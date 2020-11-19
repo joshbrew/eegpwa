@@ -1,3 +1,5 @@
+import {GPU} from 'gpu.js'
+
 export class gpuUtils {
   constructor(){
       this.gpu = new GPU();

@@ -2,7 +2,7 @@
 //var localpath = full.substr(0,full.lastIndexOf("/"));
 //var parentpath = localpath.substr(0,localpath.lastIndexOf("/"));
 
-import {GPU} from './utils/gpu-browser.min.js'
+import {GPU} from 'gpu.js'
 import {gpuUtils} from './utils/gpuUtils.js';
 import {eegmath} from './eeg32';
 

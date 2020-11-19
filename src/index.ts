@@ -9,8 +9,9 @@ import 'smoothie'
 import 'gpu.js'
 
 import './js/utils/webgl-heatmap'
-import "./js/eeg32.js"
-import "./js/utils/gpuUtils.js"
+import './js/eeg32.js'
+import './js/eegvisuals.js'
+import './js/utils/gpuUtils.js'
 import './js/eegworker.js'
 import './js/app.js'
 //import { elm } from './util/util';

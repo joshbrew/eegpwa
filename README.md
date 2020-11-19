@@ -48,16 +48,16 @@ There are a couple handlers you can customize in the serial streaming to handle 
 * `eegclass.onDecoded = () => {console.log("decoded!");}`
 * `eegclass.onConnectedCallback = () => {console.log("port connected!");}`
 
-Static functions:
-* `eeg32.genSineWave(sampleRate, frequency, amplitude, seconds, frequency2 (optional), amplitude2 (optional));` - generates a sine wave of the given frequencies, with array length equal to sampleRate * seconds. Frequency 2 is optional e.g. for simulating simple noise.
-* `eeg32.cov2d(mat)` - 2D matrix covariance, pretty fast!
-* `eeg32.crosscorrelation(arr1,arr2)` - returns the cross-correlogram for the two input signals
-* `eeg32.autocorrelation(arr1)` - returns the auto-correlogram for the input signal
-* `eeg32.sma(array, window)` - returns an array of the simple moving average based on the window sample size
-* `eeg32.mean(array)` - reduces an array to the mean (expected value)
-* `eeg32.variance(array)` - returns the variance array of the input array
-* `eeg32.transpose(mat)` - 2D matrix transposing for quick maths
-* `eeg32.matmul(mat1,mat2)` - 2D matrix multiplication
+Static functions in eegmath class:
+* `eegmath.genSineWave(sampleRate, frequency, amplitude, seconds, frequency2 (optional), amplitude2 (optional));` - generates a sine wave of the given frequencies, with array length equal to sampleRate * seconds. Frequency 2 is optional e.g. for simulating simple noise.
+* `eegmath.cov2d(mat)` - 2D matrix covariance, pretty fast!
+* `eegmath.crosscorrelation(arr1,arr2)` - returns the cross-correlogram for the two input signals
+* `eegmath.autocorrelation(arr1)` - returns the auto-correlogram for the input signal
+* `eegmath.sma(array, window)` - returns an array of the simple moving average based on the window sample size
+* `eegmath.mean(array)` - reduces an array to the mean (expected value)
+* `eegmath.variance(array)` - returns the variance array of the input array
+* `eegmath.transpose(mat)` - 2D matrix transposing for quick maths
+* `eegmath.matmul(mat1,mat2)` - 2D matrix multiplication
 
 #### gpuUtils in src/js/utils/gpuUtils.js
 

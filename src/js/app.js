@@ -1,8 +1,6 @@
 
-import 'smoothie'
-import 'uplot'
-import './utils/webgl-heatmap'
-import {eeg32, eegmath, SmoothieChartMaker, uPlotMaker, brainMap2D, BufferLoader, SoundJS, geolocateJS} from './eeg32.js'
+import {eeg32, eegmath} from './eeg32.js'
+import {SmoothieChartMaker, uPlotMaker, brainMap2D, BufferLoader, SoundJS, geolocateJS} from './eegvisuals.js'
 import {GPU} from 'gpu.js'
 import {gpuUtils} from './utils/gpuUtils.js'
 
