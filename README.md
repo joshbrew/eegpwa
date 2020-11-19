@@ -49,7 +49,7 @@ There are a couple handlers you can customize in the serial streaming to handle 
 * `eegclass.onConnectedCallback = () => {console.log("port connected!");}`
 
 Static functions in eegmath class:
-* `eegmath.genSineWave(sampleRate, frequency, amplitude, seconds, frequency2 (optional), amplitude2 (optional));` - generates a sine wave of the given frequencies, with array length equal to sampleRate * seconds. Frequency 2 is optional e.g. for simulating simple noise.
+* `eegmath.genSineWave(frequency, amplitude, seconds, sampleRate, frequency2 (optional), amplitude2 (optional));` - generates a sine wave of the given frequencies, with array length equal to sampleRate * seconds. Frequency 2 is optional e.g. for simulating simple noise.
 * `eegmath.cov2d(mat)` - 2D matrix covariance, pretty fast!
 * `eegmath.crosscorrelation(arr1,arr2)` - returns the cross-correlogram for the two input signals
 * `eegmath.autocorrelation(arr1)` - returns the auto-correlogram for the input signal
