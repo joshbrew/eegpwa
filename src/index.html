@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <link rel="shortcut icon" href="/public/favicon.ico" />
+  <link rel="apple-touch-icon" href="/public/logo192.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="stylesheet" href="./css/uPlot.min.css">
+  <link href="./index.sass" rel="stylesheet">
+
+
+  <style>
+   #brainmap {
+      position: absolute;
+      right: 10px;
+      top: 1000px;
+      width: 400px;
+      height: 400px;
+    }
+    #brainmappoints {
+      position: absolute;
+      right: 10px;
+      z-index: 2;
+      top: 1000px;
+      width: 400px;
+      height: 400px;
+    }
+
+  </style>
+
+</head>
+<body>
+    <button id="connect">Connect to EEG</button>
+    <button id="analyze">Analyze Data</button>
+    <button id="stop">Stop Analyzing</button>
+    <button id="record">Save CSV (does nothing)</button> 
+    <input type="text" id="freqStart" placeholder="lower bound" value="0">
+    <input type="text" id="freqEnd" placeholder="upper bound" value="100">
+    <button id="bandPass">Set BandPass</button>
+    <button id="mode">Graph Mode</button>
+    <button id="tg2o">Theta-Gamma 2 Octave (not set up yet)</button>
+    <br><input type="text" id="channelView" placeholder="Format: 0,1,2,5,6,7,etc">
+    <button id="setChannelView">Set Channel View</button>
+    <input type="text" id="channelTags" placeholder="Format: 0:Fp1,2:Fz,etc">
+    <button id="setTags">Set Tags</button>
+    
+
+    <h3 id="uplottitle">ADC FFTs w/ Bandpass</h3>
+    <div id="adc"></div>
+
+    <h3>Band Amplitudes. Color codes: Purple - Delta, Orange - Theta, Green - Alpha, Blue - Beta, Red - Gamma</h3>
+    <canvas id="smoothie1" style="width: 75%; height: 200px"></canvas>
+    <h3>Alpha Amplitudes (8-12Hz)</h3>
+    <canvas id="smoothie2" style="width: 75%; height: 200px"></canvas>
+
+    <table id="brainmaptable">
+      <tr><td><h3>Brain Map (see "atlas" in the console and set corresponding channel tags (see "channelTags")) | </h3></td>
+      <td><h4>Viewing:</h4></td>
+      <td><select id="bandview">
+        <option value="delta">Delta</option>
+        <option value="theta">Theta</option>
+        <option value="alpha" selected="selected">Alpha</option>
+        <option value="beta">Beta</option>
+        <option value="gamma">Gamma</option>
+      </select></td></tr>
+    </table>
+    <canvas id="brainmap"></canvas>
+    <canvas id="brainmappoints"></canvas>
+
+<script src="./index.ts"></script>
+
+<script>
+  // https://developers.google.com/web/tools/workbox/modules/workbox-cli
+  // it is needed because parcel will not recognize this as a file and not precess in its manner
+  const sw = "./service-worker.js";
+
+  navigator.serviceWorker
+    .register(sw)
+    .then(registration => {
+      registration.onupdatefound = () => {
+        const installingWorker = registration.installing;
+        if (installingWorker == null) {
+          return;
+        }
+        installingWorker.onstatechange = () => {
+          if (installingWorker.state === "installed") {
+            if (navigator.serviceWorker.controller) {
+              console.log(
+                "New content is available and will be used when all " +
+                  "tabs for this page are closed. See https://bit.ly/CRA-PWA."
+              );
+            } else {
+              console.log("Content is cached for offline use.");
+            }
+          }
+        };
+      };
+    })
+    .catch(error => {
+      console.error("Error during service worker registration:", error);
+    });
+
+    var threads = 1;
+    
+    //WebWorker only works when hosted (e.g. with node)
+    
+    try {
+      window.worker = [];
+      for(var i = 0; i< threads; i++){
+        window.worker.push(new Worker('./js/utils/eegworker.js'));
+        worker[i].onmessage = function(e) {
+          var result = e.data;
+          console.log(result);
+        };
+      }
+      
+    }
+    catch (err) {
+      window.worker = undefined;
+      console.log(err);
+    }
+
+    
+    //foo options: "xcor, autocor, cov1d, cov2d, sma, dft, multidft, multibandpassdft"
+    var postToWorker = (foo,input) => {
+        worker[0].postMessage({foo:foo, input:input});
+    }
+
+    console.time("threadtest");
+    postToWorker("xcor", [[1,2,3,4,5,4,3,2,1],[1,2,3,4,5,4,3,2,1]]);
+    console.timeEnd("threadtest");
+
+</script>
+
+</body>
+</html>

@@ -1,2 +1,7 @@
-# eegpwa
-Progressive Web App implementation of my EEG browser based software, to implement web worker threads for performance.
+# Test for EEG browser PWA
+
+Not working yet but you can test the EEG worker
+
+## 
+
+Thank you Dovydas!
