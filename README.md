@@ -81,7 +81,7 @@ Static functions in eegmath class:
 
 ##### 1 channel, 512sps, 1 second of data: 1.9ms, 2.5ms average
 
-![performance](performance.png)
+![performance](screenshots/performance.png)
 
 ### Visual features
 
