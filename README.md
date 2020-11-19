@@ -79,7 +79,7 @@ Static functions in eegmath class:
 
 ##### 128 channels, 512sps, 1 second of data with bandpass filter: 8.3ms fastest, 20ms average.
 
-##### 1 channel, 512sps, 1 second of data: 1.9ms, 2.5ms average
+##### 1 channel, 512sps, 1 second of data: 1.9ms fastest, 3.5ms average
 
 ![performance](screenshots/performance.png)
 
