@@ -1,10 +1,10 @@
 
-import {SmoothieChart, TimeSeries} from './utils/smoothie.min.js'
-import uPlot from './utils/uPlot.iife.min.js'
-import createWebGLHeatmap from './utils/webgl-heatmap'
+import 'smoothie'
+import 'uplot'
+import './utils/webgl-heatmap'
 import {eeg32, SmoothieChartMaker, uPlotMaker, brainMap2D, BufferLoader, SoundJS, geolocateJS} from './eeg32.js'
-import GPU from './utils/gpu-browser.min.js'
-import gpuUtils from './utils/gpuUtils.js'
+import {GPU} from 'gpu.js'
+import {gpuUtils} from './utils/gpuUtils.js'
 
 if(!navigator.serial){
   document.getElementById("p").innerHTML = "navigator.serial not found! Enable #enable-experimental-web-platform-features in chrome://flags (search 'experimental') then refresh";

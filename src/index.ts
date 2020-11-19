@@ -4,11 +4,12 @@ import { main } from './main'
 import { viewSize } from '@giveback007/util-lib/dist/browser'
 
 import 'regenerator-runtime/runtime'
-import "./js/utils/uPlot.iife.min.js"
-import "./js/utils/smoothie.min.js"
-import "./js/utils/webgl-heatmap.js"
+import 'uplot'
+import 'smoothie'
+import 'gpu.js'
+
+import './js/utils/webgl-heatmap'
 import "./js/eeg32.js"
-import "./js/utils/gpu-browser.min.js"
 import "./js/utils/gpuUtils.js"
 import './js/utils/eegworker.js'
 import './js/app.js'
