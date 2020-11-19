@@ -11,7 +11,7 @@ import 'gpu.js'
 import './js/utils/webgl-heatmap'
 import "./js/eeg32.js"
 import "./js/utils/gpuUtils.js"
-import './js/utils/eegworker.js'
+import './js/eegworker.js'
 import './js/app.js'
 //import { elm } from './util/util';
 

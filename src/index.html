@@ -110,7 +110,7 @@
     try {
       window.worker = [];
       for(var i = 0; i< threads; i++){
-        window.worker.push(new Worker('./js/utils/eegworker.js'));
+        window.worker.push(new Worker('./js/eegworker.js'));
         worker[i].onmessage = function(e) {
           var result = e.data;
           console.log(result);

@@ -2,7 +2,7 @@
 import 'smoothie'
 import 'uplot'
 import './utils/webgl-heatmap'
-import {eeg32, SmoothieChartMaker, uPlotMaker, brainMap2D, BufferLoader, SoundJS, geolocateJS} from './eeg32.js'
+import {eeg32, eegmath, SmoothieChartMaker, uPlotMaker, brainMap2D, BufferLoader, SoundJS, geolocateJS} from './eeg32.js'
 import {GPU} from 'gpu.js'
 import {gpuUtils} from './utils/gpuUtils.js'
 
@@ -183,7 +183,7 @@ var analysisLoop = () => {
           });
           //Compare other channels to one channel to save time/processing. First result is an autocorrelation
           xcorbuf.forEach((buffer,i) => {
-              correlograms.push(eeg32.crosscorrelation(xcorbuf[0],buffer));
+              correlograms.push(eegmath.crosscorrelation(xcorbuf[0],buffer));
           });
           //Then take FFTs of correlograms
           //var correlogram_FFTs = gpu.MultiChannelDFT_BandPass(xcor)[1];

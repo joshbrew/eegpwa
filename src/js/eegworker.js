@@ -2,9 +2,9 @@
 //var localpath = full.substr(0,full.lastIndexOf("/"));
 //var parentpath = localpath.substr(0,localpath.lastIndexOf("/"));
 
-import {GPU} from './gpu-browser.min.js'
-import {gpuUtils} from './gpuUtils.js';
-import {eeg32} from '../eeg32';
+import {GPU} from './utils/gpu-browser.min.js'
+import {gpuUtils} from './utils/gpuUtils.js';
+import {eegmath} from './eeg32';
 
 
 const gpu = new gpuUtils();
@@ -14,11 +14,11 @@ onmessage = function(e) {
   //console.time("worker");
     var output = 0;
 
-    if(e.data.foo === "xcor"){ output = eeg32.crosscorrelation(e.data.input[0],e.data.input[1]);} //Takes 2 1D arrays
-    else if(e.data.foo === "autocor"){ output = eeg32.autocorrelation(e.data.input);}      //Takes 1 1D array
-    else if(e.data.foo === "cov1d"){ output = eeg32.cov1d(e.data.input[0],e.data.input[1]);} //Takes 2 1D arrays
-    else if(e.data.foo === "cov2d"){ output = eeg32.cov2d(e.data.input); }              //Takes 1 2D array with equal width rows
-    else if(e.data.foo === "sma"){ output = eeg32.sma(e.data.input[0],e.data.input[1]);}   //Takes 1 1D array and an sma window size
+    if(e.data.foo === "xcor"){ output = eegmath.crosscorrelation(e.data.input[0],e.data.input[1]);} //Takes 2 1D arrays
+    else if(e.data.foo === "autocor"){ output = eegmath.autocorrelation(e.data.input);}      //Takes 1 1D array
+    else if(e.data.foo === "cov1d"){ output = eegmath.cov1d(e.data.input[0],e.data.input[1]);} //Takes 2 1D arrays
+    else if(e.data.foo === "cov2d"){ output = eegmath.cov2d(e.data.input); }              //Takes 1 2D array with equal width rows
+    else if(e.data.foo === "sma"){ output = eegmath.sma(e.data.input[0],e.data.input[1]);}   //Takes 1 1D array and an sma window size
     else if(e.data.foo === "dft"){ //Takes 1 1D array and the number of seconds 
         output = gpu.gpuDFT(e.data.input[0],e.data.input[1]); 
     }              

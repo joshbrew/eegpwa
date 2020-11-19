@@ -1,6 +1,9 @@
 //Joshua Brewster, AGPL (copyleft)
 
 import 'regenerator-runtime/runtime' //For async functions on node\\
+import 'uplot'
+import 'smoothie'
+import './utils/webgl-heatmap'
 
 export class eeg32 { //Contains structs and necessary functions/API calls to analyze serial data for the FreeEEG32
     constructor() {
@@ -346,6 +349,14 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		return {delta: deltaFreqs, theta: thetaFreqs, alpha: alphaFreqs, beta: betaFreqs, gamma: gammaFreqs}
 	}
 	
+
+}
+
+export class eegmath {
+	constructor() {
+
+	}
+
 	//----------------------------------------------------------------
 	//-------------------- Static Functions --------------------------
 	//----------------------------------------------------------------
@@ -533,8 +544,6 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 
 
 
-
-
 //---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
 //-------------------------------EEG Visual Classes--------------------------------
@@ -613,7 +622,7 @@ export class SmoothieChartMaker {
 	}
 }
 
-//Lightweight plotter based on uplot.life.js
+//Lightweight plotter based on uplot.iife.min.js
 //TODO - big vertical chart comparing all channel data 
 //E.g. y-shifted series https://leeoniya.github.io/uPlot/demos/y-shifted-series.html
 //Other examples to draw from: https://leeoniya.github.io/uPlot/demos/resize.html
@@ -622,7 +631,7 @@ export class SmoothieChartMaker {
 export class uPlotMaker {
 	constructor(canvasId = null) {
 		if(typeof(uPlot) === 'undefined'){
-			console.log("uPlot not detected! Make sure uplot.life.js and uplot.min.css are included in your app!");
+			console.log("uPlot not detected! Make sure uplot.iife.js and uplot.min.css are included in your app!");
 			return false;
 		}
 
