@@ -108,7 +108,8 @@
 
 <script>
 
-  var threads = 1; //Make multiple workers for big tasks
+  window.threads = 1; //Make multiple workers for big tasks
+  window.threadrot = 0;
     //WebWorker only works when hosted (e.g. with node)
     
     try {
@@ -129,8 +130,19 @@
 
     
     //foo options: "xcor, autocor, cov1d, cov2d, sma, dft, multidft, multibandpassdft"
-    var postToWorker = (foo,input,worker=0) => {
-      window.workers[worker].postMessage({foo:foo, input:input});
+    var postToWorker = (foo,input,workeridx = null) => {
+      if(workeridx === null){
+        window.workers[window.threadrot].postMessage({foo:foo, input:input});
+        if(window.threads > 1){
+          window.threadrot++;
+          if(window.threadrot >= window.threads){
+            window.threadrot = 0;
+          }
+        }
+      }
+      else{
+       window.workers[workeridx].postMessage({foo:foo, input:input});
+      }
     }
 
     var sine = [];
