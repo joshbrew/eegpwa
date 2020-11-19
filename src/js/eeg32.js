@@ -266,7 +266,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			if (amplitudes === undefined) {
 				newLayout.map.push({tag: tag, data: this.newCoord(coords[i][0],coords[i][1],coords[i][2],undefined,undefined,undefined,undefined)});
 			}
-			else{
+			else {
 				newLayout.map.push({tag: tag, data: this.newCoord(coords[i][0],coords[i][1],coords[i][2],times[i],amplitudes[i],slices[i],means[i])});
 			}
 		});
@@ -276,7 +276,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	//Return the object corresponding to the atlas tag
 	getAtlasCoordByTag(tag="Fp1"){
 		var found = undefined;
-		let atlasCoord = atlas.map.find((o, i) => {
+		let atlasCoord = this.atlas.map.find((o, i) => {
 			if(o.tag === tag){
 				found = o;
 				return true;
@@ -286,13 +286,39 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	}
 
 	//Returns an array of Array(3)s for each coordinate. Useful e.g. for graphics
-	getAtlasCoordsList(fromAtlas) {
+	getAtlasCoordsList() {
 		var coords = [];
-		for(var i = 0; i< fromAtlas.length; i++) {
-		  coords.push([fromAtlas.map[i].data.x,fromAtlas.map[i].data.y,fromAtlas.map[i].data.z]);
+		for(var i = 0; i< this.atlas.length; i++) {
+		  coords.push([this.atlas.map[i].data.x,this.atlas.map[i].data.y,this.atlas.map[i].data.z]);
 		 
 		}
 		return coords;
+	}
+
+	//Get the latest data pushed to tagged channels
+	getLatestDataFromAtlas() {
+		var dat = [];
+	
+		this.channelTags.forEach((r, i) => {
+			var row = this.getAtlasCoordByTag(r.tag);
+			var lastIndex = row.data.times.length - 1;
+			dat.push({tag:row.tag, data:{
+				time: row.data.times[lastIndex],
+				amplitude: row.data.amplitudes[lastIndex], 
+				slice:{delta:row.data.slices.delta[lastIndex], theta:row.data.slices.theta[lastIndex], alpha:row.data.slices.alpha[lastIndex], beta:row.data.slices.beta[lastIndex], gamma:row.data.slices.gamma[lastIndex]}, 
+				mean:{delta:row.data.means.delta[lastIndex], theta:row.data.means.theta[lastIndex], alpha: row.data.means.alpha[lastIndex], beta: row.data.means.beta[lastIndex], gamma: row.data.means.gamma[lastIndex]}}});
+		});
+		return dat;
+	}
+
+	//Gets raw data associated with the channelTags, since we assume these are the only channels you are using
+	getTaggedRawData(nSamples) {
+		var raw = [];
+		this.channelTags.forEach((row,i) => {
+			var ch = 'A' + row.ch;
+			raw.push(this.data[ch].slice(this.data[ch].length-nSamples,this.data[ch].length));
+		});
+		return raw;
 	}
 
 	//Returns a 10_20 atlas object with structure { "Fp1": {x,y,z,amplitudes[]}, "Fp2" : {...}, ...}
@@ -345,7 +371,6 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		});
 		return {delta: deltaFreqs, theta: thetaFreqs, alpha: alphaFreqs, beta: betaFreqs, gamma: gammaFreqs}
 	}
-	
 
 }
 
@@ -514,6 +539,19 @@ export class eegmath {
 
 		console.timeEnd("autocorr");
 		return correlations;
+	}
+
+	//Compute correlograms of the given array of arrays (of equal length). Input array of equal length arrays of latest raw data (use dat = eeg32instance.getTaggedRawData())
+	static correlograms(dat) {//Coherence network math for data pushed to the atlas
+		var correlograms = []; //auto and cross correlations for each channel
+		dat.forEach((row1,i) => {
+			dat.forEach((row2,j) => {
+				if(j >= i) {
+					correlograms.push(eegmath.crosscorrelation(row1,row2));
+				}
+			})
+		});
+		return correlograms; //Output ordered like (tag1:tag1, tag1:tag2 ... tag2:tag2, tag2:tag3 ... tagn:tagn) where autocorrelograms are also included
 	}
 
 	//Input data and averaging window, output array of moving averages (should be same size as input array, initial values not fully averaged due to window)
