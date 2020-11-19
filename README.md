@@ -75,6 +75,12 @@ Static functions:
 
 * More being tested like inverse DFTs or automatic bandpass then inverse dfts via pipelining, or other combinations. gpujs lets you pass textures of the outputs between kernels with ease which lowers the difficulty for real time DSP. There are also tests in the /other folder e.g. for video convolution or the 128 channel FFT benchmark
 
+#@@# Benchmark on RTX 2060 using gpuworker.js:
+
+##### 128 channels, 512sps, 1 second of data with bandpass filter: 8.3ms fastest, 20ms average.
+
+##### 1 channel, 512sps, 1 second of data: 1.9ms, 2.5ms average
+
 ### Visual features
 
 Also in eeg32.js, for now you will find many visual classes and some other utilities like sound buffering and geolocation. This includes helpers to make smoothiejs charts, stacked or overlaid uplot charts, brainmaps, and soon colored bar bandpower charts and a theta-gamma 2 octave module for Dmitry.
