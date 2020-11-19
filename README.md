@@ -49,7 +49,7 @@ There are a couple handlers you can customize in the serial streaming to handle 
 * `eegclass.onConnectedCallback = () => {console.log("port connected!");}`
 
 Static functions in eegmath class:
-* `eegmath.genSineWave(sampleRate, frequency, amplitude, seconds, frequency2 (optional), amplitude2 (optional));` - generates a sine wave of the given frequencies, with array length equal to sampleRate * seconds. Frequency 2 is optional e.g. for simulating simple noise.
+* `eegmath.genSineWave(frequency, amplitude, seconds, sampleRate, frequency2 (optional), amplitude2 (optional));` - generates a sine wave of the given frequencies, with array length equal to sampleRate * seconds. Frequency 2 is optional e.g. for simulating simple noise.
 * `eegmath.cov2d(mat)` - 2D matrix covariance, pretty fast!
 * `eegmath.crosscorrelation(arr1,arr2)` - returns the cross-correlogram for the two input signals
 * `eegmath.autocorrelation(arr1)` - returns the auto-correlogram for the input signal
@@ -87,12 +87,12 @@ Also in eegvisuals.js, for now you will find many visual classes and some other 
 The idea is to make it so the lightweight analysis and visual tools are both there as needed, I'm still fleshing this concept out but think of a cross between a python scientific package and a web game engine library. My HEG software is essentially this and I want to expand both to then be combined for a WebBCI framework. This will make use of all the best of the web.
  
 * `var smoothie = new SmoothieChartMaker()` - make a [Smoothiejs](http://smoothiecharts.org/) instance for smooth time series visualization
-* `var uplotter = new uPlotMaker()` - make a [uPlot](https://github.com/leeoniya/uPlot) instance, allows for overlaid or stacked (vertical) time series visualization.
+* `var uplotter = new uPlotMaker()` - make a [uPlot](https://github.com/leeoniya/uPlot) instance, allows for overlaid or stacked (vertical) time series or FFT (or whatever really) visualization.
 * `var brainmap = new brainMap2D()` - make a brain heat map using the atlas from your eeg32 instance, tags each point with their atlas name (e.g. Fp1, Cz) and which ADC channels are assigned. Uses [webgl-heatmap](https://github.com/pyalot/webgl-heatmap) for visualization 
 
 Incoming:
 * colored bar charts - a common eeg visual you see to highlight band powers
-* theta-gamma 2 octave - Dmitry's test to show working memory coherence patterns with audio and heatmap visualization
+* theta-gamma 2 octave - Dmitry's test to show working memory coherence patterns with audio and heatmap visualization using my soundjs toy and uplot
 * alpha coherence visualization - for alpha training e.g. with meditation
 
 
