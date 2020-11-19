@@ -1,6 +1,6 @@
 # Test for EEG browser PWA
 
-Not fully working yet in node but you can test the EEG worker. [other repo with plain browser implementation](https://github.com/moothyknight/free_eeg32_web)
+Not fully working yet in this node implementation but you can at least test the EEG worker. [old repo](https://github.com/moothyknight/free_eeg32_web)
 
 with node
 `npm install`
@@ -74,6 +74,20 @@ Static functions:
 
 * More being tested like inverse DFTs or automatic bandpass then inverse dfts via pipelining, or other combinations. gpujs lets you pass textures of the outputs between kernels with ease which lowers the difficulty for real time DSP. There are also tests in the /other folder e.g. for video convolution or the 128 channel FFT benchmark
 
+### Visual features
+
 Also in eeg32.js, for now you will find many visual classes and some other utilities like sound buffering and geolocation. This includes helpers to make smoothiejs charts, stacked or overlaid uplot charts, brainmaps, and soon colored bar bandpower charts and a theta-gamma 2 octave module for Dmitry.
-The idea is to make it so the analysis and visual tools are both there as needed, I'm still fleshing this concept out but think of a cross between a python scientific package and a web game engine library. My HEG software is essentially this and I want to expand both to then be combined for a WebBCI framework. This will make use of all the best of the web.
+The idea is to make it so the lightweight analysis and visual tools are both there as needed, I'm still fleshing this concept out but think of a cross between a python scientific package and a web game engine library. My HEG software is essentially this and I want to expand both to then be combined for a WebBCI framework. This will make use of all the best of the web.
  
+* `var smoothie = new SmoothieChartMaker()` - make a [Smoothiejs](http://smoothiecharts.org/) instance for smooth time series visualization
+* `var uplotter = new uPlotMaker()` - make a [uPlot](https://github.com/leeoniya/uPlot) instance, allows for overlaid or stacked (vertical) time series visualization.
+* `var brainmap = new brainMap2D()` - make a brain heat map using the atlas from your eeg32 instance, tags each point with their atlas name (e.g. Fp1, Cz) and which ADC channels are assigned. Uses [webgl-heatmap](https://github.com/pyalot/webgl-heatmap) for visualization 
+
+Incoming:
+* colored bar charts - a common eeg visual you see to highlight band powers
+* theta-gamma 2 octave - Dmitry's test to show working memory coherence patterns with audio and heatmap visualization
+* alpha coherence visualization - for alpha training e.g. with meditation
+
+![stream](screenshots/stream.png)
+![timeseries](screenshots/timeseries.png)
+![brainmap](screenshots/brainmap.PNG)
