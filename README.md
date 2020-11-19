@@ -85,7 +85,8 @@ Static functions in eegmath class:
 
 ### Visual features
 
-Also in eegvisuals.js, for now you will find many visual classes and some other utilities like sound buffering and geolocation. This includes helpers to make smoothiejs charts, stacked or overlaid uplot charts, brainmaps, and soon colored bar bandpower charts and a theta-gamma 2 octave module for Dmitry.
+Also in eegvisuals.js, for now you will find many visual classes and some other utilities like sound buffering and geolocation. See the file to know how to make proper calls and be sure to include the right modules. This includes helpers to make smoothiejs charts, stacked or overlaid uplot charts, brainmaps, and soon colored bar bandpower charts and a theta-gamma 2 octave module for Dmitry.
+
 The idea is to make it so the lightweight analysis and visual tools are both there as needed, I'm still fleshing this concept out but think of a cross between a python scientific package and a web game engine library. My HEG software is essentially this and I want to expand both to then be combined for a WebBCI framework. This will make use of all the best of the web.
  
 * `var smoothie = new SmoothieChartMaker()` - make a [Smoothiejs](http://smoothiecharts.org/) instance for smooth time series visualization
