@@ -151,11 +151,12 @@
     }
     var bigarr = new Array(128).fill(sine);
 
-    postToWorker("dft", [sine,1]);
-
     function testGPU(){
       console.log("testGPU()");
-      console.log("single dft");
+      
+      postToWorker("dft", [bigarr,1]);
+      postToWorker("dft", [bigarr,1]);
+      console.log("posted 1x dft 2 times");
       postToWorker("multidft", [bigarr,1]);
       postToWorker("multidft", [bigarr,1]);
       postToWorker("multidft", [bigarr,1]);
@@ -164,7 +165,7 @@
       postToWorker("multidft", [bigarr,1]);
       postToWorker("multidft", [bigarr,1]);
       postToWorker("multidft", [bigarr,1]);
-      console.log("128x dft * 8");
+      console.log("posted 128x dft 8 times");
     }
 
     testGPU();
