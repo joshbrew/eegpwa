@@ -4,9 +4,6 @@ import { main } from './main'
 import { viewSize } from '@giveback007/util-lib/dist/browser'
 
 import 'regenerator-runtime/runtime'
-import 'uplot'
-import 'smoothie'
-import 'gpu.js'
 
 import './js/utils/webgl-heatmap'
 import './js/eeg32.js'

@@ -12,7 +12,7 @@ import './utils/webgl-heatmap'
 export class SmoothieChartMaker {
 	constructor(nSeries = 1, canvasId=null, gridStrokeStyle = 'rgb(125, 125, 125)', gridFillStyle = 'rgb(10, 10, 10)', labelFillStyle = 'rgb(255, 255, 255)') {
 		if(typeof(SmoothieChart) === 'undefined'){
-			alert("smoothie.js not found, please include it correctly before instantiating this class!");
+			alert("smoothie.js not found!");
 			return false;
 		}
 
@@ -89,7 +89,7 @@ export class SmoothieChartMaker {
 export class uPlotMaker {
 	constructor(canvasId = null) {
 		if(typeof(uPlot) === 'undefined'){
-			console.log("uPlot not detected! Make sure uplot.iife.js and uplot.min.css are included in your app!");
+			console.log("uPlot not detected!");
 			return false;
 		}
 

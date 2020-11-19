@@ -2,7 +2,6 @@
 //var localpath = full.substr(0,full.lastIndexOf("/"));
 //var parentpath = localpath.substr(0,localpath.lastIndexOf("/"));
 
-import {GPU} from 'gpu.js'
 import {gpuUtils} from './utils/gpuUtils.js';
 import {eegmath} from './eeg32';
 
@@ -11,7 +10,7 @@ const gpu = new gpuUtils();
 
 onmessage = function(e) {
   // define gpu instance
-  //console.time("worker");
+  console.time("worker");
     var output = 0;
 
     if(e.data.foo === "xcor"){ output = eegmath.crosscorrelation(e.data.input[0],e.data.input[1]);} //Takes 2 1D arrays
@@ -30,6 +29,6 @@ onmessage = function(e) {
     else {output = "function not defined"}
 
   // output some results!
-  //console.timeEnd("worker");
+  console.timeEnd("worker");
   postMessage(output);
 };

@@ -103,7 +103,13 @@
       console.error("Error during service worker registration:", error);
     });
 
-    var threads = 1;
+    
+</script>
+
+<script>
+
+var threads = 1; //Make multiple workers for big tasks
+var threadrot = 0;
     
     //WebWorker only works when hosted (e.g. with node)
     
@@ -113,25 +119,47 @@
         window.worker.push(new Worker('./js/eegworker.js'));
         worker[i].onmessage = function(e) {
           var result = e.data;
-          console.log(result);
+          //console.log(result);
         };
       }
       
     }
     catch (err) {
       window.worker = undefined;
-      console.log(err);
+      //console.log(err);
     }
 
     
     //foo options: "xcor, autocor, cov1d, cov2d, sma, dft, multidft, multibandpassdft"
     var postToWorker = (foo,input) => {
-        worker[0].postMessage({foo:foo, input:input});
+      worker[0].postMessage({foo:foo, input:input});
+      if(threads > 1) {
+        threadrot++;
+        if(threadrot >= threads){
+          threadrot = 0;
+        }
+      }
     }
 
-    console.time("threadtest");
-    postToWorker("xcor", [[1,2,3,4,5,4,3,2,1],[1,2,3,4,5,4,3,2,1]]);
-    console.timeEnd("threadtest");
+    var sine = [];
+    for(var i = 0; i < 512; i++){
+      sine.push(Math.sin(Math.PI*(i/511)));
+    }
+    var bigarr = new Array(128).fill(sine);
+
+    postToWorker("dft", [sine,1]);
+    console.log("single dft");
+    postToWorker("multidft", [bigarr,1]);
+    postToWorker("multidft", [bigarr,1]);
+    postToWorker("multidft", [bigarr,1]);
+    postToWorker("multidft", [bigarr,1]);
+    postToWorker("multidft", [bigarr,1]);
+    postToWorker("multidft", [bigarr,1]);
+    postToWorker("multidft", [bigarr,1]);
+    postToWorker("multidft", [bigarr,1]);
+    console.log("128x dft * 8");
+
+
 
 </script>
 

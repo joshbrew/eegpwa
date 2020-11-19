@@ -242,7 +242,7 @@ export class gpuUtils {
 
         var freqDist = this.makeFrequencyDistribution(nSamplesPerChannel, sampleRate);
         signalBufferProcessed = outputTex.toArray();
-        console.log(signalBufferProcessed);
+        //console.log(signalBufferProcessed);
 
         for(var i = 0; i < signalBufferProcessed.length; i+=nSamplesPerChannel){
           orderedMagsList.push(this.orderMagnitudes([...signalBufferProcessed.slice(i,i+nSamplesPerChannel)]));
