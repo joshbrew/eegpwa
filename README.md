@@ -81,6 +81,8 @@ Static functions in eegmath class:
 
 ##### 1 channel, 512sps, 1 second of data: 1.9ms, 2.5ms average
 
+![performance](performance.png)
+
 ### Visual features
 
 Also in eegvisuals.js, for now you will find many visual classes and some other utilities like sound buffering and geolocation. This includes helpers to make smoothiejs charts, stacked or overlaid uplot charts, brainmaps, and soon colored bar bandpower charts and a theta-gamma 2 octave module for Dmitry.
