@@ -89,6 +89,8 @@ Incoming:
 * theta-gamma 2 octave - Dmitry's test to show working memory coherence patterns with audio and heatmap visualization
 * alpha coherence visualization - for alpha training e.g. with meditation
 
+
+On the right you can see single threaded performance statistics (<20ms average for 128x FFTs on worker threads)
 ![stream](screenshots/stream.png)
 ![timeseries](screenshots/timeseries.png)
 ![brainmap](screenshots/brainmap.PNG)
