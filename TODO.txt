@@ -1,13 +1,14 @@
 DONE:
-- GPU FFTs + bandpass, handles an arbitrary number of FFTs in 20ms-100ms on average depending on size (<20ms usually for a single channel, it beats jsfft). Tested up to 128 channels of simulated data. 
-- Coherence
+- GPU FFTs + bandpass, handles an arbitrary number of FFTs in <20ms-30ms on average depending on size (<3ms for single channel, <20ms for 128 channels, it beats jsfft by a long shot). Tested up to 128 channels of simulated data on RTX 2060. 
+- Coherence, am about to make it do coherence per channel
 - uPlot for live time series charts for any number of channels. 
     -- FFT plots, raw data plot, stacked raw data plot (was a pain in the ass but looks good), coherence plot
 - Smoothie charts for streaming simple time series (I thought it looked like this one muse charting applet I used)
 - heatmapjs + canvas for a brain atlas + heat map. 
    -- The canvas creates points based off the given MNI atlas coordinates with tags e.g. Fp1, Fp2, Fz, etc.
    -- Points assigned to channels are highlighted with the channel index listed
-- Web/Blob workers for CPU or GPU processing with multithread.js (works local or hosted)
+- Web workers
+- Nodejs pwa implementation for better worker functionality and web-hostability
 
 
 
@@ -27,7 +28,7 @@ Visuals:
 - Brain network map for more complex coherence
 
 Performance:
-- I could definitely optimize most of the math but if it ain't broke don't fix it.. yet.. We could probably push 30FPS at least with the mass FFTs on the GPU, there are compute shader examples that do them in microseconds.
+- I could definitely optimize most of the math but if it ain't broke don't fix it.. yet.. 
 
 Use cases:
 - Alpha coherence
