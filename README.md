@@ -30,7 +30,7 @@ testeeg.html
 
 There are two main classes you should know about:
 
-#### eeg32 in eeg32.js
+#### eeg32 in src/js/eeg32.js
 
 * Contains all necessary functions to connect to, parse, and organize the FreeEEG32 data.
 * Decoders can be written for any hardware with serial output and used seamlessly with the rest of the API.
@@ -59,7 +59,7 @@ Static functions:
 * `eeg32.transpose(mat)` - 2D matrix transposing for quick maths
 * `eeg32.matmul(mat1,mat2)` - 2D matrix multiplication
 
-#### gpuUtils in ./utils/gpuUtils.js
+#### gpuUtils in src/js/utils/gpuUtils.js
 
 * gpu.js based utilities. It's easy enough for my brain to handle
 * This does the bulk of the computation work and eats FFTs for breakfast. Accomplished 128 channels * 2048 samples (4 seconds) in 50ms, averages about 70ms runtime on RTX 2060 but even works on super old laptops
