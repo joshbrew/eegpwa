@@ -1,4 +1,3 @@
-
 import {eeg32, eegmath} from './eeg32.js'
 import {SmoothieChartMaker, uPlotMaker, brainMap2D, BufferLoader, SoundJS, geolocateJS} from './eegvisuals.js'
 import {GPU} from 'gpu.js'
@@ -51,13 +50,13 @@ EEG.channelTags = [
 EEG.atlas = EEG.makeAtlas10_20();
 
 try {
-var uplotter = new uPlotMaker("adc");
-var uPlotData = [bandPassWindow,bandPassWindow,bandPassWindow];
+  var uplotter = new uPlotMaker("adc");
+  var uPlotData = [bandPassWindow,bandPassWindow,bandPassWindow];
 
-uplotter.makeuPlot(uplotter.makeSeriesFromChannelTags(EEG.channelTags),uPlotData);
+  uplotter.makeuPlot(uplotter.makeSeriesFromChannelTags(EEG.channelTags),uPlotData);
 }
 catch (err) {
-console.log("uPlot error: ", err);
+  console.log("uPlot error: ", err);
 }
 
 try {
