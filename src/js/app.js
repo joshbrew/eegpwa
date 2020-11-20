@@ -5,7 +5,7 @@ import {GPU} from 'gpu.js'
 import {gpuUtils} from './utils/gpuUtils.js'
 
 if(!navigator.serial){
-  document.getElementById("p").innerHTML = "navigator.serial not found! Enable #enable-experimental-web-platform-features in chrome://flags (search 'experimental') then refresh";
+  alert("navigator.serial not found! Enable #enable-experimental-web-platform-features in chrome://flags (search 'experimental') then refresh");//document.getElementById("p").innerHTML = "navigator.serial not found! Enable #enable-experimental-web-platform-features in chrome://flags (search 'experimental') then refresh";
 }
 
 try { window.EEG = new eeg32(); }
