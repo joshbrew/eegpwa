@@ -1,4 +1,4 @@
-import { uPlot } from 'uplot';
+import uPlot from 'uplot';
 import { SmoothieChart, TimeSeries } from "smoothie";
 import './utils/webgl-heatmap'
 
@@ -88,7 +88,7 @@ export class SmoothieChartMaker {
 // https://leeoniya.github.io/uPlot/demos/latency-heatmap.html
 export class uPlotMaker {
 	constructor(canvasId = null) {
-		if(typeof(uPlot) === 'undefined'){
+		if(uPlot === 'undefined') {
 			console.log("uPlot not detected!");
 			return false;
 		}
@@ -134,7 +134,7 @@ export class uPlotMaker {
 		//console.log(uPlotData);
 
 		if(this.plot !== null){ this.plot.destroy(); }
-
+		
 		this.plot = new uPlot(uPlotOptions, uPlotData, document.getElementById(this.canvasId));
 	}
 
