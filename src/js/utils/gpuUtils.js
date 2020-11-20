@@ -1,4 +1,4 @@
-import {GPU} from 'gpu.js'
+import {GPU} from './gpu-browser.min.js'
 
 export class gpuUtils {
   constructor(){
