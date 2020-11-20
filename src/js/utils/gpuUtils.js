@@ -1,8 +1,7 @@
-//const {GPU} = require('gpu.js');
+import {GPU} from 'gpu.js'
 
 export class gpuUtils {
   constructor(){
-      const { GPU } = require('gpu.js');
       this.gpu = new GPU();
       this.kernel;
       this.PI = 3.141592653589793;
