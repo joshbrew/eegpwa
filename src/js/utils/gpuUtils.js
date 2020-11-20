@@ -1,4 +1,4 @@
-import {GPU} from 'gpu.js'
+const {GPU} = require('gpu.js');
 
 export class gpuUtils {
   constructor(){
@@ -197,6 +197,7 @@ export class gpuUtils {
    
     }
 
+    //Input array buffer and the number of seconds of data
     gpuDFT(signalBuffer, nSeconds, texOut = false){
 
       var nSamples = signalBuffer.length;
@@ -221,6 +222,7 @@ export class gpuUtils {
       }
     }
 
+    //Input array of array buffers of the same length and the number of seconds recorded
     MultiChannelDFT(signalBuffer, nSeconds, texOut = false) {
       
       var signalBufferProcessed = [];
