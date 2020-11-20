@@ -1,5 +1,5 @@
-import 'uplot'
-import 'smoothie'
+import * as uPlot from 'uplot';
+import { SmoothieChart, TimeSeries } from "smoothie";
 import './utils/webgl-heatmap'
 
 //---------------------------------------------------------------------------------
