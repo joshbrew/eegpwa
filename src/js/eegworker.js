@@ -42,7 +42,7 @@ onmessage = function(e) {
         //Multiply channel 1 DFT by channel 1 autocorrelation DFT
         //Multiply these two results together with the cross correlation DFT between channel 0 and 1.
         //Outputs coherence data in order of channel data inputted e.g. for 4 channels resulting DFTs = [0:1,0:2,0:3,1:2,1:3,2:3];
-        dfts.forEach((row,i) => {
+        /*dfts.forEach((row,i) => {
           var k = i;
           while (k < nChannels){
             coherenceResults.push([]);
@@ -56,7 +56,7 @@ onmessage = function(e) {
             });
             k++;
           }
-        });
+        });*/
     }
     else {output = "function not defined"}
 
