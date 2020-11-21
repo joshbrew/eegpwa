@@ -23,6 +23,7 @@ var freqEnd = 100; //End of DFT frequencies (max = SPS * 0.5, half the nyquist s
 
 var posFFTList = [];
 var bandPassWindow = gpu.bandPassWindow(freqStart,freqEnd,sps); // frequencies (x-axis)
+var analyze = false;
 
 var coherenceResults = [bandPassWindow, bandPassWindow];
 
