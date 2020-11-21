@@ -75,7 +75,7 @@ Static functions in eegmath class:
 
 * More being tested like inverse DFTs or automatic bandpass then inverse dfts via pipelining, or other combinations. gpujs lets you pass textures of the outputs between kernels with ease which lowers the difficulty for real time DSP. There are also tests in the /other folder e.g. for video convolution or the 128 channel FFT benchmark
 
-#### Benchmark on RTX 2060 using gpuworker.js:
+#### Benchmark on RTX 2060 using eegworker.js:
 
 ##### 128 channels, 512sps, 1 second of data with bandpass filter: 8.3ms fastest, 20ms average.
 
