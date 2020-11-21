@@ -62,7 +62,7 @@ Static functions in eegmath class:
 #### gpuUtils in src/js/utils/gpuUtils.js
 
 * gpu.js based utilities. It's easy enough for my brain to handle
-* This does the bulk of the computation work and eats FFTs for breakfast. Accomplished 128 channels * 2048 samples (4 seconds) in 50ms, averages about 70ms runtime on RTX 2060 but even works on super old laptops
+* This does the bulk of the computation work and eats FFTs for breakfast. Accomplished 128 channels * 2048 samples (4 seconds) in 50ms, averages about 70ms runtime in single thread, 20ms in worker threads on RTX 2060 but even works on super old laptops
 * I'll try to port the autocorrelation and cross correlation functions in to do mass numbers of them in parallel (e.g. for mapping coherence networks)
 
 `var gpu = new gpuUtils()`
