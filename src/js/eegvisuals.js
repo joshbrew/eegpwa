@@ -209,9 +209,11 @@ export class uPlotMaker {
 			dat[0]
 		];
 
-		dat.forEach((row) => {
-			uPlotData.push(row.map((t,j) => ymapper(t,j)));
-			mapidx++;
+		dat.forEach((row,i) => {
+			if(i>0){
+				uPlotData.push(row.map((t,j) => ymapper(t,j)));
+				mapidx++;
+			}
 		  });
 
 		var datidx = 1;
