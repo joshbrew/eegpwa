@@ -125,12 +125,11 @@ window.threadrot = 0;
       window.workers.push(new Worker('./js/eegworker.js'));
       workers[i].onmessage = (e) => {
         var msg = e.data;
-        //console.log(msg)
+        console.log(e)
         receivedMsg(msg);
-        //console.log(result);
       };
     }
-    console.log("worker threads: ", threads)
+    console.log("worker threads: ", threads);
     
   }
   catch (err) {

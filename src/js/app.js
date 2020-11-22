@@ -19,7 +19,7 @@ var nChannels = 32; //Number of channels to sample
 var sps = 512; //Samples per second
 var nSec = 1; //Number of seconds to sample FFTs
 var freqStart = 0; //Beginning of DFT frequencies
-var freqEnd = 150; //End of DFT frequencies (max = SPS * 0.5, half the nyquist sampling rate)
+var freqEnd = 100; //End of DFT frequencies (max = SPS * 0.5, half the nyquist sampling rate)
 
 var posFFTList = [];
 var bandPassWindow = gpu.bandPassWindow(freqStart,freqEnd,sps); // frequencies (x-axis)
@@ -271,6 +271,10 @@ function processFFTs() {
 }
 
 
+//-------------------------------------------
+//-------------------------------------------
+//-------------------------------------------
+
 //For handling worker messages
 window.receivedMsg = (msg) => {
   if(msg.foo === "multidftbandpass") {
@@ -282,8 +286,8 @@ window.receivedMsg = (msg) => {
 }
 
 
-var sine = eegmath.genSineWave(30,1,1,512);
-var bigarr = new Array(3).fill(sine[1]);
+var sine = eegmath.genSineWave(50,1,1,512);
+var bigarr = new Array(128).fill(sine[1]);
 
 console.log(sine)
 function testGPU(){

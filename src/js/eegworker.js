@@ -62,6 +62,6 @@ onmessage = (e) => {
 
   // output some results!
   console.timeEnd("worker");
-  console.log(output);
+  console.log("In worker: ", output);
   postMessage({output: output,foo: e.data.foo});
 };
