@@ -36,7 +36,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 
 		//navigator.serial utils
 		if(!navigator.serial){
-			alert("navigator.serial not found! Enable #enable-experimental-web-platform-features in chrome://flags (search 'experimental')")
+			console.error("`navigator.serial not found! Enable #enable-experimental-web-platform-features in chrome://flags (search 'experimental')")
 		}
 		this.port = null;
 
