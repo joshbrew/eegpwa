@@ -24,7 +24,7 @@ onmessage = (e) => {
     else if(e.data.foo === "multidft") { //Takes 1 2D array with equal width rows, and the number of seconds of data being given
         output = gpu.MultiChannelDFT(e.data.input[0],e.data.input[1]);
     }  
-    else if(e.data.foo === "multibandpassdft") { //Accepts 1 2D array of equal width, number of seconds of data, beginning frequency, ending frequency
+    else if(e.data.foo === "multidftbandpass") { //Accepts 1 2D array of equal width, number of seconds of data, beginning frequency, ending frequency
         output = gpu.MultiChannelDFT_Bandpass(e.data.input[0],e.data.input[1],e.data.input[2],e.data.input[3]);
     } 
     else if(e.data.foo === "coherence") { //Input 2D array, number of seconds, beginning frequency, ending frequency. Outputs an array of products of each FFT with each associated correlogram, ordered by channel
@@ -62,5 +62,5 @@ onmessage = (e) => {
 
   // output some results!
   console.timeEnd("worker");
-  postMessage(output);
+  postMessage({foo: e.data.foo, output: output});
 };

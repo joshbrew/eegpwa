@@ -263,7 +263,7 @@ export class gpuUtils {
 
       
     //Input buffer of signals [[channel 0],[channel 1],...,[channel n]] with the same number of samples for each signal. Returns arrays of the positive DFT results in the given window.
-    MultiChannelDFT_BandPass(signalBuffer,nSeconds,freqStart,freqEnd, texOut = false) {
+    MultiChannelDFT_Bandpass(signalBuffer,nSeconds,freqStart,freqEnd, texOut = false) {
       
       var signalBufferProcessed = [];
         

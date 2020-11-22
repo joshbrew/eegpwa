@@ -115,69 +115,44 @@
 
 <script>
 
-  window.threads = 1; //Make multiple workers for big tasks
-  window.threadrot = 0;
-    //WebWorker only works when hosted (e.g. with node)
+window.threads = 1; //Make multiple workers for big tasks
+window.threadrot = 0;
+  //WebWorker only works when hosted (e.g. with node)
+  
+  try {
+    window.workers = [];
+    for(var i = 0; i< window.threads; i++){
+      window.workers.push(new Worker('./js/eegworker.js'));
+      workers[i].onmessage = (e) => {
+        var msg = e.data;
+        receivedMsg(msg);
+        //console.log(result);
+      };
+    }
+    console.log("worker threads: ", threads)
     
-    try {
-      window.workers = [];
-      for(var i = 0; i< window.threads; i++){
-        window.workers.push(new Worker('./js/eegworker.js'));
-        workers[i].onmessage = function(e) {
-          var result = e.data;
-          //console.log(result);
-        };
-      }
-      console.log("worker threads: ", threads)
-      
-    }
-    catch (err) {
-      window.workers = undefined;
-      //console.log(err);
-    }
+  }
+  catch (err) {
+    window.workers = undefined;
+    //console.log(err);
+  }
 
-    
-    //foo options: "xcor, autocor, cov1d, cov2d, sma, dft, multidft, multibandpassdft"
-    var postToWorker = (foo,input,workeridx = null) => {
-      if(workeridx === null){
-        window.workers[window.threadrot].postMessage({foo:foo, input:input});
-        if(window.threads > 1){
-          window.threadrot++;
-          if(window.threadrot >= window.threads){
-            window.threadrot = 0;
-          }
+  
+  //foo options: "xcor, autocor, cov1d, cov2d, sma, dft, multidft, multibandpassdft"
+  window.postToWorker = (foo,input,workeridx = null) => {
+    if(workeridx === null){
+      window.workers[window.threadrot].postMessage({foo:foo, input:input});
+      if(window.threads > 1){
+        window.threadrot++;
+        if(window.threadrot >= window.threads){
+          window.threadrot = 0;
         }
       }
-      else{
-       window.workers[workeridx].postMessage({foo:foo, input:input});
-      }
     }
-
-    var sine = [];
-    for(var i = 0; i < 512; i++){
-      sine.push(Math.sin(Math.PI*(i/511)));
+    else{
+     window.workers[workeridx].postMessage({foo:foo, input:input});
     }
-    var bigarr = new Array(128).fill(sine);
-
-    function testGPU(){
-      console.log("testGPU()");
-      
-      postToWorker("dft", [bigarr,1]);
-      postToWorker("dft", [bigarr,1]);
-      console.log("posted 1x dft 2 times");
-      postToWorker("multidft", [bigarr,1]);
-      postToWorker("multidft", [bigarr,1]);
-      postToWorker("multidft", [bigarr,1]);
-      postToWorker("multidft", [bigarr,1]);
-      postToWorker("multidft", [bigarr,1]);
-      postToWorker("multidft", [bigarr,1]);
-      postToWorker("multidft", [bigarr,1]);
-      postToWorker("multidft", [bigarr,1]);
-      console.log("posted 128x dft 8 times");
-    }
-
-    testGPU();
-
+  }
 
 </script>
 

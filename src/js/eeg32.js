@@ -31,7 +31,8 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		}
 
 		this.atlas = null; //this.makeAtlas10_20();
-		this.channelTags = null; //Format: [{ch:0, tag:"Fp1", viewing:true},{etc}];
+		this.channelTags = this.setDefaultTags(); //Format: [{ch:0, tag:"Fp1", viewing:true},{etc}];
+
 
 		//navigator.serial utils
 		if(!navigator.serial){
@@ -348,6 +349,19 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			{tag:"O2",  data: { x: 24.1,  y: -100.5, z: 14.,   times: [], amplitudes: [], slices: {delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {delta: [0], theta: [0], alpha: [0], beta: [0], gamma: [0]}}} 
 		]};
 
+	}
+
+	setDefaultTags() {
+		return [
+			{ch: 0, tag: null},{ch: 1, tag: null},{ch: 2, tag: null},{ch: 3, tag: null},
+			{ch: 4, tag: null},{ch: 5, tag: null},{ch: 6, tag: null},{ch: 7, tag: null},
+			{ch: 8, tag: null},{ch: 9, tag: null},{ch: 10, tag: null},{ch: 11, tag: null},
+			{ch: 12, tag: null},{ch: 13, tag: null},{ch: 14, tag: null},{ch: 15, tag: null},
+			{ch: 16, tag: null},{ch: 17, tag: null},{ch: 18, tag: null},{ch: 19, tag: null},
+			{ch: 20, tag: null},{ch: 21, tag: null},{ch: 22, tag: null},{ch: 23, tag: null},
+			{ch: 24, tag: null},{ch: 25, tag: null},{ch: 26, tag: null},{ch: 27, tag: null},
+			{ch: 28, tag: null},{ch: 29, tag: null},{ch: 30, tag: null},{ch: 31, tag: null}
+		];
 	}
 
 	getBandFreqs(bandPassWindow) {//Returns an object with the frequencies and indices associated with the bandpass window (for processing the FFT results)

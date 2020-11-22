@@ -19,7 +19,7 @@ var nChannels = 32; //Number of channels to sample
 var sps = 512; //Samples per second
 var nSec = 1; //Number of seconds to sample FFTs
 var freqStart = 0; //Beginning of DFT frequencies
-var freqEnd = 100; //End of DFT frequencies (max = SPS * 0.5, half the nyquist sampling rate)
+var freqEnd = 150; //End of DFT frequencies (max = SPS * 0.5, half the nyquist sampling rate)
 
 var posFFTList = [];
 var bandPassWindow = gpu.bandPassWindow(freqStart,freqEnd,sps); // frequencies (x-axis)
@@ -38,15 +38,6 @@ EEG.channelTags = [
   {ch: 5, tag: "T3", viewing: true},
   {ch: 25, tag: "T4", viewing: true}
 ];
-
-/*
-{ch: 2, tag: "Fz"},  //Channel 2 etc.
-{ch: 3, tag: "F3"},
-{ch: 4, tag: "F4"},
-{ch: 5, tag: "F7"},
-{ch: 6, tag: "F8"},
-{ch: 7, tag: "Cz"},
-*/
 
 EEG.atlas = EEG.makeAtlas10_20();
 
@@ -121,39 +112,39 @@ let atlasCoord = EEG.atlas.map.find((o, i) => {
 
 var updateVisuals = () => {
 
-//uPlot
-if(graphmode === "Stacked"){
-  uplotter.makeStackeduPlot(undefined,uPlotData,undefined,channelTags);
-}
-else {
-  uplotter.plot.setData(uPlotData);
-}
-
-//Smoothie charts
-EEG.channelTags.forEach((row,i) => {
-  var coord = EEG.getAtlasCoordByTag(row.tag);
-  if(i===0) {
-    smoothie1.bulkAppend([
-      coord.data.means.delta[coord.data.means.delta.length-1],
-      coord.data.means.theta[coord.data.means.theta.length-1],
-      coord.data.means.alpha[coord.data.means.alpha.length-1],
-      coord.data.means.beta[coord.data.means.beta.length-1],
-      coord.data.means.gamma[coord.data.means.gamma.length-1]]);
+  //uPlot
+  if(graphmode === "Stacked"){
+    uplotter.makeStackeduPlot(undefined,uPlotData,undefined,channelTags);
   }
-  if(i < smoothie2.series.length - 1){
-    smoothie2.series[i].append(Date.now(), coord.data.means.alpha[coord.data.means.alpha.length-1]);
+  else {
+    uplotter.plot.setData(uPlotData);
   }
-});
 
-//Brainmap
-//normalize the point sizes to a max of 90.
-var viewing = document.getElementById("bandview").value;
+  //Smoothie charts
+  EEG.channelTags.forEach((row,i) => {
+    var coord = EEG.getAtlasCoordByTag(row.tag);
+    if(i===0) {
+      smoothie1.bulkAppend([
+        coord.data.means.delta[coord.data.means.delta.length-1],
+        coord.data.means.theta[coord.data.means.theta.length-1],
+        coord.data.means.alpha[coord.data.means.alpha.length-1],
+        coord.data.means.beta[coord.data.means.beta.length-1],
+        coord.data.means.gamma[coord.data.means.gamma.length-1]]);
+    }
+    if(i < smoothie2.series.length - 1){
+      smoothie2.series[i].append(Date.now(), coord.data.means.alpha[coord.data.means.alpha.length-1]);
+    }
+  });
+
+  //Brainmap
+  //normalize the point sizes to a max of 90.
+  var viewing = document.getElementById("bandview").value;
 brainMap.updateHeatmapFromAtlas(EEG.atlas,EEG.channelTags,viewing);
 }
 
-var analyse = false;
-var analyzeloop = null;
 
+
+var analyzeloop = null;
 
 
 //---------------------------------------
@@ -172,6 +163,8 @@ var analysisLoop = () => {
               buffer.push(dat);
           }
       }
+
+      //TODO: put coherence in its own worker thread
       if(fdbackmode === "coherence") {
           var correlograms = [];
           var xcorbuf = [];
@@ -190,85 +183,123 @@ var analysisLoop = () => {
           //Then use as a base multiplier on the original FFTs
       }
 
-      console.time("GPU DFT");
-      posFFTList = gpu.MultiChannelDFT_BandPass(buffer, nSec, freqStart, freqEnd)[1]; // Mass FFT
-      console.timeEnd("GPU DFT");
-      console.log("FFTs processed: ", buffer.length);
+      if(window.workers !== undefined){
+        window.postToWorker("multidftbandpass",[buffer,nSec,freqStart,freqEnd]);
+      }
+      else{
+        console.time("GPU DFT");
+        posFFTList = gpu.MultiChannelDFT_Bandpass(buffer, nSec, freqStart, freqEnd)[1]; // Mass FFT
+        console.timeEnd("GPU DFT");
+        console.log("FFTs processed: ", buffer.length);
 
-      if(fdbackmode === "coherence"){
-          var correlogram_FFTs = posFFTList.splice(EEG.channelTags.length,EEG.channelTags.length); //Splice off the correlogram FFTs on the end
-          //console.log(posFFTList);
-          //console.log(correlogram_FFTs);
-          var results = []; //Get a total product of all of the correlogram FFT arrays multiplied by all of the signal FFT arrays then check for coherence (resonance)
-          correlogram_FFTs.forEach((fft,i) => {
-              fft.forEach((elem,j) => {
-                  if(i === 0){
-                      results.push(posFFTList[i][j]*elem);
-                  }
-                  else{
-                      results[j] *= (posFFTList[i][j]*elem);
-                  }
-              });
-          });
-          coherenceResults = [bandPassWindow, results];
+        processFFTs();
+        
+        //Update visuals
+        updateVisuals();
       }
 
-      if(graphmode === "FFT"){
-
-          //Animate plot(s)
-          uPlotData = [
-              bandPassWindow
-          ];
-
-          EEG.channelTags.forEach((row,i) => {
-              if(row.viewing === true) {
-                  uPlotData.push(posFFTList[i]);
-              }
-          });
-
-      }
-
-      else if ((graphmode === "TimeSeries") || (graphmode === "Stacked")) {
-          var nsamples = Math.floor(sps*nSecAdcGraph);
-
-          uPlotData = [
-              EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
-          ];
-
-          EEG.channelTags.forEach((row,i) => {
-              if(row.viewing === true) {
-                  uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
-              }
-          });
-      }
-
-      else if (graphmode === "Coherence") {
-          uPlotData = coherenceResults;
-      }
-
-        //Separate and report channel results by band
-      EEG.channelTags.forEach((row,i) => {
-          if((row.tag !== null) && (i < nChannels)){
-              //console.log(tag);
-              channelBands(i,row.tag);
-          }
-          if(row.tag === null){
-              posFFTList.splice(i,0,null); //Add nulls to the magnitudes lists for the channelBands function to work
-          }
-      });
-      EEG.atlas.shared.bandPassWindows.push(bandPassWindow);//Push the x-axis values for each frame captured as they may change
-
-
-      //Update visuals
-
-      updateVisuals();
-
-      if(analyze === true) {setTimeout(() => {analyzeloop = requestAnimationFrame(analysisLoop);},200)};
+      if(analyze === true) {setTimeout(() => {analyzeloop = requestAnimationFrame(analysisLoop);},100)};
       //console.log(coherenceResults);
   }
   
 }
 
+function processFFTs() {
+    if(fdbackmode === "coherence"){
+      var correlogram_FFTs = posFFTList.splice(EEG.channelTags.length,EEG.channelTags.length); //Splice off the correlogram FFTs on the end
+      //console.log(posFFTList);
+      //console.log(correlogram_FFTs);
+      var results = []; //Get a total product of all of the correlogram FFT arrays multiplied by all of the signal FFT arrays then check for coherence (resonance)
+      correlogram_FFTs.forEach((fft,i) => {
+          fft.forEach((elem,j) => {
+              if(i === 0){
+                  results.push(posFFTList[i][j]*elem);
+              }
+              else{
+                  results[j] *= (posFFTList[i][j]*elem);
+              }
+          });
+      });
+      coherenceResults = [bandPassWindow, results];
+    }
+
+    if(graphmode === "FFT"){
+
+        //Animate plot(s)
+        uPlotData = [
+            bandPassWindow
+        ];
+
+        EEG.channelTags.forEach((row,i) => {
+            if(row.viewing === true) {
+                uPlotData.push(posFFTList[i]);
+            }
+        });
+
+    }
+
+    else if ((graphmode === "TimeSeries") || (graphmode === "Stacked")) {
+        var nsamples = Math.floor(sps*nSecAdcGraph);
+
+        uPlotData = [
+            EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
+        ];
+
+        EEG.channelTags.forEach((row,i) => {
+            if(row.viewing === true) {
+                uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
+            }
+        });
+    }
+
+    else if (graphmode === "Coherence") {
+        uPlotData = coherenceResults;
+    }
+
+      //Separate and report channel results by band
+    EEG.channelTags.forEach((row,i) => {
+        if((row.tag !== null) && (i < nChannels)){
+            //console.log(tag);
+            channelBands(i,row.tag);
+        }
+        if(row.tag === null){
+            posFFTList.splice(i,0,null); //Add nulls to the magnitudes lists for the channelBands function to work
+        }
+    });
+    EEG.atlas.shared.bandPassWindows.push(bandPassWindow);//Push the x-axis values for each frame captured as they may change
+
+}
+
+
+//For handling worker messages
+window.receivedMsg = (msg) => {
+  if(msg.foo === "multidftbandpass") {
+    console.log(msg)
+    posFFTList = msg.output[1];
+    processFFTs(); 
+    updateVisuals();
+  }
+}
+
+
+var sine = eegmath.genSineWave(30,1,1,512);
+var bigarr = new Array(128).fill(sine[1]);
+
+console.log(sine)
+function testGPU(){
+  console.log("testGPU()");
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  console.log("posted 128x dft 8 times");
+}
+
+  setTimeout(()=>{testGPU()},1000); //Need to delay this call since app.js is made before the worker script is made
 
 //---------------------------------------
 //-------------- UI SETUP ---------------
