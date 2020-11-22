@@ -36,7 +36,8 @@ var nSecAdcGraph = 10; //number of seconds to show on the raw signal graph
 
 EEG.channelTags = [
   {ch: 5, tag: "T3", viewing: true},
-  {ch: 25, tag: "T4", viewing: true}
+  {ch: 25, tag: "T4", viewing: true},
+  {ch: 0, tag: "Fz", viewing: true}
 ];
 
 EEG.atlas = EEG.makeAtlas10_20();
@@ -287,7 +288,7 @@ window.receivedMsg = (msg) => {
 
 
 var sine = eegmath.genSineWave(50,1,1,512);
-var bigarr = new Array(128).fill(sine[1]);
+var bigarr = new Array(3).fill(sine[1]);
 
 console.log(sine)
 function testGPU(){
