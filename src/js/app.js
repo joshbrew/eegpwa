@@ -37,14 +37,18 @@ var nSecAdcGraph = 10; //number of seconds to show on the raw signal graph
 EEG.channelTags = [
   {ch: 5, tag: "T3", viewing: true},
   {ch: 25, tag: "T4", viewing: true},
-  {ch: 0, tag: "Fz", viewing: true}
+  {ch: 10, tag: "Fp1", viewing: true},
+  {ch: 15, tag: "Fp2", viewing: true},
 ];
 
 EEG.atlas = EEG.makeAtlas10_20();
 
 try {
   var uplotter = new uPlotMaker("adc");
-  var uPlotData = [bandPassWindow,bandPassWindow,bandPassWindow];
+  var uPlotData = [bandPassWindow];
+  EEG.channelTags.forEach(() => {
+    uPlotData.push(bandPassWindow)
+  })
 
   uplotter.makeuPlot(uplotter.makeSeriesFromChannelTags(EEG.channelTags),uPlotData);
 }
@@ -79,6 +83,7 @@ EEG.atlas.shared.bandFreqs = EEG.getBandFreqs(bandPassWindow);
 
 //generalize this for the eeg32 class or just 
 var channelBands = (channel,tag) => {
+  //console.log(posFFTList[channel])
 //console.time("slicing bands");
 let atlasCoord = EEG.atlas.map.find((o, i) => {
   if(o.tag === tag){
@@ -114,6 +119,7 @@ let atlasCoord = EEG.atlas.map.find((o, i) => {
 var updateVisuals = () => {
 
   //uPlot
+  console.log(uPlotData)
   if(graphmode === "Stacked"){
     uplotter.makeStackeduPlot(undefined,uPlotData,undefined,channelTags);
   }
@@ -262,10 +268,7 @@ function processFFTs() {
         if((row.tag !== null) && (i < nChannels)){
             //console.log(tag);
             channelBands(i,row.tag);
-        }
-        if(row.tag === null){
-            posFFTList.splice(i,0,null); //Add nulls to the magnitudes lists for the channelBands function to work
-        }
+        }        
     });
     EEG.atlas.shared.bandPassWindows.push(bandPassWindow);//Push the x-axis values for each frame captured as they may change
 
@@ -280,15 +283,15 @@ function processFFTs() {
 window.receivedMsg = (msg) => {
   if(msg.foo === "multidftbandpass") {
     console.log(msg)
-    posFFTList = [...[msg.output[1]]];
-    processFFTs(); 
+    posFFTList = [...msg.output[1]];
+    processFFTs();
     updateVisuals();
   }
 }
 
 
 var sine = eegmath.genSineWave(50,1,1,512);
-var bigarr = new Array(6).fill(sine[1]);
+var bigarr = new Array(8).fill(sine[1]);
 
 console.log(sine)
 function testGPU(){
@@ -357,6 +360,8 @@ else if (graphmode === "Stacked"){
 else if (graphmode === "Coherence") {
   graphmode = "Stacked";
   document.getElementById("uplottitle").innerHTML = "ADC signals Stacked";
+  
+  console.log(uPlotData)
   uplotter.makeStackeduPlot(undefined, uPlotData, undefined, EEG.channelTags);
   
 }
@@ -447,61 +452,61 @@ if(graphmode === "Stacked"){
 
 
 document.getElementById("setTags").onclick = () => {
-var val = document.getElementById("channelTags").value;
-if(val.length === 0) { return; }
-//console.log(val);
-var arr = val.split(",");
-console.log(arr);
-//channelTags.forEach((row,j) => { channelTags[j].viewing = false; });
-//console.log(arr);
-arr.forEach((item,i) => {
-  var dict = item.split(":");
-  var found = false;
-  let setTags = EEG.channelTags.find((o, j) => {
-    if(o.ch === parseInt(dict[0])){
-      let otherTags = EEG.channelTags.find((p,k) => {
-        if(p.tag === dict[1]){
-          EEG.channelTags[k].tag = null;
-          return true;
+  var val = document.getElementById("channelTags").value;
+  if(val.length === 0) { return; }
+  //console.log(val);
+  var arr = val.split(",");
+  console.log(arr);
+  //channelTags.forEach((row,j) => { channelTags[j].viewing = false; });
+  //console.log(arr);
+  arr.forEach((item,i) => {
+    var dict = item.split(":");
+    var found = false;
+    let setTags = EEG.channelTags.find((o, j) => {
+      if(o.ch === parseInt(dict[0])){
+        let otherTags = EEG.channelTags.find((p,k) => {
+          if(p.tag === dict[1]){
+            EEG.channelTags[k].tag = null;
+            return true;
+          }
+        })
+        //console.log(o);
+        EEG.channelTags[j].tag = dict[1];
+        EEG.channelTags[j].viewing = true;
+        found = true;
+        return true;
         }
-      })
-      //console.log(o);
-      EEG.channelTags[j].tag = dict[1];
-      EEG.channelTags[j].viewing = true;
-      found = true;
-      return true;
+      else if(o.tag === dict[1]){
+        EEG.channelTags[j].tag = null; //Set tag to null since it's being assigned to another channel
       }
-    else if(o.tag === dict[1]){
-      EEG.channelTags[j].tag = null; //Set tag to null since it's being assigned to another channel
+    });
+    if (found === false){
+      var ch = parseInt(dict[0]);
+      if(ch !== NaN) {
+        if((ch >= 0) && (ch < nChannels)){
+          EEG.channelTags.push({ch:parseInt(ch), tag: dict[1], viewing: true});
+        }
+      }
     }
   });
-  if (found === false){
-    var ch = parseInt(dict[0]);
-    if(ch !== NaN) {
-      if((ch >= 0) && (ch < nChannels)){
-        EEG.channelTags.push({ch:parseInt(ch), tag: dict[1], viewing: true});
-      }
+
+  if(uPlotData.length - 1 < EEG.channelTags.length) {
+    while (uPlotData.length - 1 < EEG.channelTags.length) {
+      uPlotData.push(bandPassWindow);
     }
   }
-});
 
-if(uPlotData.length - 1 < EEG.channelTags.length) {
-  while (uPlotData.length - 1 < EEG.channelTags.length) {
-    uPlotData.push(bandPassWindow);
-  }
-}
+  //var newSeries = [{}]//plot.series;
+  brainMap.updatePoints(EEG.atlas,EEG.channelTags);
 
-//var newSeries = [{}]//plot.series;
-brainMap.updatePoints(EEG.atlas,EEG.channelTags);
-
-if((graphmode !== "Coherence") || (graphmode !== "Stacked")){
-  console.time("makeplot");
-  uplotter.makeuPlot(uplotter.makeSeriesFromChannelTags(EEG.channelTags), uPlotData);
-  console.timeEnd("makeplot");
-  }
-  if(graphmode === "Stacked"){
-    uplotter.makeStackeduPlot(undefined, uPlotData, undefined, EEG.channelTags);
-  }
+  if((graphmode !== "Coherence") || (graphmode !== "Stacked")){
+      console.time("makeplot");
+      uplotter.makeuPlot(uplotter.makeSeriesFromChannelTags(EEG.channelTags), uPlotData);
+      console.timeEnd("makeplot");
+    }
+    if(graphmode === "Stacked"){
+      uplotter.makeStackeduPlot(undefined, uPlotData, undefined, EEG.channelTags);
+    }
 }
 
 
