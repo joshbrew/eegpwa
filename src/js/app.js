@@ -83,29 +83,30 @@ catch (err) {
 console.log("brainMap error: ", err);
 }
 //make analysis loop
+EEG.atlas.shared.bandFreqs = EEG.getBandFreqs(bandPassWindow);
 
 //generalize this for the eeg32 class or just 
 var channelBands = (channel,tag) => {
 //console.time("slicing bands");
-let atlasCoord = atlas.map.find((o, i) => {
+let atlasCoord = EEG.atlas.map.find((o, i) => {
   if(o.tag === tag){
   EEG.atlas.map[i].data.times.push(performance.now());
     EEG.atlas.map[i].data.amplitudes.push(posFFTList[channel]);
     var delta = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.delta[1][0], EEG.atlas.shared.bandFreqs.delta[1][EEG.atlas.shared.bandFreqs.delta[1].length-1]);
     EEG.atlas.map[i].data.slices.delta.push(delta);
-    EEG.atlas.map[i].data.means.delta.push(mean(delta));
+    EEG.atlas.map[i].data.means.delta.push(eegmath.mean(delta));
     var theta = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.theta[1][0], EEG.atlas.shared.bandFreqs.theta[1][EEG.atlas.shared.bandFreqs.theta[1].length-1]);
     EEG.atlas.map[i].data.slices.theta.push(theta);
-    EEG.atlas.map[i].data.means.theta.push(mean(theta));
+    EEG.atlas.map[i].data.means.theta.push(eegmath.mean(theta));
     var alpha = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.alpha[1][0], EEG.atlas.shared.bandFreqs.alpha[1][EEG.atlas.shared.bandFreqs.alpha[1].length-1]);
     EEG.atlas.map[i].data.slices.alpha.push(alpha);
-    EEG.atlas.map[i].data.means.alpha.push(mean(alpha));
+    EEG.atlas.map[i].data.means.alpha.push(eegmath.mean(alpha));
     var beta  = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.beta[1][0],  EEG.atlas.shared.bandFreqs.beta[1][EEG.atlas.shared.bandFreqs.beta[1].length-1]);
     EEG.atlas.map[i].data.slices.beta.push(beta);
-    EEG.atlas.map[i].data.means.beta.push(mean(beta));
+    EEG.atlas.map[i].data.means.beta.push(eegmath.mean(beta));
     var gamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.gamma[1][0], EEG.atlas.shared.bandFreqs.gamma[1][EEG.atlas.shared.bandFreqs.gamma[1].length-1]);
     EEG.atlas.map[i].data.slices.gamma.push(gamma);
-    EEG.atlas.map[i].data.means.gamma.push(mean(gamma));
+    EEG.atlas.map[i].data.means.gamma.push(eegmath.mean(gamma));
 //console.timeEnd("slicing bands");
     return true;
   }
@@ -133,14 +134,14 @@ EEG.channelTags.forEach((row,i) => {
   var coord = EEG.getAtlasCoordByTag(row.tag);
   if(i===0) {
     smoothie1.bulkAppend([
-      coord.data.delta[coord.data.delta.length-1],
-      coord.data.theta[coord.data.theta.length-1],
-      coord.data.alpha[coord.data.alpha.length-1],
-      coord.data.beta[coord.data.beta.length-1],
-      coord.data.gamma[coord.data.gamma.length-1]]);
+      coord.data.means.delta[coord.data.means.delta.length-1],
+      coord.data.means.theta[coord.data.means.theta.length-1],
+      coord.data.means.alpha[coord.data.means.alpha.length-1],
+      coord.data.means.beta[coord.data.means.beta.length-1],
+      coord.data.means.gamma[coord.data.means.gamma.length-1]]);
   }
   if(i < smoothie2.series.length - 1){
-    smoothie2.series[i].append(Date.now(), coord.data.alpha[coord.data.alpha.length-1]);
+    smoothie2.series[i].append(Date.now(), coord.data.means.alpha[coord.data.means.alpha.length-1]);
   }
 });
 
@@ -162,7 +163,7 @@ var analyzeloop = null;
 
 //Should do a lot of this with a worker to keep the UI smooth and prevent hangups
 var analysisLoop = () => {
-  if(analyse === true) {
+  if(analyze === true) {
       var buffer = [];
       for(var i = 0; i < EEG.channelTags.length; i++){
           if(i < nChannels) {
@@ -246,7 +247,7 @@ var analysisLoop = () => {
       }
 
         //Separate and report channel results by band
-      channelTags.forEach((row,i) => {
+      EEG.channelTags.forEach((row,i) => {
           if((row.tag !== null) && (i < nChannels)){
               //console.log(tag);
               channelBands(i,row.tag);
@@ -255,7 +256,7 @@ var analysisLoop = () => {
               posFFTList.splice(i,0,null); //Add nulls to the magnitudes lists for the channelBands function to work
           }
       });
-      atlas.shared.bandPassWindows.push(bandPassWindow);//Push the x-axis values for each frame captured as they may change
+      EEG.atlas.shared.bandPassWindows.push(bandPassWindow);//Push the x-axis values for each frame captured as they may change
 
 
       //Update visuals
