@@ -3,9 +3,8 @@ import {SmoothieChartMaker, uPlotMaker, brainMap2D, BufferLoader, SoundJS, geolo
 import {GPU} from 'gpu.js'
 import {gpuUtils} from './utils/gpuUtils.js'
 
-if(!navigator.serial){
-  alert("navigator.serial not found! Enable #enable-experimental-web-platform-features in chrome://flags (search 'experimental') then refresh");//document.getElementById("p").innerHTML = "navigator.serial not found! Enable #enable-experimental-web-platform-features in chrome://flags (search 'experimental') then refresh";
-}
+if(!navigator.serial)
+  console.error("navigator.serial not found! Enable #enable-experimental-web-platform-features in chrome://flags (search 'experimental') then refresh");//document.getElementById("p").innerHTML = "navigator.serial not found! Enable #enable-experimental-web-platform-features in chrome://flags (search 'experimental') then refresh";
 
 try { window.EEG = new eeg32(); }
 catch (error) { alert("eeg32.js err: ", error) }
