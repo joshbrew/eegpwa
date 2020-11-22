@@ -280,7 +280,7 @@ function processFFTs() {
 window.receivedMsg = (msg) => {
   if(msg.foo === "multidftbandpass") {
     console.log(msg)
-    posFFTList = msg.output[1];
+    posFFTList = [...[msg.output[1]]];
     processFFTs(); 
     updateVisuals();
   }
@@ -288,7 +288,7 @@ window.receivedMsg = (msg) => {
 
 
 var sine = eegmath.genSineWave(50,1,1,512);
-var bigarr = new Array(3).fill(sine[1]);
+var bigarr = new Array(6).fill(sine[1]);
 
 console.log(sine)
 function testGPU(){
