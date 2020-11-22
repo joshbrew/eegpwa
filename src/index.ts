@@ -8,7 +8,6 @@ import 'regenerator-runtime/runtime'
 import './js/app.js'
 
 
-
 if (process.env.NODE_ENV === 'development') {
     console.log('DEV MODE');
 }
