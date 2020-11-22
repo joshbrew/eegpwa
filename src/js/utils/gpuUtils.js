@@ -333,6 +333,7 @@ export class gpuUtils {
       //console.log(summedMags);
       return summedMags;  
     }
+    
     else {return posMagsList;}
   }
 

@@ -283,7 +283,7 @@ window.receivedMsg = (msg) => {
 
 
 var sine = eegmath.genSineWave(30,1,1,512);
-var bigarr = new Array(128).fill(sine[1]);
+var bigarr = new Array(3).fill(sine[1]);
 
 console.log(sine)
 function testGPU(){
