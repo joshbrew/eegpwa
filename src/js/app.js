@@ -147,7 +147,7 @@ var updateVisuals = () => {
   //Brainmap
   //normalize the point sizes to a max of 90.
   var viewing = document.getElementById("bandview").value;
-brainMap.updateHeatmapFromAtlas(EEG.atlas,EEG.channelTags,viewing);
+  brainMap.updateHeatmapFromAtlas(EEG.atlas,EEG.channelTags,viewing);
 }
 
 
@@ -296,19 +296,24 @@ document.getElementById("stop").onclick = () => { cancelAnimationFrame(analyzelo
 document.getElementById("record").onclick = () => { alert("dummy"); }
 
 document.getElementById("bandPass").onclick = () => {
-var freq0 = parseFloat(document.getElementById("freqStart").value);
-var freq1 = parseFloat(document.getElementById("freqEnd").value);
-if (freq0 > freq1) {
-  freq0 = 0;
-}
-if(freq1 > sps*0.5){
-  freq1 = sps*0.5;
-}
-freqStart = freq0;
-freqEnd = freq1;
-bandPassWindow = gpu.bandPassWindow(freq0,freq1,sps);
+  var freq0 = parseFloat(document.getElementById("freqStart").value);
+  var freq1 = parseFloat(document.getElementById("freqEnd").value);
+  if (freq0 > freq1) {
+    freq0 = 0;
+  }
+  if(freq1 > sps*0.5){
+    freq1 = sps*0.5;
+  }
+  freqStart = freq0;
+  freqEnd = freq1;
+  bandPassWindow = gpu.bandPassWindow(freq0,freq1,sps);
 
-EEG.getBandFreqs(bandPassWindow); //Update bands accessed by the atlas for averaging
+  EEG.getBandFreqs(bandPassWindow); //Update bands accessed by the atlas for averaging
+}
+
+document.getElementById("bandview").onchange = () => {
+  var viewing = document.getElementById("bandview").value;
+  brainMap.updateHeatmapFromAtlas(EEG.atlas,EEG.channelTags,viewing);
 }
 
 document.getElementById("mode").onclick = () => {
