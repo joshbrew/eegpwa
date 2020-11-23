@@ -209,9 +209,9 @@ var analysisLoop = () => {
         updateVisuals();
       }
 
-      if(analyze === true) {setTimeout(() => {analyzeloop = requestAnimationFrame(analysisLoop);},50)};
       //console.log(coherenceResults);
   }
+  if(analyze === true) {setTimeout(() => {analyzeloop = requestAnimationFrame(analysisLoop);},50)};
   
 }
 
