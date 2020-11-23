@@ -122,17 +122,17 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 
 	async onPortSelected(port,baud) {
 		try {await port.open({ baudRate: baud, bufferSize: 65536 });} //API inconsistency in syntax between linux and windows
-		catch {await port.open({ baudrate: baud, bufferSize: 65536});}
+		catch {await port.open({ baudrate: baud, buffersize: 65536});}
 		this.onConnectedCallback();
 		this.subscribe(port);//this.subscribeSafe(port);
 	}
 
-	async subscribe(port){
+	async subscribe(port){		
 		while (this.port.readable) {
 			var reader = port.readable.getReader();
-			while(true)
-			try {
-				const { value, done } = await reader.read();
+			while(true) {
+				try {
+					const { value, done } = await reader.read();
 					if (done) {
 						// Allow the serial port to be closed later.
 						await reader.releaseLock();
@@ -147,9 +147,10 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 						//console.log("new Read");
 						//console.log(this.decoder.decode(value));
 					}		
-			} catch (error) {
-				console.log(error);// TODO: Handle non-fatal read error.
-				break;
+				} catch (error) {
+					console.log(error);// TODO: Handle non-fatal read error.
+					break;
+				}
 			}
 		}
 	}
@@ -178,6 +179,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 							if(done === true) { var donezo = new Promise((resolve,reject) => {
 								resolve(reader.releaseLock())}).then(() => {
 									looper = false;
+									return;
 								});	
 							}
 							else{
