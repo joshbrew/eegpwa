@@ -34,6 +34,7 @@ var sounds = null;//new SoundJS(); //For theta-gamma 2 octave
 
 var nSecAdcGraph = 10; //number of seconds to show on the raw signal graph
 
+var newMsg = true; //true if new message from worker
 
 EEG.channelTags = [
   {ch: 5, tag: "T3", viewing: true},
@@ -162,7 +163,8 @@ var analyzeloop = null;
 
 //Should do a lot of this with a worker to keep the UI smooth and prevent hangups
 var analysisLoop = () => {
-  if(analyze === true) {
+  if((analyze === true) && (newMsg === true)) {
+    //console.log("analyzing")
       var buffer = [];
       for(var i = 0; i < EEG.channelTags.length; i++){
           if(i < nChannels) {
@@ -193,6 +195,7 @@ var analysisLoop = () => {
 
       if(window.workers !== undefined){
         window.postToWorker("multidftbandpass",[buffer,nSec,freqStart,freqEnd]);
+        newMsg = false;
       }
       else{
         console.time("GPU DFT");
@@ -206,7 +209,7 @@ var analysisLoop = () => {
         updateVisuals();
       }
 
-      if(analyze === true) {setTimeout(() => {analyzeloop = requestAnimationFrame(analysisLoop);},100)};
+      if(analyze === true) {setTimeout(() => {analyzeloop = requestAnimationFrame(analysisLoop);},50)};
       //console.log(coherenceResults);
   }
   
@@ -494,11 +497,12 @@ window.receivedMsg = (msg) => {
     posFFTList = [...msg.output[1]];
     processFFTs();
     updateVisuals();
+    newMsg = true;
   }
 }
 
 
-var sine = eegmath.genSineWave(15,1,1,512);
+var sine = eegmath.genSineWave(10,1,1,512);
 var bigarr = new Array(8).fill(sine[1]);
 
 //console.log(sine)

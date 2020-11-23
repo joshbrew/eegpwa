@@ -98,7 +98,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			return true;
 			//Continue
 		}
-		else {this.buffer = []; return false;} 
+		//else {this.buffer = []; return false;} 
 	}
 
 	//Callbacks
@@ -115,7 +115,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 
 		while (this.buffer.length > 209) {
 			//console.log("decoding... ", this.buffer.length)
-			this.decode();	
+			this.decode(this.buffer);	
 		}
 		this.onDecoded();
 	}
@@ -124,26 +124,29 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		try {await port.open({ baudRate: baud, bufferSize: 65536 });} //API inconsistency in syntax between linux and windows
 		catch {await port.open({ baudrate: baud, bufferSize: 65536});}
 		this.onConnectedCallback();
-		this.subscribe(port);
+		this.subscribe(port);//this.subscribeSafe(port);
 	}
 
 	async subscribe(port){
 		while (this.port.readable) {
-			const reader = port.readable.getReader();
+			var reader = port.readable.getReader();
+			while(true)
 			try {
-				while (true) {
-				//console.log("reading...");
 				const { value, done } = await reader.read();
-				if (done) {
-					// Allow the serial port to be closed later.
-					reader.releaseLock();
-					break;
-				}
-				if (value) {
-					this.onReceive(value);
-					//console.log(this.decoder.decode(value));
-				}
-				}
+					if (done) {
+						// Allow the serial port to be closed later.
+						await reader.releaseLock();
+						break;
+					}
+					if (value) {
+						//console.log(value.length);
+						try{
+							this.onReceive(value);
+						}
+						catch (err) {console.log(err)}
+						//console.log("new Read");
+						//console.log(this.decoder.decode(value));
+					}		
 			} catch (error) {
 				console.log(error);// TODO: Handle non-fatal read error.
 				break;
@@ -151,8 +154,46 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		}
 	}
 
-	async closePort() {
-		await this.port.close();
+	async subscribeSafe(port) { //Using promises instead of async/await to cure hangs when the serial update does not meet tick requirements
+		var readable = new Promise((resolve,reject) => {
+			while(this.port.readable){
+				var reader = port.readable.getReader();
+				var looper = true;
+				var prom1 = new Promise((resolve,reject) => {
+					return reader.read();
+				});
+
+				var prom2 = new Promise((resolve,reject) => {
+					setTimeout(resolve,100,"readfail");
+				});
+				while(looper === true) {
+					//console.log("reading...");					
+					Promise.race([prom1,prom2]).then((result) => {
+						console.log("newpromise")
+						if(result === "readfail"){
+							console.log(result);
+						}
+						else{
+							const {value, done} = result;
+							if(done === true) { var donezo = new Promise((resolve,reject) => {
+								resolve(reader.releaseLock())}).then(() => {
+									looper = false;
+								});	
+							}
+							else{
+								this.onReceive(value);
+							}
+						}
+					});
+				}
+			}	
+			resolve("not readable");
+		});
+	}
+
+	async closePort(port) {
+		//if(this.reader) {this.reader.releaseLock();}
+		await port.close();
 		this.port = null; 
 	}
 
@@ -161,12 +202,15 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		const filters = [
 			{ usbVendorId: 0x10c4, usbProductId: 0x0043 } //CP2102 filter (e.g. for UART via ESP32)
 		];
+
 		
 		this.port = await navigator.serial.requestPort();
 		navigator.serial.addEventListener("disconnect",(e) => {
-			this.closePort();
+			this.closePort(this.port);
 		})
 		this.onPortSelected(this.port,baudrate);
+
+		//navigator.serial.addEventListener("onReceive", (e) => {console.log(e)});//this.onReceive(e));
 		
 	}
 
