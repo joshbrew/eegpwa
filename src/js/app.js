@@ -276,40 +276,6 @@ function processFFTs() {
 }
 
 
-//-------------------------------------------
-//-------------------------------------------
-//-------------------------------------------
-
-//For handling worker messages
-window.receivedMsg = (msg) => {
-  if(msg.foo === "multidftbandpass") {
-    //console.log(msg)
-    posFFTList = [...msg.output[1]];
-    processFFTs();
-    updateVisuals();
-  }
-}
-
-
-var sine = eegmath.genSineWave(50,1,1,512);
-var bigarr = new Array(8).fill(sine[1]);
-
-console.log(sine)
-function testGPU(){
-  console.log("testGPU()");
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  console.log("posted 128x dft 8 times");
-}
-
-  setTimeout(()=>{testGPU()},1000); //Need to delay this call since app.js is made before the worker script is made
-
 //---------------------------------------
 //-------------- UI SETUP ---------------
 //---------------------------------------
@@ -509,6 +475,43 @@ document.getElementById("setTags").onclick = () => {
       uplotter.makeStackeduPlot(undefined, uPlotData, undefined, EEG.channelTags);
     }
 }
+
+
+
+//-------------------------------------------
+//----------------Worker stuff---------------
+//-------------------------------------------
+
+//For handling worker messages
+window.receivedMsg = (msg) => {
+  if(msg.foo === "multidftbandpass") {
+    //console.log(msg)
+    posFFTList = [...msg.output[1]];
+    processFFTs();
+    updateVisuals();
+  }
+}
+
+
+var sine = eegmath.genSineWave(50,1,1,512);
+var bigarr = new Array(8).fill(sine[1]);
+
+//console.log(sine)
+function testGPU(){
+  console.log("testGPU()");
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  console.log("posted 128x dft 8 times");
+}
+
+  setTimeout(()=>{testGPU()},1000); //Need to delay this call since app.js is made before the worker script is made
+
 
 
 
