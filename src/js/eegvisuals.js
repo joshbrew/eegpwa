@@ -388,21 +388,21 @@ export class brainMap2D {
 			  if(o.tag === row.tag){
 				points.push({x:o.data.x*1.5+width*.5, y:height*.5-o.data.y*1.5, size:10, intensity:0.7});
 				if(viewing === "delta"){
-				  points[points.length - 1].size = o.data.means.delta;
+				  points[points.length - 1].size = o.data.means.delta[o.data.means.delta.length - 1];
 				}
 				else if(viewing === "theta"){
-				  points[points.length - 1].size = o.data.means.theta;
+				  points[points.length - 1].size = o.data.means.theta[o.data.means.theta.length - 1];
 				}
 				else if(viewing === "alpha"){
-				  points[points.length - 1].size = o.data.means.alpha;
+				  points[points.length - 1].size = o.data.means.alpha[o.data.means.alpha.length - 1];
 				}
 				else if(viewing === "beta"){
-				  points[points.length - 1].size = o.data.means.beta;
+				  points[points.length - 1].size = o.data.means.beta[o.data.means.beta.length - 1];
 				}
 				else if(viewing === "gamma"){
-				  points[points.length - 1].size = o.data.means.gamma;
+				  points[points.length - 1].size = o.data.means.gamma[o.data.means.gamma.length - 1];
 				}
-				points[points.length - 1].size *= 0.001; //Need a better method
+				points[points.length - 1].size *= 10; //Need a better method
 	
 				//simplecoherence *= points[points.length-1].size;
 				if(points[points.length - 1].size > 135){
@@ -411,6 +411,7 @@ export class brainMap2D {
 			  }
 			});
 		  });
+		  console.log(points)
 		this.points = points;
 		this.heatmap.clear();
 		this.heatmap.addPoints(this.points); //update size and intensity

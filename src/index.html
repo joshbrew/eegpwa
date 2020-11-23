@@ -140,7 +140,7 @@ window.threadrot = 0;
   
   //foo options: "xcor, autocor, cov1d, cov2d, sma, dft, multidft, multibandpassdft"
   window.postToWorker = (foo,input,workeridx = null) => {
-    if(workeridx === null){
+    if(workeridx === null) {
       window.workers[window.threadrot].postMessage({foo:foo, input:input});
       if(window.threads > 1){
         window.threadrot++;

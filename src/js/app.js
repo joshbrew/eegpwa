@@ -493,7 +493,7 @@ window.receivedMsg = (msg) => {
 }
 
 
-var sine = eegmath.genSineWave(50,1,1,512);
+var sine = eegmath.genSineWave(15,1,1,512);
 var bigarr = new Array(8).fill(sine[1]);
 
 //console.log(sine)
