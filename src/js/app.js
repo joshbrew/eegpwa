@@ -9,7 +9,9 @@ if(!navigator.serial)
 try { window.EEG = new eeg32(); }
 catch (error) { alert("eeg32.js err: ", error) }
 
-try { window.gpu = new gpuUtils(); }
+var gfx = new GPU()
+
+try { window.gpu = new gpuUtils(gfx); }
 catch (err) { alert("gpu.js utils error: ", err); }
 
 
@@ -118,7 +120,7 @@ let atlasCoord = EEG.atlas.map.find((o, i) => {
 var updateVisuals = () => {
 
   //uPlot
-  console.log(uPlotData)
+  //console.log(uPlotData)
   if(graphmode === "Stacked"){
     uplotter.makeStackeduPlot(undefined,uPlotData,undefined,channelTags);
   }
@@ -281,7 +283,7 @@ function processFFTs() {
 //For handling worker messages
 window.receivedMsg = (msg) => {
   if(msg.foo === "multidftbandpass") {
-    console.log(msg)
+    //console.log(msg)
     posFFTList = [...msg.output[1]];
     processFFTs();
     updateVisuals();

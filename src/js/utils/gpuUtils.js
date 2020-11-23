@@ -1,8 +1,13 @@
 import {GPU} from 'gpu.js'
 
 export class gpuUtils {
-  constructor(){
+  constructor(gpu=null){
+    if(gpu !== null){
+      this.gpu = gpu;
+    }
+    else {
       this.gpu = new GPU();
+    }
       this.kernel;
       this.PI = 3.141592653589793;
       this.SQRT1_2 = 0.7071067811865476
