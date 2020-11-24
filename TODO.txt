@@ -1,6 +1,6 @@
 DONE:
 - GPU FFTs + bandpass, handles an arbitrary number of FFTs in <20ms-30ms on average depending on size (<3ms for single channel, <20ms for 128 channels, it beats jsfft by a long shot). Tested up to 128 channels of simulated data on RTX 2060. 
-- Coherence, am about to make it do coherence per channel
+- Coherence per channel (coherence networks)
 - uPlot for live time series charts for any number of channels. 
     -- FFT plots, raw data plot, stacked raw data plot (was a pain in the ass but looks good), coherence plot
 - Smoothie charts for streaming simple time series (I thought it looked like this one muse charting applet I used)
@@ -31,7 +31,7 @@ Performance:
 - I could definitely optimize most of the math but if it ain't broke don't fix it.. yet.. 
 
 Use cases:
-- Alpha coherence
+- Finish Alpha Coherence
 - Theta-Gamma 2 Octave by Dmitry
 
 Compatibility:

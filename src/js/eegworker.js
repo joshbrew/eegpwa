@@ -88,7 +88,7 @@ onmessage = (e) => {
         }
       });
 
-      return [dfts[0], dfts[1], coherenceResults];
+      output = [dfts[0], dfts[1], coherenceResults];
 
       
       break;
