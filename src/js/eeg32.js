@@ -121,8 +121,8 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	}
 
 	async onPortSelected(port,baud) {
-		try {await port.open({ baudRate: baud, bufferSize: 65536 });} //API inconsistency in syntax between linux and windows
-		catch {await port.open({ baudrate: baud, buffersize: 65536});}
+		try {await port.open({ baudRate: baud, bufferSize: 200000 });} //API inconsistency in syntax between linux and windows
+		catch {await port.open({ baudrate: baud, buffersize: 200000 });}
 		this.onConnectedCallback();
 		this.subscribe(port);//this.subscribeSafe(port);
 	}
@@ -414,19 +414,19 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		var deltaFreqs = [[],[]], thetaFreqs = [[],[]], alphaFreqs = [[],[]], betaFreqs = [[],[]], gammaFreqs = [[],[]]; //x axis values and indices for named EEG frequency bands
 		bandPassWindow.forEach((item,idx) => {
 			if((item >= 0.5) && (item <= 4)){
-			deltaFreqs[0].push(item); deltaFreqs[1].push(idx);
+				deltaFreqs[0].push(item); deltaFreqs[1].push(idx);
 			}
 			if((item > 4) && (item <= 8)) {
-			thetaFreqs[0].push(item); thetaFreqs[1].push(idx);
+				thetaFreqs[0].push(item); thetaFreqs[1].push(idx);
 			}
 			if((item > 8) && (item <= 12)){
-			alphaFreqs[0].push(item); alphaFreqs[1].push(idx);
+				alphaFreqs[0].push(item); alphaFreqs[1].push(idx);
 			}
 			if((item > 12) && (item <= 35)){
-			betaFreqs[0].push(item); betaFreqs[1].push(idx);
+				betaFreqs[0].push(item); betaFreqs[1].push(idx);
 			}
 			if(item > 35) {
-			gammaFreqs[0].push(item); gammaFreqs[1].push(idx);
+				gammaFreqs[0].push(item); gammaFreqs[1].push(idx);
 			}
 		});
 		return {delta: deltaFreqs, theta: thetaFreqs, alpha: alphaFreqs, beta: betaFreqs, gamma: gammaFreqs}
@@ -613,6 +613,7 @@ export class eegmath {
 		});
 		return correlograms; //Output ordered like (tag1:tag1, tag1:tag2 ... tag2:tag2, tag2:tag3 ... tagn:tagn) where autocorrelograms are also included
 	}
+
 
 	//Input data and averaging window, output array of moving averages (should be same size as input array, initial values not fully averaged due to window)
 	static sma(arr, window) {
