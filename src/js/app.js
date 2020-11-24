@@ -81,7 +81,7 @@ console.log("brainMap error: ", err);
 //make analysis loop
 EEG.atlas.shared.bandFreqs = EEG.getBandFreqs(bandPassWindow);
 
-//generalize this for the eeg32 class or just 
+//generalize this for the eeg32 class
 var channelBands = (channel,tag) => {
   //console.log(posFFTList[channel])
 //console.time("slicing bands");
@@ -89,6 +89,9 @@ let atlasCoord = EEG.atlas.map.find((o, i) => {
   if(o.tag === tag){
   EEG.atlas.map[i].data.times.push(performance.now());
     EEG.atlas.map[i].data.amplitudes.push(posFFTList[channel]);
+    var scp = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.scp[1][0], EEG.atlas.shared.bandFreqs.scp[1][EEG.atlas.shared.bandFreqs.scp[1].length-1]);
+    EEG.atlas.map[i].data.slices.scp.push(scp);
+    EEG.atlas.map[i].data.means.scp.push(eegmath.mean(scp));
     var delta = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.delta[1][0], EEG.atlas.shared.bandFreqs.delta[1][EEG.atlas.shared.bandFreqs.delta[1].length-1]);
     EEG.atlas.map[i].data.slices.delta.push(delta);
     EEG.atlas.map[i].data.means.delta.push(eegmath.mean(delta));
@@ -104,6 +107,7 @@ let atlasCoord = EEG.atlas.map.find((o, i) => {
     var gamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.gamma[1][0], EEG.atlas.shared.bandFreqs.gamma[1][EEG.atlas.shared.bandFreqs.gamma[1].length-1]);
     EEG.atlas.map[i].data.slices.gamma.push(gamma);
     EEG.atlas.map[i].data.means.gamma.push(eegmath.mean(gamma));
+    
 //console.timeEnd("slicing bands");
     return true;
   }
@@ -404,7 +408,7 @@ else if (graphmode === "TimeSeries") {
   coherenceResults.forEach((row,i) => {
     l++;
     newSeries.push({
-      label:"A"+EEG.channelTags[k].ch+":A"+EEG.channelTags[l].ch,
+      label:"A"+EEG.channelTags[k].ch+":A"+EEG.channelTags[k+l].ch,
       value: (u, v) => v == null ? "-" : v.toFixed(1),
       stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
     });

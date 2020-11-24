@@ -387,7 +387,10 @@ export class brainMap2D {
 			let atlasCoord = atlas.map.find((o, j) => {
 			  if(o.tag === row.tag){
 				points.push({x:o.data.x*1.5+width*.5, y:height*.5-o.data.y*1.5, size:10, intensity:0.7});
-				if(viewing === "delta"){
+				if(viewing === "scp"){
+					points[points.length - 1].size = o.data.means.scp[o.data.means.scp.length - 1];
+				  }
+				else if(viewing === "delta"){
 				  points[points.length - 1].size = o.data.means.delta[o.data.means.delta.length - 1];
 				}
 				else if(viewing === "theta"){
@@ -448,6 +451,19 @@ export class brainMap2D {
   
 		  this.pointsCtx.fillStyle = "rgba(0,0,0,0.7)";
 		  this.pointsCtx.fillText(row.tag,width*.5+4+row.data.x*this.scale,height*.5+10-row.data.y*this.scale,14);
+		});
+	}
+
+	updateConnectomeFromAtlas(atlas,channelTags) {
+		var width = this.pointsCanvas.width;
+		var height = this.pointsCanvas.height;
+
+		channelTags.forEach((row,i) => {
+			let atlasCoord = atlas.map.find((o, j) => { 
+				if(o.tag === row.tag) {
+					return true;
+				}
+			});
 		});
 	}
 

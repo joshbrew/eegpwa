@@ -33,8 +33,9 @@ Performance:
 Use cases:
 - Finish Alpha Coherence
 - Theta-Gamma 2 Octave by Dmitry
+- Slow cortical potentials (0.1-1Hz)
+- Generalized bandpower training (e.g. training a single bandpower or multiple and set to train in either direction, make selectable)
 
 Compatibility:
-- Windows has a default driver incompatibility. This does not seem to persist in some EEG software on Windows, which may use different drivers.
-- Test Mac, Linux is fine
+- Linux and Windows now both working. Test Mac
 
