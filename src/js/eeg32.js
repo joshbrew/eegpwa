@@ -399,14 +399,15 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 
 	genCoherenceMap(channelTags) {
 		var coherenceMap = {shared:{bandPassWindow:[],bandPassFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], gamma:[[],[]]}},map:[]};
-		for( var i = 0; i < (channelTags.length*(channelTags.length + 1)/2); i++){
-			l++;
-			coord0 = getAtlasCoordByTag(channelTags[k].tag);
-			coord1 = getAtlasCoordByTag(channelTag[k+l].tag);
+		var l = 1, k = 0;
+		for( var i = 0; i < (channelTags.length*(channelTags.length + 1)/2)-channelTags.length; i++){
+			var coord0 = this.getAtlasCoordByTag(channelTags[k].tag);
+			var coord1 = this.getAtlasCoordByTag(channelTags[k+l].tag);
 			coherenceMap.map.push({tag:channelTags[k].tag+":"+channelTags[l+k].tag, data:{x0:coord0.data.x,y0:coord0.data.y,z0:coord0.data.z,x1:coord1.data.x,y1:coord1.data.y,z1:coord1.data.z, amplitudes:[], slices:{scp:[], delta:[],theta:[],alpha:[],beta:[],gamma:[]}, means: {scp: [0], delta: [0], theta: [0], alpha: [0], beta: [0], gamma: [0]}}});
-			if(l+k+1 === EEG.channelTags.length){
+			l++;
+			if(l+k === channelTags.length){
 				k++;
-				l=0;
+				l=1;
 			}
 		}
 		return coherenceMap;
@@ -431,19 +432,19 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			if((item >= 0.1) && (item <= 1)){
 				scpFreqs[0].push(item); scpFreqs[1].push(idx);
 			}
-			if((item >= 1) && (item <= 4)){
+			else if((item >= 1) && (item <= 4)){
 				deltaFreqs[0].push(item); deltaFreqs[1].push(idx);
 			}
-			if((item > 4) && (item <= 8)) {
+			else if((item > 4) && (item <= 8)) {
 				thetaFreqs[0].push(item); thetaFreqs[1].push(idx);
 			}
-			if((item > 8) && (item <= 12)){
+			else if((item > 8) && (item <= 12)){
 				alphaFreqs[0].push(item); alphaFreqs[1].push(idx);
 			}
-			if((item > 12) && (item <= 35)){
+			else if((item > 12) && (item <= 35)){
 				betaFreqs[0].push(item); betaFreqs[1].push(idx);
 			}
-			if(item > 35) {
+			else if(item > 35) {
 				gammaFreqs[0].push(item); gammaFreqs[1].push(idx);
 			}
 		});
