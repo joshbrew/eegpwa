@@ -423,14 +423,15 @@ export class brainMap2D {
 	}
 
 	//pass this the atlas and channelTags from your eeg32 instance
-	updatePointsFromAtlas(atlas,channelTags) {
+	updatePointsFromAtlas(atlas,channelTags,clear=true) {
 		
-		var width = this.pointsCanvas.width;
-		var height = this.pointsCanvas.height;
+		var halfwidth = this.pointsCanvas.width*.5;
+		var halfheight = this.pointsCanvas.height*.5;
 		
-		this.pointsCtx.fillStyle = "rgba(0,0,0,0)";
-		this.pointsCtx.clearRect(0, 0, width, height);
-		
+		if(clear === true){
+			this.pointsCtx.fillStyle = "rgba(0,0,0,0)";
+			this.pointsCtx.clearRect(0, 0, this.pointsCanvas.width, this.pointsCanvas.height);
+		}
 		
 		atlas.map.forEach((row,i) => {
 			this.pointsCtx.beginPath();
@@ -438,33 +439,41 @@ export class brainMap2D {
 		  let tags = channelTags.find((o, i) => {
 			if(o.tag === row.tag){
 				this.pointsCtx.fillStyle = "rgba(0,0,0,0.7)";
-				this.pointsCtx.fillText(o.ch,width*.5-15+row.data.x*this.scale,height*.5+10-row.data.y*this.scale,14);
+				this.pointsCtx.fillText(o.ch,halfwidth-15+row.data.x*this.scale,halfheight+10-row.data.y*this.scale,14);
 				this.points[i] = { x: row.data.x, y: row.data.y, size: 10, intensity: 0.7 };
 				this.pointsCtx.fillStyle="rgba(0,255,0,1)";
 			  return true;
 			}
 		  });
 		  // Draws a circle at the coordinates on the canvas
-		  this.pointsCtx.arc(width*.5+row.data.x*this.scale, height*.5-row.data.y*this.scale, 4, 0, Math.PI*2, true); 
+		  this.pointsCtx.arc(halfwidth+row.data.x*this.scale, halfheight-row.data.y*this.scale, 4, 0, Math.PI*2, true); 
 		  this.pointsCtx.closePath();
 		  this.pointsCtx.fill();
   
 		  this.pointsCtx.fillStyle = "rgba(0,0,0,0.7)";
-		  this.pointsCtx.fillText(row.tag,width*.5+4+row.data.x*this.scale,height*.5+10-row.data.y*this.scale,14);
+		  this.pointsCtx.fillText(row.tag,halfwidth+4+row.data.x*this.scale,halfheight+10-row.data.y*this.scale,14);
 		});
 	}
 
-	updateConnectomeFromAtlas(atlas,channelTags) {
-		var width = this.pointsCanvas.width;
-		var height = this.pointsCanvas.height;
+	updateConnectomeFromAtlas(coherenceMap, atlas, channelTags, clear=true) {
+		var halfwidth = this.pointsCanvas.width*.5;
+		var halfheight = this.pointsCanvas.height*.5;
+		var ctx = this.pointsCtx;
 
-		channelTags.forEach((row,i) => {
-			let atlasCoord = atlas.map.find((o, j) => { 
-				if(o.tag === row.tag) {
-					return true;
-				}
-			});
+		if(clear === true){
+			ctx.fillStyle = "rgba(0,0,0,0)";
+			ctx.clearRect(0, 0, this.pointsCanvas.width, this.pointsCanvas.height);
+		}
+
+		coherenceMap.forEach((row,i) => {
+			ctx.beginPath();
+			ctx.moveTo(halfwidth+row.data.x0,halfheight+row.data.y0);
+			ctx.lineTo(halfwidth+row.data.x1,halfheight+row.data.y1);
+			ctx.stroke();
 		});
+
+		//Now redraw points on top of connectome
+		this.updatePointsFromAtlas(atlas,channelTags, false);
 	}
 
 	draw = () => {
