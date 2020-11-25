@@ -7,6 +7,7 @@ DONE:
 - heatmapjs + canvas for a brain atlas + heat map. 
    -- The canvas creates points based off the given MNI atlas coordinates with tags e.g. Fp1, Fp2, Fz, etc.
    -- Points assigned to channels are highlighted with the channel index listed
+   -- Visualize coherence networks automatically
 - Web workers
 - Nodejs pwa implementation for better worker functionality and web-hostability
 
@@ -25,10 +26,11 @@ Visuals:
 - Nice UI layout and CSS
 - Toggling for different visuals
 - Colored bars for bandpowers (another typical EEG visual in home software)
-- Brain network map for more complex coherence
+- Tune the Brain Map with real data
 
 Performance:
 - I could definitely optimize most of the math but if it ain't broke don't fix it.. yet.. 
+- Definitely optimize the coherence results calculating in the web worker, could do a bulk matrix math dispatch to gpujs (in fact I will!)
 
 Use cases:
 - Finish Alpha Coherence
