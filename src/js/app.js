@@ -42,6 +42,11 @@ EEG.channelTags = [
 ];
 
 EEG.atlas = EEG.makeAtlas10_20();
+EEG.coherenceMap = EEG.genCoherenceMap(EEG.channelTags);
+EEG.atlas.shared.bandPassWindow = bandPassWindow;
+EEG.atlas.shared.bandFreqs = EEG.getBandFreqs(bandPassWindow);
+EEG.coherenceMap.shared.bandPassWindow = bandPassWindow
+EEG.coherenceMap.shared.bandFreqs = EEG.getBandFreqs(bandPassWindow);
 
 try {
   var uplotter = new uPlotMaker("adc");
@@ -57,61 +62,60 @@ catch (err) {
 }
 
 try {
-var smoothie1 = new SmoothieChartMaker(5,"smoothie1","rgb(125,0,0)");
-var smoothie2 = new SmoothieChartMaker(8,"smoothie2","rgb(0,0,125)");
+  var smoothie1 = new SmoothieChartMaker(5,"smoothie1","rgb(125,0,0)");
+  var smoothie2 = new SmoothieChartMaker(8,"smoothie2","rgb(0,0,125)");
 }
 catch (err) {
-console.log("Smoothiejs error: ", err);
+  console.log("Smoothiejs error: ", err);
 }
 
 //make brain map
 try{
-var brainMap = new brainMap2D("brainmap","brainmappoints");
-brainMap.genHeatMap();
-brainMap.points = [];
-EEG.atlas.map.forEach((row,i) => {
-  brainMap.points.push({x:row.data.x*1.5+200, y:200-row.data.y*1.5, size:130, intensity:0.8});
-});
-brainMap.updateHeatmap();
+  var brainMap = new brainMap2D("brainmap","brainmappoints");
+  brainMap.genHeatMap();
+  brainMap.points = [];
+  EEG.atlas.map.forEach((row,i) => {
+    brainMap.points.push({x:row.data.x*1.5+200, y:200-row.data.y*1.5, size:130, intensity:0.8});
+  });
+  brainMap.updateHeatmap();
 brainMap.updatePointsFromAtlas(EEG.atlas,EEG.channelTags);
 }
 catch (err) {
-console.log("brainMap error: ", err);
+  console.log("brainMap error: ", err);
 }
 //make analysis loop
-EEG.atlas.shared.bandFreqs = EEG.getBandFreqs(bandPassWindow);
 
 //generalize this for the eeg32 class
 var channelBands = (channel,tag) => {
   //console.log(posFFTList[channel])
-//console.time("slicing bands");
-let atlasCoord = EEG.atlas.map.find((o, i) => {
-  if(o.tag === tag){
-  EEG.atlas.map[i].data.times.push(performance.now());
-    EEG.atlas.map[i].data.amplitudes.push(posFFTList[channel]);
-    var scp = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.scp[1][0], EEG.atlas.shared.bandFreqs.scp[1][EEG.atlas.shared.bandFreqs.scp[1].length-1]);
-    EEG.atlas.map[i].data.slices.scp.push(scp);
-    EEG.atlas.map[i].data.means.scp.push(eegmath.mean(scp));
-    var delta = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.delta[1][0], EEG.atlas.shared.bandFreqs.delta[1][EEG.atlas.shared.bandFreqs.delta[1].length-1]);
-    EEG.atlas.map[i].data.slices.delta.push(delta);
-    EEG.atlas.map[i].data.means.delta.push(eegmath.mean(delta));
-    var theta = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.theta[1][0], EEG.atlas.shared.bandFreqs.theta[1][EEG.atlas.shared.bandFreqs.theta[1].length-1]);
-    EEG.atlas.map[i].data.slices.theta.push(theta);
-    EEG.atlas.map[i].data.means.theta.push(eegmath.mean(theta));
-    var alpha = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.alpha[1][0], EEG.atlas.shared.bandFreqs.alpha[1][EEG.atlas.shared.bandFreqs.alpha[1].length-1]);
-    EEG.atlas.map[i].data.slices.alpha.push(alpha);
-    EEG.atlas.map[i].data.means.alpha.push(eegmath.mean(alpha));
-    var beta  = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.beta[1][0],  EEG.atlas.shared.bandFreqs.beta[1][EEG.atlas.shared.bandFreqs.beta[1].length-1]);
-    EEG.atlas.map[i].data.slices.beta.push(beta);
-    EEG.atlas.map[i].data.means.beta.push(eegmath.mean(beta));
-    var gamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.gamma[1][0], EEG.atlas.shared.bandFreqs.gamma[1][EEG.atlas.shared.bandFreqs.gamma[1].length-1]);
-    EEG.atlas.map[i].data.slices.gamma.push(gamma);
-    EEG.atlas.map[i].data.means.gamma.push(eegmath.mean(gamma));
-    
-//console.timeEnd("slicing bands");
-    return true;
-  }
-});
+  //console.time("slicing bands");
+  let atlasCoord = EEG.atlas.map.find((o, i) => {
+    if(o.tag === tag){
+    EEG.atlas.map[i].data.times.push(performance.now());
+      EEG.atlas.map[i].data.amplitudes.push(posFFTList[channel]);
+      var scp = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.scp[1][0], EEG.atlas.shared.bandFreqs.scp[1][EEG.atlas.shared.bandFreqs.scp[1].length-1]);
+      EEG.atlas.map[i].data.slices.scp.push(scp);
+      EEG.atlas.map[i].data.means.scp.push(eegmath.mean(scp));
+      var delta = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.delta[1][0], EEG.atlas.shared.bandFreqs.delta[1][EEG.atlas.shared.bandFreqs.delta[1].length-1]);
+      EEG.atlas.map[i].data.slices.delta.push(delta);
+      EEG.atlas.map[i].data.means.delta.push(eegmath.mean(delta));
+      var theta = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.theta[1][0], EEG.atlas.shared.bandFreqs.theta[1][EEG.atlas.shared.bandFreqs.theta[1].length-1]);
+      EEG.atlas.map[i].data.slices.theta.push(theta);
+      EEG.atlas.map[i].data.means.theta.push(eegmath.mean(theta));
+      var alpha = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.alpha[1][0], EEG.atlas.shared.bandFreqs.alpha[1][EEG.atlas.shared.bandFreqs.alpha[1].length-1]);
+      EEG.atlas.map[i].data.slices.alpha.push(alpha);
+      EEG.atlas.map[i].data.means.alpha.push(eegmath.mean(alpha));
+      var beta  = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.beta[1][0],  EEG.atlas.shared.bandFreqs.beta[1][EEG.atlas.shared.bandFreqs.beta[1].length-1]);
+      EEG.atlas.map[i].data.slices.beta.push(beta);
+      EEG.atlas.map[i].data.means.beta.push(eegmath.mean(beta));
+      var gamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.gamma[1][0], EEG.atlas.shared.bandFreqs.gamma[1][EEG.atlas.shared.bandFreqs.gamma[1].length-1]);
+      EEG.atlas.map[i].data.slices.gamma.push(gamma);
+      EEG.atlas.map[i].data.means.gamma.push(eegmath.mean(gamma));
+      
+      //console.timeEnd("slicing bands");
+      return true;
+    }
+  });
 }
 
 function coherence(data, nSec, freqStart, freqEnd) {
@@ -173,7 +177,6 @@ function coherence(data, nSec, freqStart, freqEnd) {
 
 var updateVisuals = () => {
 
-  
     //uPlot
     if(graphmode === "FFT"){
 
@@ -241,6 +244,8 @@ var updateVisuals = () => {
   var viewing = document.getElementById("bandview").value;
   brainMap.updateHeatmapFromAtlas(EEG.atlas,EEG.channelTags,viewing);
 
+  brainMap.updateConnectomeFromAtlas(EEG.coherenceMap,EEG.atlas,EEG.channelTags);
+
 
   //------------------------------------------------------------------
 }
@@ -285,7 +290,7 @@ var analysisLoop = () => {
       }
       else{
 
-        if(fdbackmode === coherence) {
+        if(fdbackmode === "coherence") {
           console.time("GPU DFT + coherence")
           var results = coherence(buffer, nSec, freqStart, freqEnd);
           console.timeEnd("GPU DFT + coherence");
@@ -328,7 +333,30 @@ function processFFTs() {
           }        
       });
   
-      EEG.atlas.shared.bandPassWindows.push(bandPassWindow);//Push the x-axis values for each frame captured as they may change - should make this lighter
+      
+      if(fdbackmode === "coherence") {
+        coherenceResults.forEach((row,i) => {
+          EEG.coherenceMap.map[i].data.amplitudes.push(row);
+          var scp = posFFTList[channel].slice( EEG.coherenceMap.shared.bandFreqs.scp[1][0], EEG.coherenceMap.shared.bandFreqs.scp[1][EEG.coherenceMap.shared.bandFreqs.scp[1].length-1]);
+          EEG.coherenceMap.map[i].data.slices.scp.push(scp);
+          EEG.coherenceMap.map[i].data.means.scp.push(eegmath.mean(scp));
+          var delta = posFFTList[channel].slice( EEG.coherenceMap.shared.bandFreqs.delta[1][0], EEG.coherenceMap.shared.bandFreqs.delta[1][EEG.coherenceMap.shared.bandFreqs.delta[1].length-1]);
+          EEG.coherenceMap.map[i].data.slices.delta.push(delta);
+          EEG.coherenceMap.map[i].data.means.delta.push(eegmath.mean(delta));
+          var theta = posFFTList[channel].slice( EEG.coherenceMap.shared.bandFreqs.theta[1][0], EEG.coherenceMap.shared.bandFreqs.theta[1][EEG.coherenceMap.shared.bandFreqs.theta[1].length-1]);
+          EEG.coherenceMap.map[i].data.slices.theta.push(theta);
+          EEG.coherenceMap.map[i].data.means.theta.push(eegmath.mean(theta));
+          var alpha = posFFTList[channel].slice( EEG.coherenceMap.shared.bandFreqs.alpha[1][0], EEG.coherenceMap.shared.bandFreqs.alpha[1][EEG.coherenceMap.shared.bandFreqs.alpha[1].length-1]);
+          EEG.coherenceMap.map[i].data.slices.alpha.push(alpha);
+          EEG.coherenceMap.map[i].data.means.alpha.push(eegmath.mean(alpha));
+          var beta  = posFFTList[channel].slice( EEG.coherenceMap.shared.bandFreqs.beta[1][0],  EEG.coherenceMap.shared.bandFreqs.beta[1][EEG.coherenceMap.shared.bandFreqs.beta[1].length-1]);
+          EEG.coherenceMap.map[i].data.slices.beta.push(beta);
+          EEG.coherenceMap.map[i].data.means.beta.push(eegmath.mean(beta));
+          var gamma = posFFTList[channel].slice( EEG.coherenceMap.shared.bandFreqs.gamma[1][0], EEG.coherenceMap.shared.bandFreqs.gamma[1][EEG.coherenceMap.shared.bandFreqs.gamma[1].length-1]);
+          EEG.coherenceMap.map[i].data.slices.gamma.push(gamma);
+          EEG.coherenceMap.map[i].data.means.gamma.push(eegmath.mean(gamma));
+        })
+      }
 
 }
 
@@ -365,9 +393,19 @@ document.getElementById("bandPass").onclick = () => {
   }
   freqStart = freq0;
   freqEnd = freq1;
+
+  EEG.atlas = makeAtlas10_20(); //reset atlas 
+
   bandPassWindow = gpu.bandPassWindow(freq0,freq1,EEG.sps);
 
-  EEG.getBandFreqs(bandPassWindow); //Update bands accessed by the atlas for averaging
+  EEG.atlas.shared.bandPassWindow = bandPassWindow;//Push the x-axis values for each frame captured as they may change - should make this lighter
+  EEG.atlas.shared.bandFreqs = EEG.getBandFreqs(bandPassWindow); //Update bands accessed by the atlas for averaging
+
+  if(fdbackmode === "coherence") {
+    EEG.coherenceMap = EEG.genCoherenceMap(EEG.channelTags);
+    EEG.coherenceMap.bandPasswindow - bandPassWindow;
+    EEG.coherenceMap.shared.bandFreqs = EEG.atlas.shared.bandFreqs;
+  }
 }
 
 document.getElementById("bandview").onchange = () => {
@@ -416,7 +454,7 @@ else if (graphmode === "TimeSeries") {
       k++;
       l=0;
     }
-  })
+  });
 
   uplotter.makeuPlot(newSeries, coherenceResults);
 
@@ -537,9 +575,14 @@ document.getElementById("setTags").onclick = () => {
       uPlotData.push(bandPassWindow);
     }
   }
+  
+  EEG.genCoherenceMap(); //Reset coherence map with new tags
+  EEG.coherenceMap.shared.bandPassWindows.push(bandPassWindow);
+  EEG.coherenceMap.shared.bandFreqs = EEG.atlas.shared.bandFreqs;
 
-  //var newSeries = [{}]//plot.series;
   brainMap.updatePoints(EEG.atlas,EEG.channelTags);
+
+  brainMap.updateConnectomeFromAtlas(EEG.coherenceMap,EEG.atlas,EEG.channelTags);
 
   if((graphmode !== "Coherence") || (graphmode !== "Stacked")){
       console.time("makeplot");

@@ -465,7 +465,7 @@ export class brainMap2D {
 			ctx.clearRect(0, 0, this.pointsCanvas.width, this.pointsCanvas.height);
 		}
 
-		coherenceMap.forEach((row,i) => {
+		coherenceMap.map.forEach((row,i) => {
 			ctx.beginPath();
 			ctx.moveTo(halfwidth+row.data.x0,halfheight+row.data.y0);
 			ctx.lineTo(halfwidth+row.data.x1,halfheight+row.data.y1);
@@ -473,7 +473,7 @@ export class brainMap2D {
 		});
 
 		//Now redraw points on top of connectome
-		this.updatePointsFromAtlas(atlas,channelTags, false);
+		this.updatePointsFromAtlas(atlas, channelTags, false);
 	}
 
 	draw = () => {

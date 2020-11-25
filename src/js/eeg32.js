@@ -372,7 +372,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	makeAtlas10_20(){
 		// 19 channel coordinate space spaghetti primitive. 
 		// Based on MNI atlas. 
-		return {shared: {sps: this.sps, bandPassWindows:[], bandPassFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], gamma:[[],[]]} //x axis values and indices for named EEG frequency bands
+		return {shared: {sps: this.sps, bandPassWindow:[], bandPassFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], gamma:[[],[]]} //x axis values and indices for named EEG frequency bands
 		}, map:[
 			{tag:"Fp1", data: { x: -21.5, y: 70.2,   z: -0.1,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [0], delta: [0], theta: [0], alpha: [0], beta: [0], gamma: [0]}}},
 			{tag:"Fp2", data: { x: 28.4,  y: 69.1,   z: -0.4,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [0], delta: [0], theta: [0], alpha: [0], beta: [0], gamma: [0]}}},
@@ -398,12 +398,12 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	}
 
 	genCoherenceMap(channelTags) {
-		var coherenceMap = [];
+		var coherenceMap = {shared:{bandPassWindow:[],bandPassFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], gamma:[[],[]]}},map:[]};
 		for( var i = 0; i < (channelTags.length*(channelTags.length + 1)/2); i++){
 			l++;
 			coord0 = getAtlasCoordByTag(channelTags[k].tag);
 			coord1 = getAtlasCoordByTag(channelTag[k+l].tag);
-			coherenceMap.push({tag:"A"+channelTags[k]+":A"+channelTags[l+k], data:{x0:coord0.data.x,y0:coord0.data.y,z0:coord0.data.z,x1:coord1.data.x,y1:coord1.data.y,z1:coord1.data.z,coherence:{full:[], scp:[], delta:[],theta:[],alpha:[],beta:[],gamma:[]}}});
+			coherenceMap.map.push({tag:"A"+channelTags[k].ch+":A"+channelTags[l+k].ch, data:{x0:coord0.data.x,y0:coord0.data.y,z0:coord0.data.z,x1:coord1.data.x,y1:coord1.data.y,z1:coord1.data.z, amplitudes:[], slices:{scp:[], delta:[],theta:[],alpha:[],beta:[],gamma:[]}, means: {scp: [0], delta: [0], theta: [0], alpha: [0], beta: [0], gamma: [0]}}});
 			if(l+k+1 === EEG.channelTags.length){
 				k++;
 				l=0;
