@@ -475,17 +475,17 @@ export class brainMap2D {
 			strokeStyle = "rgba(255,255,0,";}
 		coherenceMap.map.forEach((row,i) => {
 			if(viewing === "scp") {	 //TODO:: figure out a good transparency (or could do line thickness) upper bound based on actual results
-				ctx.strokeStyle = strokeStyle + (row.data.means.scp/1000) + ")";}
+				ctx.strokeStyle = strokeStyle + (row.data.means.scp[row.data.means.scp.length-1]*0.001) + ")";}
 			else if(viewing === "delta") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.delta/1000) + ")";}
+				ctx.strokeStyle = strokeStyle + (row.data.means.delta[row.data.means.delta.length-1]*0.001) + ")";}
 			else if(viewing === "theta") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.theta/1000) + ")";}
+				ctx.strokeStyle = strokeStyle + (row.data.means.theta[row.data.means.theta.length-1]*0.001) + ")";}
 			else if(viewing === "alpha") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.alpha/1000) + ")";}
+				ctx.strokeStyle = strokeStyle + (row.data.means.alpha[row.data.means.alpha.length-1]*0.001) + ")";}
 			else if(viewing === "beta") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.beta/1000) + ")";}
+				ctx.strokeStyle = strokeStyle + (row.data.means.beta[row.data.means.beta.length-1]*0.001) + ")";}
 			else if(viewing === "gamma") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.gamma/1000) + ")";}
+				ctx.strokeStyle = strokeStyle + (row.data.means.gamma[row.data.means.gamma.length-1]*0.001) + ")";}
 
 			ctx.beginPath();
 			ctx.moveTo(halfwidth+row.data.x0,halfheight+row.data.y0);
