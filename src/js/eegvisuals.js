@@ -388,23 +388,17 @@ export class brainMap2D {
 			  if(o.tag === row.tag){
 				points.push({x:o.data.x*1.5+width*.5, y:height*.5-o.data.y*1.5, size:10, intensity:0.7});
 				if(viewing === "scp"){
-					points[points.length - 1].size = o.data.means.scp[o.data.means.scp.length - 1];
-				  }
+					points[points.length - 1].size = o.data.means.scp[o.data.means.scp.length - 1];}
 				else if(viewing === "delta"){
-				  points[points.length - 1].size = o.data.means.delta[o.data.means.delta.length - 1];
-				}
+				  points[points.length - 1].size = o.data.means.delta[o.data.means.delta.length - 1];}
 				else if(viewing === "theta"){
-				  points[points.length - 1].size = o.data.means.theta[o.data.means.theta.length - 1];
-				}
+				  points[points.length - 1].size = o.data.means.theta[o.data.means.theta.length - 1];}
 				else if(viewing === "alpha"){
-				  points[points.length - 1].size = o.data.means.alpha[o.data.means.alpha.length - 1];
-				}
+				  points[points.length - 1].size = o.data.means.alpha[o.data.means.alpha.length - 1];}
 				else if(viewing === "beta"){
-				  points[points.length - 1].size = o.data.means.beta[o.data.means.beta.length - 1];
-				}
+				  points[points.length - 1].size = o.data.means.beta[o.data.means.beta.length - 1];}
 				else if(viewing === "gamma"){
-				  points[points.length - 1].size = o.data.means.gamma[o.data.means.gamma.length - 1];
-				}
+				  points[points.length - 1].size = o.data.means.gamma[o.data.means.gamma.length - 1];}
 				points[points.length - 1].size *= 10; //Need a better method
 	
 				//simplecoherence *= points[points.length-1].size;
@@ -455,7 +449,7 @@ export class brainMap2D {
 		});
 	}
 
-	updateConnectomeFromAtlas(coherenceMap, atlas, channelTags, clear=true) {
+	updateConnectomeFromAtlas(coherenceMap, atlas, channelTags, viewing, clear=true) {
 		var halfwidth = this.pointsCanvas.width*.5;
 		var halfheight = this.pointsCanvas.height*.5;
 		var ctx = this.pointsCtx;
@@ -465,7 +459,34 @@ export class brainMap2D {
 			ctx.clearRect(0, 0, this.pointsCanvas.width, this.pointsCanvas.height);
 		}
 
+		var strokeStyle = "";
+		//Set alpha based on intensity (needs testing)
+		if(viewing === "scp") {	
+			strokeStyle = "rgba(0,0,0,";}
+		else if(viewing === "delta") {
+			strokeStyle = "rgba(255,0,0,";}
+		else if(viewing === "theta") {
+			strokeStyle = "rgba(0,255,0,";}
+		else if(viewing === "alpha") {
+			strokeStyle = "rgba(0,100,255,";}
+		else if(viewing === "beta") {
+			strokeStyle = "rgba(255,0,255,";}
+		else if(viewing === "gamma") {
+			strokeStyle = "rgba(255,255,0,";}
 		coherenceMap.map.forEach((row,i) => {
+			if(viewing === "scp") {	 //TODO:: figure out a good transparency (or could do line thickness) upper bound based on actual results
+				ctx.strokeStyle = strokeStyle + (row.data.means.scp/1000) + ")";}
+			else if(viewing === "delta") {
+				ctx.strokeStyle = strokeStyle + (row.data.means.delta/1000) + ")";}
+			else if(viewing === "theta") {
+				ctx.strokeStyle = strokeStyle + (row.data.means.theta/1000) + ")";}
+			else if(viewing === "alpha") {
+				ctx.strokeStyle = strokeStyle + (row.data.means.alpha/1000) + ")";}
+			else if(viewing === "beta") {
+				ctx.strokeStyle = strokeStyle + (row.data.means.beta/1000) + ")";}
+			else if(viewing === "gamma") {
+				ctx.strokeStyle = strokeStyle + (row.data.means.gamma/1000) + ")";}
+
 			ctx.beginPath();
 			ctx.moveTo(halfwidth+row.data.x0,halfheight+row.data.y0);
 			ctx.lineTo(halfwidth+row.data.x1,halfheight+row.data.y1);

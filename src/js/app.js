@@ -446,7 +446,7 @@ else if (graphmode === "TimeSeries") {
   coherenceResults.forEach((row,i) => {
     l++;
     newSeries.push({
-      label:"A"+EEG.channelTags[k].ch+":A"+EEG.channelTags[k+l].ch,
+      label:EEG.channelTags[k].tag+":"+EEG.channelTags[k+l].tag,
       value: (u, v) => v == null ? "-" : v.toFixed(1),
       stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
     });

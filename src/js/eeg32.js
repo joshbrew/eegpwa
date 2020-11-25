@@ -403,7 +403,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			l++;
 			coord0 = getAtlasCoordByTag(channelTags[k].tag);
 			coord1 = getAtlasCoordByTag(channelTag[k+l].tag);
-			coherenceMap.map.push({tag:"A"+channelTags[k].ch+":A"+channelTags[l+k].ch, data:{x0:coord0.data.x,y0:coord0.data.y,z0:coord0.data.z,x1:coord1.data.x,y1:coord1.data.y,z1:coord1.data.z, amplitudes:[], slices:{scp:[], delta:[],theta:[],alpha:[],beta:[],gamma:[]}, means: {scp: [0], delta: [0], theta: [0], alpha: [0], beta: [0], gamma: [0]}}});
+			coherenceMap.map.push({tag:channelTags[k].tag+":"+channelTags[l+k].tag, data:{x0:coord0.data.x,y0:coord0.data.y,z0:coord0.data.z,x1:coord1.data.x,y1:coord1.data.y,z1:coord1.data.z, amplitudes:[], slices:{scp:[], delta:[],theta:[],alpha:[],beta:[],gamma:[]}, means: {scp: [0], delta: [0], theta: [0], alpha: [0], beta: [0], gamma: [0]}}});
 			if(l+k+1 === EEG.channelTags.length){
 				k++;
 				l=0;
