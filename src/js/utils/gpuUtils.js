@@ -84,7 +84,7 @@ export class gpuUtils {
           imag = imag-signal[i]*Math.sin(sharedi);
         }
         //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
-        return [real*_len,imag*_len]; //mag(real,imag)
+        return [real*_len*2,imag*_len*2]; //mag(real,imag)
       });
 
       this.gpu.addFunction(function DFTlist(signals,len,freq,n){ //Extract a particular frequency
@@ -98,7 +98,7 @@ export class gpuUtils {
           imag = imag-signals[i+(len-1)*n]*Math.sin(sharedi);  
         }
         //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
-        return [real*_len,imag*_len]; //mag(real,imag)
+        return [real*_len*2,imag*_len*2]; //mag(real,imag)
       });
 
 
@@ -114,7 +114,7 @@ export class gpuUtils {
           imag = amplitudes[i+(len-1)*n]*Math.sin(sharedi)-imag;  
         }
         //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
-        return [real*_len,imag*_len]; //mag(real,imag)
+        return [real*_len*2,imag*_len*2]; //mag(real,imag)
       });
 
       this.gpu.addFunction(function iDFTlist(amplitudes,len,freq,n){ //inverse DFT to return time domain 
@@ -128,7 +128,7 @@ export class gpuUtils {
           imag = amplitudes[i+(len-1)*n]*Math.sin(sharedi)-imag;  
         }
         //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
-        return [imag*_len,real*_len]; //mag(real,imag)
+        return [real*_len*2,imag*_len*2]; //mag(real,imag)
       });
 
       //Return frequency domain based on DFT
