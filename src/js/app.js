@@ -390,7 +390,7 @@ var setGraph = (gmode) => {
       });
     }
     uplotter.makeuPlot(uplotter.makeSeriesFromChannelTags(EEG.channelTags), uPlotData);
-    uplotter.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001).toFixed(1) + "s");
+    uplotter.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001).toFixed(2) + "s");
     
   }
   else if (gmode === "FFT"){
@@ -399,12 +399,17 @@ var setGraph = (gmode) => {
         uPlotData = [
             bandPassWindow
         ];
-        if(posFFTList.length > 0) {
+        if((posFFTList.length > 0) && (posFFTList.length <= EEG.channelTags.length)) {
           console.log(posFFTList);
           EEG.channelTags.forEach((row,i) => {
+            if(i < posFFTList.length){
               if(row.viewing === true) {
                   uPlotData.push(posFFTList[i]);
               }
+            }
+            else{
+              uPlotData.push(bandPassWindow); // Placeholder for unprocessed channel data.
+            }
           });
         }
         else {
@@ -443,26 +448,40 @@ var setGraph = (gmode) => {
     
   }
   else if (gmode === "Coherence") {
-    uPlotData = [bandPassWindow,...coherenceResults];
-    
-    var newSeries = [{}];
-  
-    var l = 1;
-    var k = 0;
-    
-    coherenceResults.forEach((row,i) => {
-      newSeries.push({
-        label:EEG.channelTags[k].tag+":"+EEG.channelTags[k+l].tag,
-        value: (u, v) => v == null ? "-" : v.toFixed(1),
-        stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
-      });
-      l++;
-      if(l+k === EEG.channelTags.length){
-        k++;
-        l=1;
+
+    if((coherenceResults.length > 0) && (coherenceResults.length <= EEG.coherenceMap.map.length)){
+      uPlotData = [bandPassWindow,...coherenceResults];
+      if(uPlotData.length < EEG.coherenceMap.map.length+1) {
+        for(var i = uPlotData.length; i < EEG.coherenceMap.map.length+1; i++){
+          uPlotData.push(bandPassWindow);
+        }
       }
-    });
-  
+      //console.log(uPlotData)
+      
+      var newSeries = [{}];
+    
+      var l = 1;
+      var k = 0;
+      
+      EEG.coherenceMap.map.forEach((row,i) => {
+        newSeries.push({
+          label:EEG.channelTags[k].tag+":"+EEG.channelTags[k+l].tag,
+          value: (u, v) => v == null ? "-" : v.toFixed(1),
+          stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
+        });
+        l++;
+        if(l+k === EEG.channelTags.length){
+          k++;
+          l=1;
+        }
+      });
+    }
+    else {
+      uPlotData = [bandPassWindow];
+      EEG.channelTags.forEach((row,i) => {
+        uPlotData.push(bandPassWindow);
+      });
+    }
     //console.log(newSeries.length);
     //console.log(uPlotData.length);
   
@@ -595,14 +614,7 @@ if(uPlotData.length - 1 < EEG.channelTags.length) {
   }
 }
 
-if((graphmode !== "Coherence") || (graphmode !== "Stacked")){
-  console.time("makeplot");
-  uplotter.makeuPlot(uplotter.makeSeriesFromChannelTags(EEG.channelTags), uPlotData);
-  console.timeEnd("makeplot");
-}
-if(graphmode === "Stacked"){
-  uplotter.makeStackeduPlot(undefined, uPlotData, undefined, EEG.channelTags);
-}
+setGraph(graphmode);
 }
 
 
@@ -612,7 +624,7 @@ document.getElementById("setTags").onclick = () => {
   if(val.length === 0) { return; }
   //console.log(val);
   var arr = val.split(",");
-  console.log(arr);
+  //console.log(arr);
   //channelTags.forEach((row,j) => { channelTags[j].viewing = false; });
   //console.log(arr);
   arr.forEach((item,i) => {
@@ -701,30 +713,36 @@ window.receivedMsg = (msg) => {
 
 
 var sine = eegmath.genSineWave(10,1,1,512);
-var bigarr = new Array(8).fill(sine[1]);
+var sine1 = eegmath.genSineWave(15,1,1,512);
+var sine2 = eegmath.genSineWave(40,1,1,512);
+
+var bigarr = new Array(128).fill(sine[1]);
 
 //console.log(sine)
 function testGPU(){
   console.log("testGPU()");
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
-  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd]);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd],0);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd],0);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd],0);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd],0);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd],0);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd],0);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd],0);
+  window.postToWorker("multidftbandpass", [bigarr,1,freqStart,freqEnd],0);
   console.log("posted 128x dft 8 times");
 }
 
 function testCoherence(){
   console.log("testCoherence()");
-  window.postToWorker("coherence", [[sine[1],sine[1],sine[1],sine[1]],1,freqStart,freqEnd]);
+  window.postToWorker("coherence", [[sine[1],sine1[1],sine1[1],sine2[1]],1,freqStart,freqEnd],1);
+  window.postToWorker("coherence", [[sine[1],sine1[1],sine1[1],sine2[1]],1,freqStart,freqEnd],1);
+  window.postToWorker("coherence", [[sine[1],sine1[1],sine1[1],sine2[1]],1,freqStart,freqEnd],1);
+  window.postToWorker("coherence", [[sine[1],sine1[1],sine1[1],sine2[1]],1,freqStart,freqEnd],1);
 }
 
 
 
-  setTimeout(()=>{testGPU(); testCoherence();},1000); //Need to delay this call since app.js is made before the worker script is made
+  setTimeout(()=>{testGPU(); setTimeout(()=>{testCoherence();},500)},1000); //Need to delay this call since app.js is made before the worker script is made
 
 
 

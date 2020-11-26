@@ -67,14 +67,14 @@ onmessage = (e) => {
         var newdft = [];
         if(i < nChannels) { //first multiply autocorrelograms
           dft.forEach((amp,j) => {
-            newdft.push(amp*dfts[1][i][j]);
+            newdft.push(amp*dfts[1][i][j]*100);
           });
           autoFFTproducts.push(newdft);
         }
         else{ //now multiply cross correlograms
           
           dft.forEach((amp,j) => {           
-              newdft.push(amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]);
+              newdft.push(amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]*100);
           });
           l++;
           if((l+k) === nChannels) {

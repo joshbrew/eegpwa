@@ -116,13 +116,13 @@
 
 <script>
 
-window.threads = 1; //Make multiple workers for big tasks
+window.threads = 2; //Make multiple workers for big tasks
 window.threadrot = 0;
   //WebWorker only works when hosted (e.g. with node)
   
   try {
     window.workers = [];
-    for(var i = 0; i< window.threads; i++){
+    for(var i = 0; i < window.threads; i++){
       window.workers.push(new Worker('./js/eegworker.js'));
       workers[i].onmessage = (e) => {
         var msg = e.data;

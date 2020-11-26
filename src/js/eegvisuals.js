@@ -109,7 +109,7 @@ export class uPlotMaker {
 				axes: [
 				{
 				scale: "Hz",
-				values: (u, vals, space) => vals.map(v => +v.toFixed(1) + "Hz")
+				values: (u, vals, space) => vals.map(v => +v.toFixed(2) + "Hz")
 				},
 			]}
 		}
@@ -145,7 +145,7 @@ export class uPlotMaker {
 			if(row.viewing === true) {
 			  newSeries.push({
 				label:"A"+row.ch + ", Tag: "+row.tag,
-				value: (u, v) => v == null ? "-" : v.toFixed(1),
+				value: (u, v) => v == null ? "-" : v.toFixed(2),
 				stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
 			  });
 			}
@@ -232,7 +232,7 @@ export class uPlotMaker {
 					}
 					else {
 						//console.log(v)
-						return dat[ser-1][i].toFixed(1);
+						return dat[ser-1][i].toFixed(2);
 					}
 				}
 	
@@ -264,7 +264,7 @@ export class uPlotMaker {
 			  return newSeries[v].label;
 			}
 		  }
-		  else{ return (((v-ax)*(max)+mins[ax])).toFixed(1);}
+		  else{ return (((v-ax)*(max)+mins[ax])).toFixed(2);}
 		}
 		
 		var uPlotOptions;
@@ -277,7 +277,7 @@ export class uPlotMaker {
 		  axes: [
 			{
 			scale: "sec",
-			values: (u, vals, space) => vals.map(v => +v.toFixed(1) + "s"),
+			values: (u, vals, space) => vals.map(v => +v.toFixed(2) + "s"),
 			},
 			{
 			  size: 80,
@@ -460,6 +460,7 @@ export class brainMap2D {
 		}
 
 		var strokeStyle = "";
+		var alphaMul = 3;
 		//Set alpha based on intensity (needs testing)
 		if(viewing === "scp") {	
 			strokeStyle = "rgba(0,0,0,";}
@@ -476,17 +477,17 @@ export class brainMap2D {
 			//console.log(strokeStyle);
 		coherenceMap.map.forEach((row,i) => {
 			if(viewing === "scp") {	 //TODO:: figure out a good transparency (or could do line thickness) upper bound based on actual results
-				ctx.strokeStyle = strokeStyle + (row.data.means.scp[row.data.means.scp.length-1]*0.001) + ")";}
+				ctx.strokeStyle = strokeStyle + (row.data.means.scp[row.data.means.scp.length-1]*alphaMul) + ")";}
 			else if(viewing === "delta") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.delta[row.data.means.delta.length-1]*0.001) + ")";}
+				ctx.strokeStyle = strokeStyle + (row.data.means.delta[row.data.means.delta.length-1]*alphaMul) + ")";}
 			else if(viewing === "theta") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.theta[row.data.means.theta.length-1]*0.001) + ")";}
+				ctx.strokeStyle = strokeStyle + (row.data.means.theta[row.data.means.theta.length-1]*alphaMul) + ")";}
 			else if(viewing === "alpha") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.alpha[row.data.means.alpha.length-1]*0.001) + ")";}
+				ctx.strokeStyle = strokeStyle + (row.data.means.alpha[row.data.means.alpha.length-1]*alphaMul) + ")";}
 			else if(viewing === "beta") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.beta[row.data.means.beta.length-1]*0.001) + ")";}
+				ctx.strokeStyle = strokeStyle + (row.data.means.beta[row.data.means.beta.length-1]*alphaMul) + ")";}
 			else if(viewing === "gamma") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.gamma[row.data.means.gamma.length-1]*0.001) + ")";}
+				ctx.strokeStyle = strokeStyle + (row.data.means.gamma[row.data.means.gamma.length-1]*alphaMul) + ")";}
 
 			//console.log(ctx.strokeStyle);
 			ctx.beginPath();
