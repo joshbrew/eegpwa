@@ -473,7 +473,7 @@ export class brainMap2D {
 			strokeStyle = "rgba(255,0,255,";}
 		else if(viewing === "gamma") {
 			strokeStyle = "rgba(255,255,0,";}
-			console.log(strokeStyle);
+			//console.log(strokeStyle);
 		coherenceMap.map.forEach((row,i) => {
 			if(viewing === "scp") {	 //TODO:: figure out a good transparency (or could do line thickness) upper bound based on actual results
 				ctx.strokeStyle = strokeStyle + (row.data.means.scp[row.data.means.scp.length-1]*0.001) + ")";}
@@ -488,7 +488,7 @@ export class brainMap2D {
 			else if(viewing === "gamma") {
 				ctx.strokeStyle = strokeStyle + (row.data.means.gamma[row.data.means.gamma.length-1]*0.001) + ")";}
 
-			console.log(ctx.strokeStyle);
+			//console.log(ctx.strokeStyle);
 			ctx.beginPath();
 			ctx.moveTo(halfwidth+row.data.x0*this.scale,halfheight-row.data.y0*this.scale);
 			ctx.lineTo(halfwidth+row.data.x1*this.scale,halfheight-row.data.y1*this.scale);

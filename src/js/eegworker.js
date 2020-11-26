@@ -58,11 +58,8 @@ onmessage = (e) => {
       });
       //Now arranged like [0:0,1:1,2:2,3:3,4:4,0:1,0:2,0:3,0:4,1:2,1:3,1:4,2:3,2:4,3:4]
 
-      //For channels 0 and 1,
-      //Multiply channel 0 DFT by channel 0 autocorrelation DFT
-      //Multiply channel 1 DFT by channel 1 autocorrelation DFT
-      //Multiply these two results together with the cross correlation DFT between channel 0 and 1.
       //Outputs FFT coherence data in order of channel data inputted e.g. for 4 channels resulting DFTs = [0:1,0:2,0:3,0:4,1:2,1:3,1:4,2:3,2:4,3:4];
+      //TODO:Optimize this e.g. with a bulk dispatch to GPUJs
       var autoFFTproducts = [];
       k = 0;
       var l = 1;

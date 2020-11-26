@@ -197,8 +197,7 @@ export class gpuUtils {
       .setPipeline(true)
       .setImmutable(true);
 
-      //Return time domain signal after bandpass
-   
+
    
     }
 

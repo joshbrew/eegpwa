@@ -26,7 +26,7 @@ var analyze = false;
 
 var coherenceResults = [bandPassWindow, bandPassWindow];
 
-var graphmode = "FFT"; //"TimeSeries" "Coherence"
+var graphmode = "FFT"; //"TimeSeries", "Stacked", "Coherence"
 var fdbackmode = "coherence"; //"tg2o"
 var sounds = null;//new SoundJS(); //For theta-gamma 2 octave
 
@@ -38,7 +38,7 @@ EEG.channelTags = [
   {ch: 5, tag: "T3", viewing: true},
   {ch: 10, tag: "Fp1", viewing: true},
   {ch: 15, tag: "Fp2", viewing: true},
-  {ch: 25, tag: "T4", viewing: true},
+  {ch: 25, tag: "T4", viewing: true}
 ];
 
 EEG.atlas = EEG.makeAtlas10_20();
@@ -366,6 +366,115 @@ function processFFTs() {
 //-------------- UI SETUP ---------------
 //---------------------------------------
 
+var setGraph = (gmode) => {
+  if(gmode === "TimeSeries"){
+    document.getElementById("uplottitle").innerHTML = "ADC signals";
+    
+    if(EEG.data["A0"].length > 1) {
+      var nsamples = Math.floor(EEG.sps*nSecAdcGraph);
+
+      uPlotData = [
+          EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
+      ];
+
+      EEG.channelTags.forEach((row,i) => {
+          if(row.viewing === true) {
+              uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
+          }
+      });
+      }
+    else {
+      uPlotData = [bandPassWindow];
+      EEG.channelTags.forEach((row,i) => {
+        uPlotData.push(bandPassWindow);
+      });
+    }
+    uplotter.makeuPlot(uplotter.makeSeriesFromChannelTags(EEG.channelTags), uPlotData);
+    uplotter.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001).toFixed(1) + "s");
+    
+  }
+  else if (gmode === "FFT"){
+
+          //Animate plot(s)
+        uPlotData = [
+            bandPassWindow
+        ];
+        if(posFFTList.length > 0) {
+          console.log(posFFTList);
+          EEG.channelTags.forEach((row,i) => {
+              if(row.viewing === true) {
+                  uPlotData.push(posFFTList[i]);
+              }
+          });
+        }
+        else {
+          EEG.channelTags.forEach((row,i) => {
+            uPlotData.push(bandPassWindow);
+          });
+        }
+        uplotter.makeuPlot(uplotter.makeSeriesFromChannelTags(EEG.channelTags), uPlotData);
+  }
+  else if (gmode === "Stacked") {
+
+    if(EEG.data["A0"].length > 1){
+    var nsamples = Math.floor(EEG.sps*nSecAdcGraph);
+
+      uPlotData = [
+          EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
+      ];
+
+      EEG.channelTags.forEach((row,i) => {
+          if(row.viewing === true) {
+              uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
+          }
+      });
+    }
+    else {
+      uPlotData = [bandPassWindow];
+      EEG.channelTags.forEach((row,i) => {
+        uPlotData.push(bandPassWindow);
+      });
+    }
+
+    document.getElementById("uplottitle").innerHTML = "ADC signals Stacked";
+    
+    //console.log(uPlotData)
+    uplotter.makeStackeduPlot(undefined, uPlotData, undefined, EEG.channelTags);
+    
+  }
+  else if (gmode === "Coherence") {
+    uPlotData = [bandPassWindow,...coherenceResults];
+    
+    var newSeries = [{}];
+  
+    var l = 1;
+    var k = 0;
+    
+    coherenceResults.forEach((row,i) => {
+      newSeries.push({
+        label:EEG.channelTags[k].tag+":"+EEG.channelTags[k+l].tag,
+        value: (u, v) => v == null ? "-" : v.toFixed(1),
+        stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
+      });
+      l++;
+      if(l+k === EEG.channelTags.length){
+        k++;
+        l=1;
+      }
+    });
+  
+    //console.log(newSeries.length);
+    //console.log(uPlotData.length);
+  
+    uplotter.makeuPlot(newSeries, uPlotData);
+  
+    document.getElementById("uplottitle").innerHTML = "Coherence from tagged signals";
+  }
+  //else if(graphmode === "StackedRaw") { graphmode = "StackedFFT" }//Stacked Coherence
+  
+}
+
+
 document.getElementById("connect").onclick = () => {EEG.setupSerialAsync();}
 
 document.getElementById("analyze").onclick = () => {
@@ -413,59 +522,22 @@ document.getElementById("bandview").onchange = () => {
   brainMap.updateConnectomeFromAtlas(EEG.coherenceMap,EEG.atlas,EEG.channelTags,viewing);
 }
 
-document.getElementById("mode").onclick = () => {
-if(graphmode === "FFT"){
-  graphmode = "TimeSeries";
-  document.getElementById("uplottitle").innerHTML = "ADC signals";
-  uplotter.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001).toFixed(1) + "s");
-}
-else if (graphmode === "Stacked"){
-
-  graphmode = "FFT";
-  uplotter.makeuPlot(uplotter.makeSeriesFromChannelTags(EEG.channelTags), uPlotData);
+document.getElementById("graphmode").onclick = () => {
+  if(graphmode === "TimeSeries") {
+    graphmode = "Stacked";
+  }
+  else if(graphmode === "Stacked"){
+    graphmode = "Coherence";
+  }
+  else if(graphmode === "Coherence"){
+    graphmode = "FFT";
+  }
+  else if(graphmode === "FFT") {
+    graphmode = "TimeSeries";
+  }
+  //else if(graphmode === "StackedRaw") { graphmode = "StackedFFT" }//Stacked Coherence
   
-}
-
-else if (graphmode === "Coherence") {
-  graphmode = "Stacked";
-  document.getElementById("uplottitle").innerHTML = "ADC signals Stacked";
-  
-  //console.log(uPlotData)
-  uplotter.makeStackeduPlot(undefined, uPlotData, undefined, EEG.channelTags);
-  
-}
-
-else if (graphmode === "TimeSeries") {
-  uPlotData = [bandPassWindow,...coherenceResults];
-  graphmode = "Coherence";
-  
-  var newSeries = [{}];
-
-  var l = 1;
-  var k = 0;
-  
-  coherenceResults.forEach((row,i) => {
-    newSeries.push({
-      label:EEG.channelTags[k].tag+":"+EEG.channelTags[k+l].tag,
-      value: (u, v) => v == null ? "-" : v.toFixed(1),
-      stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
-    });
-    l++;
-    if(l+k === EEG.channelTags.length){
-      k++;
-      l=1;
-    }
-  });
-
-  console.log(newSeries.length);
-  console.log(uPlotData.length);
-
-  uplotter.makeuPlot(newSeries, uPlotData);
-
-  document.getElementById("uplottitle").innerHTML = "Coherence from tagged signals";
-
-}
-
+  setGraph(graphmode);
 }
 
 
@@ -580,14 +652,14 @@ document.getElementById("setTags").onclick = () => {
     }
   }
   
-  EEG.genCoherenceMap(); //Reset coherence map with new tags
-  EEG.coherenceMap.shared.bandPassWindows.push(bandPassWindow);
+  EEG.coherenceMap = EEG.genCoherenceMap(EEG.channelTags); //Reset coherence map with new tags
+  EEG.coherenceMap.shared.bandPassWindow = bandPassWindow;
   EEG.coherenceMap.shared.bandFreqs = EEG.atlas.shared.bandFreqs;
 
-  brainMap.updatePoints(EEG.atlas,EEG.channelTags);
+  brainMap.updatePointsFromAtlas(EEG.atlas,EEG.channelTags);
 
   brainMap.updateConnectomeFromAtlas(EEG.coherenceMap,EEG.atlas,EEG.channelTags);
-
+  /*
   if((graphmode !== "Coherence") || (graphmode !== "Stacked")){
       console.time("makeplot");
       uplotter.makeuPlot(uplotter.makeSeriesFromChannelTags(EEG.channelTags), uPlotData);
@@ -596,6 +668,11 @@ document.getElementById("setTags").onclick = () => {
   if(graphmode === "Stacked"){
     uplotter.makeStackeduPlot(undefined, uPlotData, undefined, EEG.channelTags);
   }
+  if(graphmode === "Coherence"){
+
+  }
+  */
+  setGraph(graphmode);
 }
 
 
