@@ -18,7 +18,7 @@ catch (err) { alert("gpu.js utils error: ", err); }
 
 var nSec = 1; //Number of seconds to sample FFTs
 var freqStart = 0; //Beginning of DFT frequencies
-var freqEnd = 100; //End of DFT frequencies (max = SPS * 0.5, half the nyquist sampling rate)
+var freqEnd = 256; //End of DFT frequencies (max = SPS * 0.5, half the nyquist sampling rate)
 
 var posFFTList = [];
 var bandPassWindow = gpu.bandPassWindow(freqStart,freqEnd,EEG.sps); // frequencies (x-axis)
@@ -397,12 +397,13 @@ var setGraph = (gmode) => {
   }
   else if (gmode === "FFT"){
 
+        document.getElementById("uplottitle").innerHTML = "ADC FFTs w/ Bandpass";
           //Animate plot(s)
         uPlotData = [
             bandPassWindow
         ];
         if((posFFTList.length > 0) && (posFFTList.length <= EEG.channelTags.length)) {
-          console.log(posFFTList);
+          //console.log(posFFTList);
           EEG.channelTags.forEach((row,i) => {
             if(i < posFFTList.length){
               if(row.viewing === true) {
@@ -523,7 +524,7 @@ document.getElementById("bandPass").onclick = () => {
   freqStart = freq0;
   freqEnd = freq1;
 
-  EEG.atlas = makeAtlas10_20(); //reset atlas 
+  EEG.atlas = EEG.makeAtlas10_20(); //reset atlas 
 
   bandPassWindow = gpu.bandPassWindow(freq0,freq1,EEG.sps);
 
