@@ -156,9 +156,9 @@ function coherence(data, nSec, freqStart, freqEnd) {
     autoFFTproducts.push(newdft);
     }
     else{ //now multiply cross correlograms
-    
+    var timeMod = (nSec-1)*.3333333
     dft.forEach((amp,j) => {           
-      newdft.push(amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]*.3333333);
+      newdft.push(amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]*.3333333*timeMod);
     });
     l++;
     if((l+k) === nChannels) {
