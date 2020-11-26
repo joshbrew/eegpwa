@@ -129,23 +129,24 @@ function coherence(data, nSec, freqStart, freqEnd) {
   
   //cross-correlation dfts arranged like e.g. for 4 channels: [0:0, 0:1, 0:2, 0:3, 0:4, 1:1, 1:2, 1:3, 1:4, 2:2, 2:3, 2:4, 3:3, 3:4] etc.
   var k=0;
+  var l=0;
   cordfts.forEach((row,i) => { //move autocorrelation results to front to save brain power
-    if (i == nChannels-k) {
-    var temp = cordfts[i].splice(i,1);
-    k++;
-    cordfts[k].splice(k,0,temp);
+    if (l+k === nChannels) {
+      var temp = cordfts.splice(i,1);
+      k++;
+      cordfts.splice(k,0,...temp);
+      l=0;
+      console.log(i);
     }
+    l++;
   });
   //Now arranged like [0:0,1:1,2:2,3:3,4:4,0:1,0:2,0:3,0:4,1:2,1:3,1:4,2:3,2:4,3:4]
-  
-  //For channels 0 and 1,
-  //Multiply channel 0 DFT by channel 0 autocorrelation DFT
-  //Multiply channel 1 DFT by channel 1 autocorrelation DFT
-  //Multiply these two results together with the cross correlation DFT between channel 0 and 1.
+
   //Outputs FFT coherence data in order of channel data inputted e.g. for 4 channels resulting DFTs = [0:1,0:2,0:3,0:4,1:2,1:3,1:4,2:3,2:4,3:4];
+  //TODO:Optimize this e.g. with a bulk dispatch to GPUJS
   var autoFFTproducts = [];
   k = 0;
-  var l = 0;
+  l = 1;
   cordfts.forEach((dft,i) => {
     var newdft = [];
     if(i < nChannels) { //first multiply autocorrelograms
@@ -615,6 +616,7 @@ if(uPlotData.length - 1 < EEG.channelTags.length) {
 }
 
 setGraph(graphmode);
+
 }
 
 
@@ -712,9 +714,9 @@ window.receivedMsg = (msg) => {
 }
 
 
-var sine = eegmath.genSineWave(10,20000,1,512);
-var sine1 = eegmath.genSineWave(15,30000,1,512);
-var sine2 = eegmath.genSineWave(40,10000,1,512);
+var sine = eegmath.genSineWave(10,2000,1,512);
+var sine1 = eegmath.genSineWave(30,3000,1,512);
+var sine2 = eegmath.genSineWave(40,1000,1,512);
 
 var bigarr = new Array(128).fill(sine[1]);
 
