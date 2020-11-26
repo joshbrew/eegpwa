@@ -151,14 +151,14 @@ function coherence(data, nSec, freqStart, freqEnd) {
     var newdft = [];
     if(i < nChannels) { //first multiply autocorrelograms
     dft.forEach((amp,j) => {
-      newdft.push(amp*dfts[i][j]);
+      newdft.push(amp*dfts[i][j]*.5);
     });
     autoFFTproducts.push(newdft);
     }
     else{ //now multiply cross correlograms
     
     dft.forEach((amp,j) => {           
-      newdft.push(amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]);
+      newdft.push(amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]*.3333333);
     });
     l++;
     if((l+k) === nChannels) {
@@ -245,8 +245,9 @@ var updateVisuals = () => {
   var viewing = document.getElementById("bandview").value;
   brainMap.updateHeatmapFromAtlas(EEG.atlas,EEG.channelTags,viewing);
 
-  brainMap.updateConnectomeFromAtlas(EEG.coherenceMap,EEG.atlas,EEG.channelTags,viewing);
-
+  if(coherenceResults.length === EEG.coherenceMap.map.length){
+    brainMap.updateConnectomeFromAtlas(EEG.coherenceMap,EEG.atlas,EEG.channelTags,viewing);
+  }
 
   //------------------------------------------------------------------
 }

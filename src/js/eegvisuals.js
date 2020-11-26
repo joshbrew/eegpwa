@@ -383,23 +383,24 @@ export class brainMap2D {
 		var width = this.pointsCanvas.width;
 		var height = this.pointsCanvas.height;
 
+		var sizeMul = 0.1;
 		channelTags.forEach((row,i) => {
 			let atlasCoord = atlas.map.find((o, j) => {
 			  if(o.tag === row.tag){
 				points.push({x:o.data.x*1.5+width*.5, y:height*.5-o.data.y*1.5, size:10, intensity:0.7});
 				if(viewing === "scp"){
-					points[points.length - 1].size = o.data.means.scp[o.data.means.scp.length - 1];}
+					points[points.length - 1].size = Math.max(...o.data.slices.scp[o.data.slices.scp.length-1])}//o.data.means.scp[o.data.means.scp.length - 1];}
 				else if(viewing === "delta"){
-				  points[points.length - 1].size = o.data.means.delta[o.data.means.delta.length - 1];}
+				  points[points.length - 1].size = Math.max(...o.data.slices.delta[o.data.slices.delta.length-1])}//o.data.means.delta[o.data.means.delta.length - 1];}
 				else if(viewing === "theta"){
-				  points[points.length - 1].size = o.data.means.theta[o.data.means.theta.length - 1];}
+				  points[points.length - 1].size = Math.max(...o.data.slices.theta[o.data.slices.theta.length-1])}//o.data.means.theta[o.data.means.theta.length - 1];}
 				else if(viewing === "alpha"){
-				  points[points.length - 1].size = o.data.means.alpha[o.data.means.alpha.length - 1];}
+				  points[points.length - 1].size = Math.max(...o.data.slices.alpha[o.data.slices.alpha.length-1])}//o.data.means.alpha[o.data.means.alpha.length - 1];}
 				else if(viewing === "beta"){
-				  points[points.length - 1].size = o.data.means.beta[o.data.means.beta.length - 1];}
+				  points[points.length - 1].size = Math.max(...o.data.slices.beta[o.data.slices.beta.length-1])}//o.data.means.beta[o.data.means.beta.length - 1];}
 				else if(viewing === "gamma"){
-				  points[points.length - 1].size = o.data.means.gamma[o.data.means.gamma.length - 1];}
-				points[points.length - 1].size *= 10; //Need a better method
+				  points[points.length - 1].size = Math.max(...o.data.slices.gamma[o.data.slices.gamma.length-1])}//o.data.means.gamma[o.data.means.gamma.length - 1];}
+				points[points.length - 1].size *= sizeMul; //Need a better method
 	
 				//simplecoherence *= points[points.length-1].size;
 				if(points[points.length - 1].size > 135){
@@ -460,7 +461,7 @@ export class brainMap2D {
 		}
 
 		var strokeStyle = "";
-		var alphaMul = 3;
+		var alphaMul = 0.001;
 		//Set alpha based on intensity (needs testing)
 		if(viewing === "scp") {	
 			strokeStyle = "rgba(0,0,0,";}
@@ -477,18 +478,18 @@ export class brainMap2D {
 			//console.log(strokeStyle);
 		coherenceMap.map.forEach((row,i) => {
 			if(viewing === "scp") {	 //TODO:: figure out a good transparency (or could do line thickness) upper bound based on actual results
-				ctx.strokeStyle = strokeStyle + (row.data.means.scp[row.data.means.scp.length-1]*alphaMul) + ")";}
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.scp[row.data.slices.scp.length-1])*alphaMul + ")";}//(row.data.means.scp[row.data.means.scp.length-1]*alphaMul) + ")";}
 			else if(viewing === "delta") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.delta[row.data.means.delta.length-1]*alphaMul) + ")";}
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.delta[row.data.slices.delta.length-1])*alphaMul + ")";}//(row.data.means.delta[row.data.means.delta.length-1]*alphaMul) + ")";}
 			else if(viewing === "theta") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.theta[row.data.means.theta.length-1]*alphaMul) + ")";}
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.theta[row.data.slices.theta.length-1])*alphaMul + ")";}//(row.data.means.theta[row.data.means.theta.length-1]*alphaMul) + ")";}
 			else if(viewing === "alpha") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.alpha[row.data.means.alpha.length-1]*alphaMul) + ")";}
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.alpha[row.data.slices.alpha.length-1])*alphaMul + ")";}//(row.data.means.alpha[row.data.means.alpha.length-1]*alphaMul) + ")";}
 			else if(viewing === "beta") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.beta[row.data.means.beta.length-1]*alphaMul) + ")";}
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.beta[row.data.slices.beta.length-1])*alphaMul + ")";}//(row.data.means.beta[row.data.means.beta.length-1]*alphaMul) + ")";}
 			else if(viewing === "gamma") {
-				ctx.strokeStyle = strokeStyle + (row.data.means.gamma[row.data.means.gamma.length-1]*alphaMul) + ")";}
-
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.gamma[row.data.slices.gamma.length-1])*alphaMul + ")";}//(row.data.means.gamma[row.data.means.gamma.length-1]*alphaMul) + ")";}
+			//console.log(ctx.strokeStyle)
 			//console.log(ctx.strokeStyle);
 			ctx.beginPath();
 			ctx.moveTo(halfwidth+row.data.x0*this.scale,halfheight-row.data.y0*this.scale);

@@ -47,7 +47,7 @@ onmessage = (e) => {
       const coherenceResults = []; 
       const nChannels = e.data.input[0].length;
       
-      //cross-correlation dfts arranged like e.g. for 4 channels: [0:0, 0:1, 0:2, 0:3, 0:4, 1:1, 1:2, 1:3, 1:4, 2:2, 2:3, 2:4, 3:3, 3:4, 4:4] etc.
+      //cross-correlation dfts arranged like e.g. for 4 channels: [0:0, 0:1, 0:2, 0:3, 1:1, 1:2, 1:3, 2:2, 2:3, 3:3] etc.
       var k=0;
       var l=0;
       cordfts.forEach((row,i) => { //move autocorrelation results to front to save brain power
@@ -56,13 +56,13 @@ onmessage = (e) => {
           k++;
           cordfts.splice(k,0,...temp);
           l=0;
-          console.log(i);
+          //console.log(i);
         }
         l++;
       });
-      //Now arranged like [0:0,1:1,2:2,3:3,4:4,0:1,0:2,0:3,0:4,1:2,1:3,1:4,2:3,2:4,3:4]
+      //Now arranged like [0:0,1:1,2:2,3:3,0:1,0:2,0:3,1:2,1:3,2:3]
 
-      //Outputs FFT coherence data in order of channel data inputted e.g. for 4 channels resulting DFTs = [0:1,0:2,0:3,0:4,1:2,1:3,1:4,2:3,2:4,3:4];
+      //Outputs FFT coherence data in order of channel data inputted e.g. for 4 channels resulting DFTs = [0:1,0:2,0:3,1:2,1:3,2:3];
       //TODO:Optimize this e.g. with a bulk dispatch to GPUJS
       var autoFFTproducts = [];
       k = 0;
@@ -71,14 +71,14 @@ onmessage = (e) => {
         var newdft = [];
         if(i < nChannels) { //first multiply autocorrelograms
           dft.forEach((amp,j) => {
-            newdft.push(amp*dfts[1][i][j]);
+            newdft.push(amp*dfts[1][i][j]*.5);
           });
           autoFFTproducts.push(newdft);
         }
         else{ //now multiply cross correlograms
           
           dft.forEach((amp,j) => {           
-              newdft.push(amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]);
+              newdft.push(amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]*.3333333);
           });
           l++;
           if((l+k) === nChannels) {
