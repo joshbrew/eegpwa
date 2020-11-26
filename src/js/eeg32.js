@@ -372,7 +372,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	makeAtlas10_20(){
 		// 19 channel coordinate space spaghetti primitive. 
 		// Based on MNI atlas. 
-		return {shared: {sps: this.sps, bandPassWindow:[], bandPassFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], gamma:[[],[]]} //x axis values and indices for named EEG frequency bands
+		return {shared: {sps: this.sps, bandPassWindow:[], bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], gamma:[[],[]]} //x axis values and indices for named EEG frequency bands
 		}, map:[
 			{tag:"Fp1", data: { x: -21.5, y: 70.2,   z: -0.1,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [0], delta: [0], theta: [0], alpha: [0], beta: [0], gamma: [0]}}},
 			{tag:"Fp2", data: { x: 28.4,  y: 69.1,   z: -0.4,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [0], delta: [0], theta: [0], alpha: [0], beta: [0], gamma: [0]}}},
@@ -398,7 +398,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	}
 
 	genCoherenceMap(channelTags) {
-		var coherenceMap = {shared:{bandPassWindow:[],bandPassFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], gamma:[[],[]]}},map:[]};
+		var coherenceMap = {shared:{bandPassWindow:[],bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], gamma:[[],[]]}},map:[]};
 		var l = 1, k = 0;
 		for( var i = 0; i < (channelTags.length*(channelTags.length + 1)/2)-channelTags.length; i++){
 			var coord0 = this.getAtlasCoordByTag(channelTags[k].tag);
