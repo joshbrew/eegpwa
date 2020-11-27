@@ -77,7 +77,7 @@ onmessage = (e) => {
         var newdft = [];
         if(i < nChannels) { //first multiply autocorrelograms
           dft.forEach((amp,j) => {
-            newdft.push(amp*dfts[1][i][j]*.5);
+            newdft.push(amp*dfts[1][i][j]*.25);
           });
           autoFFTproducts.push(newdft);
         }
@@ -85,7 +85,7 @@ onmessage = (e) => {
           var timeMod = (e.data.input[1]-1)*.3333333; //Scaling for longer time intervals
           if(timeMod === 0) { timeMod = 1; }
           dft.forEach((amp,j) => {           
-              newdft.push(amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]*.3333333*timeMod);
+              newdft.push(amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]*.3333333*timeMod*.25);
           });
           l++;
           if((l+k) === nChannels) {
