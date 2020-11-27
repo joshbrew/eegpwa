@@ -184,7 +184,7 @@ function coherence(data, nSec, freqStart, freqEnd) {
 //----------- UPDATE VISUALS ------------
 //---------------------------------------
 
-var updateVisuals = () => {
+var updateVisuals = () => { //TODO: adjust visuals based on expected voltages to make it generically applicable
 
     //uPlot
     if(graphmode === "FFT"){
@@ -235,14 +235,15 @@ var updateVisuals = () => {
     var coord = EEG.getAtlasCoordByTag(row.tag);
     if(i===0) {
       smoothie1.bulkAppend([
-        coord.data.means.delta[coord.data.means.delta.length-1],
-        coord.data.means.theta[coord.data.means.theta.length-1],
-        coord.data.means.alpha[coord.data.means.alpha.length-1],
-        coord.data.means.beta[coord.data.means.beta.length-1],
-        coord.data.means.gamma[coord.data.means.gamma.length-1]]);
+        Math.max(...coord.data.slices.delta[coord.data.slices.delta.length-1]),
+        Math.max(...coord.data.slices.theta[coord.data.slices.theta.length-1]),
+        Math.max(...coord.data.slices.alpha[coord.data.slices.alpha.length-1]),
+        Math.max(...coord.data.slices.beta[coord.data.slices.beta.length-1]),
+        Math.max(...coord.data.slices.gamma[coord.data.slices.gamma.length-1])
+      ]);
     }
     if(i < smoothie2.series.length - 1){
-      smoothie2.series[i].append(Date.now(), coord.data.means.alpha[coord.data.means.alpha.length-1]);
+      smoothie2.series[i].append(Date.now(), Math.max(...coord.data.slices.delta[coord.data.slices.delta.length-1]));
     }
   });
 

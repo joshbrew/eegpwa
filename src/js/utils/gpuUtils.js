@@ -48,12 +48,6 @@ export class gpuUtils {
         const er = Math.exp(a_real);
         return [er * Math.cos(a_imag), er*Math.sin(a_imag)];
       });
-          
-      this.gpu.addFunction(function cScaleTransform(transform, iSize) {
-        transform[this.thread.x][0] *= iSize;
-        transform[this.thread.x][1] *= iSize;
-        return transform;
-      });
 
       this.gpu.addFunction(function mag(a,b){ // Returns magnitude
         return Math.sqrt(a*a + b*b);
@@ -72,6 +66,42 @@ export class gpuUtils {
           factor += 2;
         }
       });
+
+      this.gpu.addFunction(function mean(arr,len){
+        var mean = 0;
+        for(var i = 0; i < len; i++){
+          mean += arr[i];
+        }
+        return mean/len;
+      });
+
+      this.gpu.addFunction(function estimator(arr,mean,len){
+        var est = 0;
+        var vari = 0;
+        for(var i = 0; i < len; i++){
+          vari = arr[i]-mean;
+          est += vari*vari;
+        }
+        return Math.sqrt(est);
+      });
+
+      this.gpu.addFunction(function xcor(arr1,arr1mean,arr1Est,arr2buf,arr2mean,arr2Est,len,delay){
+        var correlation = 0;
+        for (var i = 0; i < len; i++){
+          correlation += (arr1[i]-arr1mean)*(arr2buf[i+delay]-arr2mean);
+        }
+        return correlation/(arr1Est*arr2Est);
+      });
+
+
+      this.correlograms = this.gpu.createKernel(function(arrays,len){
+        return this.thread.x;
+      })
+      .setDynamicOutput(true)
+      .setDynamicArguments(true)
+      .setPipeline(true)
+      .setImmutable(true);
+      
 
       this.gpu.addFunction(function DFT(signal,len,freq){ //Extract a particular frequency
         var real = 0;
@@ -205,8 +235,20 @@ export class gpuUtils {
       .setPipeline(true)
       .setImmutable(true);
 
+      //e.g. arrays = [[arr1],[arr2],[arr3],[arr4],[arr5],[arr6]], len = 10, n = 2, mod=1... return results of [arr1*arr2], [arr3*arr4], [arr5*arr6] as one long array that needs to be split
+      this.bulkArrayMul = this.gpu.createKernel(function(arrays,len,n,mod) {
+        var i = n*Math.floor(this.thread.x/len); //Jump forward in array buffer
+        var products = arrays[i][this.thread.x];
+        for(var j = 0; j < n; j++){
+          products *= arrays[j][this.thread.x];
+        }
+        return products*mod;
+      })
+      .setDynamicOutput(true)
+      .setDynamicArguments(true)
+      .setPipeline(true)
+      .setImmutable(true);
 
-   
     }
 
     //Input array buffer and the number of seconds of data

@@ -42,12 +42,9 @@ onmessage = (e) => {
       const correlograms = eegmath.correlograms(e.data.input[0]); 
       const buffer = [...e.data.input[0],...correlograms];
       var dfts;
-      try{
-        dfts = gpu.MultiChannelDFT_Bandpass(buffer, e.data.input[1], e.data.input[2], e.data.input[3]);
-      }
-      catch(err){
-        console.log(err)
-      }
+      
+      dfts = gpu.MultiChannelDFT_Bandpass(buffer, e.data.input[1], e.data.input[2], e.data.input[3]);
+  
       const cordfts = dfts[1].splice(e.data.input[0].length, dfts[1].length-e.data.input[0].length);
 
       const coherenceResults = []; 
@@ -69,15 +66,15 @@ onmessage = (e) => {
       //Now arranged like [0:0,1:1,2:2,3:3,0:1,0:2,0:3,1:2,1:3,2:3]
 
       //Outputs FFT coherence data in order of channel data inputted e.g. for 4 channels resulting DFTs = [0:1,0:2,0:3,1:2,1:3,2:3];
-      //TODO:Optimize this e.g. with a bulk dispatch to GPUJS
+     
       var autoFFTproducts = [];
       k = 0;
       l = 1;
       cordfts.forEach((dft,i) => {
-        var newdft = [];
+        var newdft = new Array(dft.length).fill(0);
         if(i < nChannels) { //first multiply autocorrelograms
           dft.forEach((amp,j) => {
-            newdft.push(amp*dfts[1][i][j]*.25);
+            newdft[j] = amp*dfts[1][i][j];
           });
           autoFFTproducts.push(newdft);
         }
@@ -85,7 +82,7 @@ onmessage = (e) => {
           //var timeMod = (e.data.input[1]-1)*.3333333; //Scaling for longer time intervals
           //if(timeMod <= 1) { timeMod = 1; }
           dft.forEach((amp,j) => {           
-              newdft.push(amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]*.3333333*.25);
+              newdft[j] = amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]*0.00520833333333;
           });
           l++;
           if((l+k) === nChannels) {
@@ -95,7 +92,6 @@ onmessage = (e) => {
           coherenceResults.push(newdft);
         }
       });
-
       output = [dfts[0], dfts[1], coherenceResults];
 
       

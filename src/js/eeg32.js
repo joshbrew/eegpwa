@@ -16,10 +16,12 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.searchString = new Uint8Array([this.stopByte,this.startByte]); //Byte search string
 		
 		this.sps = 512; // Sample rate
-		this.nChannels = 32; // 24 bit channels, 3 bytes each
+		this.nChannels = 32; 
 		this.nPeripheralChannels = 6; // accelerometer and gyroscope (2 bytes * 3 coordinates each)
 		this.updateMs = 1000/this.sps; //even spacing
-		
+		this.stepSize = 1/(Math.pow(2,24));
+
+
 		this.data = { //Data object to keep our head from exploding. Get current data with e.g. this.data.A0[this.data.counter-1]
 			counter: 0,
 			ms: [0],
