@@ -18,7 +18,7 @@ catch (err) { alert("gpu.js utils error: ", err); }
 
 var nSec = 1; //Number of seconds to sample FFTs
 var freqStart = 0; //Beginning of DFT frequencies
-var freqEnd = 256; //End of DFT frequencies (max = SPS * 0.5, half the nyquist sampling rate)
+var freqEnd = 50; //End of DFT frequencies (max = SPS * 0.5, half the nyquist sampling rate)
 
 var posFFTList = [];
 var bandPassWindow = gpu.bandPassWindow(freqStart,freqEnd,EEG.sps); // frequencies (x-axis)

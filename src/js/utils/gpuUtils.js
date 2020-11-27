@@ -326,22 +326,23 @@ export class gpuUtils {
      }
 
     var summedMags = [];
-    
+    var _sampleRate = 1/sampleRate;
     if(nSeconds > 1) { //Need to sum results when sample time > 1 sec
       posMagsList.forEach((row, k) => {
         summedMags.push([]);
+        var _max = 1/Math.max(...row)
         for(var i = 0; i < row.length; i++ ){
           if(i == 0){
               summedMags[k]=row.slice(i,Math.floor(sampleRate));
               i = Math.floor(sampleRate);
           }
           else {
-              var j = i-Math.floor(Math.floor(i/sampleRate)*sampleRate)-1; //console.log(j);
-              summedMags[k][j] = (summedMags[k][j] * row[i-1]/sampleRate);
+              var j = i-Math.floor(Math.floor(i*_sampleRate)*sampleRate)-1; //console.log(j);
+              summedMags[k][j] = summedMags[k][j] * row[i-1]*_max;
           }
         }
         summedMags[k] = [...summedMags[k].slice(0,Math.ceil(summedMags[k].length*0.5))]
-      })
+      });
       //console.log(summedMags);
       return summedMags;  
     }
