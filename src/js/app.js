@@ -33,6 +33,7 @@ var sounds = null;//new SoundJS(); //For theta-gamma 2 octave
 var nSecAdcGraph = 10; //number of seconds to show on the raw signal graph
 
 var newMsg = true; //true if new message from worker
+var anim = null;
 
 EEG.channelTags = [
   {ch: 5, tag: "T3", viewing: true},
@@ -711,19 +712,19 @@ window.receivedMsg = (msg) => {
     //console.log(msg)
     posFFTList = [...msg.output[1]];
     processFFTs();
-    updateVisuals();
+    anim = requestAnimationFrame(updateVisuals);
     newMsg = true;
   }
   if(msg.foo === "coherence") {
     posFFTList = [...msg.output[1]];
     coherenceResults = [...msg.output[2]];
     processFFTs();
-    updateVisuals();
+    anim = requestAnimationFrame(updateVisuals);
   }
 }
 
 
-var sine = eegmath.genSineWave(10,2000,1,512);
+var sine  = eegmath.genSineWave(10,2000,1,512);
 var sine1 = eegmath.genSineWave(30,3000,1,512);
 var sine2 = eegmath.genSineWave(40,1000,1,512);
 var sine3 = eegmath.genSineWave(20,500,1,512);
