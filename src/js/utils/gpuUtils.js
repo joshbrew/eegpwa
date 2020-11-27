@@ -198,7 +198,7 @@ export class gpuUtils {
         }
         //var mags = mag(result[0],result[1]);
 
-        return mag(result[0],result[1]);
+        return mag(result[0]*2,result[1]*2); //Multiply result by 2 since we are only getting the positive results and want to estimate the actual amplitudes (positive = half power, reflected in the negative axis)
       })
       .setDynamicOutput(true)
       .setDynamicArguments(true)
