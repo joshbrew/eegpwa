@@ -36,9 +36,15 @@ var newMsg = true; //true if new message from worker
 
 EEG.channelTags = [
   {ch: 5, tag: "T3", viewing: true},
+  {ch: 25, tag: "T4", viewing: true},
   {ch: 10, tag: "Fp1", viewing: true},
   {ch: 15, tag: "Fp2", viewing: true},
-  {ch: 25, tag: "T4", viewing: true}
+  {ch: 0, tag: "Fz", viewing: true},
+  {ch: 1, tag: "Cz", viewing: true},
+  {ch: 2, tag: "Pz", viewing: true},
+  {ch: 3, tag: "O1", viewing: true},
+  {ch: 4, tag: "O2", viewing: true},
+  
 ];
 
 EEG.atlas = EEG.makeAtlas10_20();
@@ -720,6 +726,10 @@ window.receivedMsg = (msg) => {
 var sine = eegmath.genSineWave(10,2000,1,512);
 var sine1 = eegmath.genSineWave(30,3000,1,512);
 var sine2 = eegmath.genSineWave(40,1000,1,512);
+var sine3 = eegmath.genSineWave(20,500,1,512);
+var sine4 = eegmath.genSineWave(12,2500,1,512);
+var sine5 = eegmath.genSineWave(5,1000,1,512);
+var sine6 = eegmath.genSineWave(30,750,1,512);
 
 var bigarr = new Array(128).fill(sine[1]);
 
@@ -739,10 +749,11 @@ function testGPU(){
 
 function testCoherence(){
   console.log("testCoherence()");
-  window.postToWorker("coherence", [[sine[1],sine1[1],sine1[1],sine2[1]],1,freqStart,freqEnd],1);
-  window.postToWorker("coherence", [[sine[1],sine1[1],sine1[1],sine2[1]],1,freqStart,freqEnd],1);
-  window.postToWorker("coherence", [[sine[1],sine1[1],sine1[1],sine2[1]],1,freqStart,freqEnd],1);
-  window.postToWorker("coherence", [[sine[1],sine1[1],sine1[1],sine2[1]],1,freqStart,freqEnd],1);
+  window.postToWorker("coherence", [[sine[1],sine1[1],sine1[1],sine2[1],sine3[1],sine4[1],sine5[1],sine6[1],sine1[1]],1,freqStart,freqEnd],1);
+  window.postToWorker("coherence", [[sine[1],sine1[1],sine1[1],sine2[1],sine3[1],sine4[1],sine5[1],sine6[1],sine1[1]],1,freqStart,freqEnd],1);
+  window.postToWorker("coherence", [[sine[1],sine1[1],sine1[1],sine2[1],sine3[1],sine4[1],sine5[1],sine6[1],sine1[1]],1,freqStart,freqEnd],1);
+  window.postToWorker("coherence", [[sine[1],sine1[1],sine1[1],sine2[1],sine3[1],sine4[1],sine5[1],sine6[1],sine1[1]],1,freqStart,freqEnd],1);
+
 }
 
 
