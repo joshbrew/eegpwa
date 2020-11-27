@@ -746,9 +746,12 @@ function testCoherence(){
 }
 
 
-
+try{
   setTimeout(()=>{testGPU(); setTimeout(()=>{testCoherence();},500)},1000); //Need to delay this call since app.js is made before the worker script is made
-
+}
+catch (err) {
+  console.log(err);
+}
 
 
 
