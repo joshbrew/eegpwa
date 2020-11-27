@@ -475,8 +475,12 @@ var setGraph = (gmode) => {
       var k = 0;
       
       EEG.coherenceMap.map.forEach((row,i) => {
+        var tag1 = EEG.channelTags[k].tag;
+        var tag2 = EEG.channelTags[k+l].tag;
+        if(tag1 === null){tag1 = "A"+EEG.channelTags[k].ch} //Untagged, give it the channel number
+        if(tag2 === null){tag2 = "A"+EEG.channelTags[k+l].ch}
         newSeries.push({
-          label:EEG.channelTags[k].tag+":"+EEG.channelTags[k+l].tag,
+          label:tag1+":"+tag2,
           value: (u, v) => v == null ? "-" : v.toFixed(1),
           stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
         });
