@@ -461,7 +461,7 @@ export class brainMap2D {
 		}
 
 		var strokeStyle = "";
-		var alphaMul = 0.001;
+		var alphaMul = 0.0001;
 		//Set alpha based on intensity (needs testing)
 		if(viewing === "scp") {	
 			strokeStyle = "rgba(0,0,0,";}
