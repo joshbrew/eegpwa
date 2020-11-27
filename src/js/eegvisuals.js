@@ -552,6 +552,26 @@ export class thetaGamma2Octave {
 		this.anim = requestAnimationFrame(draw);
 	}
 
+	getBandPowers(channelTags,atlas) {
+		channelTags.forEach((row,i) => {
+			atlas.map.forEach((o,j) => {
+				if(o.tag === row.tag) {
+					var thetaMax = Math.max(...o.data.slices[o.data.slices.length-1].theta);
+					var gammaMax = Math.max(...o.data.slices[o.data.slices.length-1].gamma);
+					gammaMaxidx = o.data.slices.gamma.indexOf(gammaMax);
+					gammaFreq = atlas.shared.bandFreqs.gamma[1][gammaMaxidx];
+					if(thetaMax > 1000) {
+						this.audioctx.playFreq(450,0.1,'sine');
+					}
+					if((gammaMax > 1000) && ((gammaFreq < 47) || (gammaFreq > 63))) { //Simple filter to rule out power supply gamma
+						this.audioctx.playFreq(800,0.1,'sine');
+					}
+					return true;
+				}
+			})
+		})
+	}
+
 	draw = () => {
 		setTimeout(() => {if(this.anim !== "cancel") this.anim = requestAnimationFrame(draw)},20); // 50 FPS hard limit
 	}
