@@ -648,15 +648,21 @@ document.getElementById("setTags").onclick = () => {
     var found = false;
     let setTags = EEG.channelTags.find((o, j) => {
       if(o.ch === parseInt(dict[0])){
-        let otherTags = EEG.channelTags.find((p,k) => {
-          if(p.tag === dict[1]){
-            EEG.channelTags[k].tag = null;
-            return true;
-          }
-        })
-        //console.log(o);
-        EEG.channelTags[j].tag = dict[1];
-        EEG.channelTags[j].viewing = true;
+        if(dict[1] === "delete"){
+          EEG.channelTags.splice(j,1);
+        }
+        else{
+          let otherTags = EEG.channelTags.find((p,k) => {
+            if(p.tag === dict[1]){
+              EEG.channelTags[k].tag = null;
+              return true;
+            }
+          });
+        
+          //console.log(o);
+          EEG.channelTags[j].tag = dict[1];
+          EEG.channelTags[j].viewing = true;
+        }
         found = true;
         return true;
         }
