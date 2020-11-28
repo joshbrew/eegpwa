@@ -1,347 +1,141 @@
-import {GPU} from 'gpu.js'
+import { GPU } from 'gpu.js'
+import { createGpuKernels as krnl } from './gpuUtils-create-kernels';
+import { addGpuFunctions } from './gpuUtils-add-functs';
+
+function makeKrnl(gpu, f, opts = {
+  setDynamicOutput: true,
+  setDynamicArguments: true,
+  setPipeline: true,
+  setImmutable: true
+}) {
+  const k = gpu.createKernel(f);
+
+  if (opts.setDynamicOutput)    k.setDynamicOutput(true);
+  if (opts.setDynamicArguments) k.setDynamicArguments(true);
+  if (opts.setPipeline)         k.setPipeline(true)
+  if (opts.setImmutable)        k.setImmutable(true);
+
+  //.setOutput([signal.length]) //Call before running the kernel
+  //.setLoopMaxIterations(signal.length);
+
+  return k;
+}
 
 export class gpuUtils {
-  constructor(gpu=null){
-    if(gpu !== null){
-      this.gpu = gpu;
-    }
-    else {
-      this.gpu = new GPU();
-    }
-      this.kernel;
-      this.PI = 3.141592653589793;
-      this.SQRT1_2 = 0.7071067811865476
+  
+  constructor(gpu = new GPU()) {
+    this.gpu = gpu;
 
-      this.addFunctions();
+    this.kernel;
+    this.PI = 3.141592653589793;
+    this.SQRT1_2 = 0.7071067811865476
+
+    this.addFunctions();
   }
 
   addFunctions() { //Use kernel map instead? or this.kernel.addfunction? Test performance!
-      this.gpu.addFunction(function add(a, b) {
-        return a + b;
-      });
-      
-      this.gpu.addFunction(function sub(a, b) {
-        return a - b;
-      });
+    addGpuFunctions.forEach(f => this.gpu.addFunction(f));
 
-      this.gpu.addFunction(function mul(a, b) {
-        return a * b;
-      });
+    this.correlograms = makeKrnl(this.gpu, krnl);
+    this.dft = makeKrnl(this.gpu, krnl.dft);
+    this.idft = makeKrnl(this.gpu, krnl.idft);
+    this.listdft2D = makeKrnl(this.gpu, krnl.listdft2D);
+    this.listdft1D = makeKrnl(this.gpu, krnl.listdft1D);
+    this.listdft1D_windowed = makeKrnl(this.gpu, krnl.listdft1D_windowed);
+    this.bulkArrayMul = makeKrnl(this.gpu, krnl.bulkArrayMul);
+  }
 
-      this.gpu.addFunction(function div(a, b) {
-        return a / b;
-      });
+  //Input array buffer and the number of seconds of data
+  gpuDFT(signalBuffer, nSeconds, texOut = false){
 
-      this.gpu.addFunction(function cadd(a_real,a_imag,b_real,b_imag) {
-        return [a_real+b_real,a_imag+b_imag];
-      });
+    var nSamples = signalBuffer.length;
+    var sampleRate = nSamples/nSeconds;
 
-      this.gpu.addFunction(function csub(a_real,a_imag,b_real,b_imag) {
-        return [a_real-b_real,a_imag-b_imag];
-      });
+    this.dft.setOutput([signalBuffer.length]);
+    this.dft.setLoopMaxIterations(nSamples);
 
-      this.gpu.addFunction(function cmul(a_real,a_imag,b_real,b_imag) {
-        return [a_real*b_real - a_imag*b_imag, a_real*b_imag + a_imag*b_real];
-      });
-
-      this.gpu.addFunction(function cexp(a_real,a_imag) {
-        const er = Math.exp(a_real);
-        return [er * Math.cos(a_imag), er*Math.sin(a_imag)];
-      });
-
-      this.gpu.addFunction(function mag(a,b){ // Returns magnitude
-        return Math.sqrt(a*a + b*b);
-      });
-
-      this.gpu.addFunction(function conj(imag){ //Complex conjugate of x + iy is x - iy
-        return 0-imag;
-      });
-
-      this.gpu.addFunction(function lof(n){ //Lowest odd factor
-        const sqrt_n = Math.sqrt(n);
-        var factor = 3;
-
-        while(factor <= sqrt_n) {
-          if (n % factor === 0) return factor;
-          factor += 2;
-        }
-      });
-
-      this.gpu.addFunction(function mean(arr,len){
-        var mean = 0;
-        for(var i = 0; i < len; i++){
-          mean += arr[i];
-        }
-        return mean/len;
-      });
-
-      this.gpu.addFunction(function estimator(arr,mean,len){
-        var est = 0;
-        var vari = 0;
-        for(var i = 0; i < len; i++){
-          vari = arr[i]-mean;
-          est += vari*vari;
-        }
-        return Math.sqrt(est);
-      });
-
-      this.gpu.addFunction(function xcor(arr1,arr1mean,arr1Est,arr2buf,arr2mean,arr2Est,len,delay){
-        var correlation = 0;
-        for (var i = 0; i < len; i++){
-          correlation += (arr1[i]-arr1mean)*(arr2buf[i+delay]-arr2mean);
-        }
-        return correlation/(arr1Est*arr2Est);
-      });
-
-
-      this.correlograms = this.gpu.createKernel(function(arrays,len){
-        return this.thread.x;
-      })
-      .setDynamicOutput(true)
-      .setDynamicArguments(true)
-      .setPipeline(true)
-      .setImmutable(true);
-      
-
-      this.gpu.addFunction(function DFT(signal,len,freq){ //Extract a particular frequency
-        var real = 0;
-        var imag = 0;
-        var _len = 1/len;
-        var shared = 6.28318530718*freq*_len;
-        for(var i = 0; i<len; i++){
-          var sharedi = shared*i; //this.thread.x is the target frequency
-          real = real+signal[i]*Math.cos(sharedi);
-          imag = imag-signal[i]*Math.sin(sharedi);
-        }
-        //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
-        return [real*_len,imag*_len]; //mag(real,imag)
-      });
-
-      this.gpu.addFunction(function DFTlist(signals,len,freq,n){ //Extract a particular frequency
-        var real = 0;
-        var imag = 0;
-        var _len = 1/len;
-        var shared = 6.28318530718*freq*_len;
-        for(var i = 0; i<len; i++){
-          var sharedi = shared*i; //this.thread.x is the target frequency
-          real = real+signals[i+(len-1)*n]*Math.cos(sharedi);
-          imag = imag-signals[i+(len-1)*n]*Math.sin(sharedi);  
-        }
-        //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
-        return [real*_len,imag*_len]; //mag(real,imag)
-      });
-
-
-      //Conjugated real and imaginary parts for iDFT
-      this.gpu.addFunction(function iDFT(amplitudes,len,freq){ //inverse DFT to return time domain
-        var real = 0;
-        var imag = 0;
-        var _len = 1/len;
-        var shared = 6.28318530718*freq*_len;
-        for(var i = 0; i<len; i++){
-          var sharedi = shared*i; //this.thread.x is the target frequency
-          real = real+amplitudes[i+(len-1)*n]*Math.cos(sharedi);
-          imag = amplitudes[i+(len-1)*n]*Math.sin(sharedi)-imag;  
-        }
-        //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
-        return [real*_len,imag*_len]; //mag(real,imag)
-      });
-
-      this.gpu.addFunction(function iDFTlist(amplitudes,len,freq,n){ //inverse DFT to return time domain 
-        var real = 0;
-        var imag = 0;
-        var _len = 1/len;
-        var shared = 6.28318530718*freq*_len
-        for(var i = 0; i<len; i++){
-          var sharedi = shared*i; //this.thread.x is the target frequency
-          real = real+amplitudes[i+(len-1)*n]*Math.cos(sharedi);
-          imag = amplitudes[i+(len-1)*n]*Math.sin(sharedi)-imag;  
-        }
-        //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
-        return [imag*_len,real*_len]; //mag(real,imag)
-      });
-
-      //Return frequency domain based on DFT
-      this.dft = this.gpu.createKernel(function (signal,len){
-        var result = DFT(signal,len,this.thread.x);
-          return mag(result[0],result[1]);
-      })
-      .setDynamicOutput(true)
-      .setDynamicArguments(true)
-      .setPipeline(true)
-      .setImmutable(true);
-      //.setOutput([signal.length]) //Call before running the kernel
-      //.setLoopMaxIterations(signal.length);
-
-      //Return time domain based on iDFT
-      this.idft = this.gpu.createKernel(function (amplitudes,len){
-        var result = iDFT(amplitudes,len,this.thread.x);
-          return mag(result[0],result[1]);
-      })
-      .setDynamicOutput(true)
-      .setDynamicArguments(true)
-      .setPipeline(true)
-      .setImmutable(true);
-      //.setOutput([signal.length]) //Call before running the kernel
-      //.setLoopMaxIterations(signal.length);
-
-      // Takes a 2D array input [signal1[],signal2[],signal3[]]; does not work atm
-      this.listdft2D = this.gpu.createKernel(function (signals){
-        var len = this.output.x;
-        var result = DFT(signals[this.thread.y],len,this.thread.x);
-        //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
-        return mag(result[0],result[1]); //mag(real,imag)
-      })
-      .setDynamicOutput(true)
-      .setDynamicArguments(true)
-      .setPipeline(true)
-      .setImmutable(true);
-
-      //More like a vertex buffer list to chunk through lists of signals
-      this.listdft1D = this.gpu.createKernel(function(signals,len){
-        var result = [0,0];
-        if(this.thread.x <= len){
-          result = DFT(signals,len,this.thread.x);
-        }
-        else{
-          var n = Math.floor(this.thread.x/len);
-          result = DFTlist(signals,len,this.thread.x-n*len,n);
-        }
-        return mag(result[0],result[1]);
-      })
-      .setDynamicOutput(true)
-      .setDynamicArguments(true)
-      .setPipeline(true)
-      .setImmutable(true);
-
-      this.listdft1D_windowed = this.gpu.createKernel(function(signals,sampleRate,freqStart,freqEnd){ //Will make a higher resolution DFT for a smaller frequency window.
-        var result = [0,0];
-        if(this.thread.x <= sampleRate){
-          var freq = ( (this.thread.x/sampleRate) * ( freqEnd - freqStart ) ) + freqStart;
-          result = DFT(signals,sampleRate,freq);
-        }
-        else{
-          var n = Math.floor(this.thread.x/sampleRate);
-          var freq = ( ( ( this.thread.x - n * sampleRate ) / sampleRate ) * ( freqEnd - freqStart ) ) + freqStart;
-          result = DFTlist(signals,sampleRate,freq-n*sampleRate,n);
-          
-        }
-        //var mags = mag(result[0],result[1]);
-
-        return mag(result[0]*2,result[1]*2); //Multiply result by 2 since we are only getting the positive results and want to estimate the actual amplitudes (positive = half power, reflected in the negative axis)
-      })
-      .setDynamicOutput(true)
-      .setDynamicArguments(true)
-      .setPipeline(true)
-      .setImmutable(true);
-
-      //e.g. arrays = [[arr1],[arr2],[arr3],[arr4],[arr5],[arr6]], len = 10, n = 2, mod=1... return results of [arr1*arr2], [arr3*arr4], [arr5*arr6] as one long array that needs to be split
-      this.bulkArrayMul = this.gpu.createKernel(function(arrays,len,n,mod) {
-        var i = n*Math.floor(this.thread.x/len); //Jump forward in array buffer
-        var products = arrays[i][this.thread.x];
-        for(var j = 0; j < n; j++){
-          products *= arrays[j][this.thread.x];
-        }
-        return products*mod;
-      })
-      .setDynamicOutput(true)
-      .setDynamicArguments(true)
-      .setPipeline(true)
-      .setImmutable(true);
-
-    }
-
-    //Input array buffer and the number of seconds of data
-    gpuDFT(signalBuffer, nSeconds, texOut = false){
-
-      var nSamples = signalBuffer.length;
-      var sampleRate = nSamples/nSeconds;
-
-      this.dft.setOutput([signalBuffer.length]);
-      this.dft.setLoopMaxIterations(nSamples);
-
-      var outputTex = this.dft(signalBuffer, nSamples);
-      var output = null;
-      if(texOut === false){
-        var freqDist = this.makeFrequencyDistribution(nSamples, sampleRate);
-        var signalBufferProcessed = outputTex.toArray();
-        //console.log(signalBufferProcessed);
-        outputTex.delete();
-        return [freqDist,this.orderMagnitudes(signalBufferProcessed)]; //Returns x (frequencies) and y axis (magnitudes)
-      }
-      else {
-        var tex = outputTex; 
-        outputTex.delete(); 
-        return tex;
-      }
-    }
-
-    //Input array of array buffers of the same length and the number of seconds recorded
-    MultiChannelDFT(signalBuffer, nSeconds, texOut = false) {
-      
-      var signalBufferProcessed = [];
-        
-      signalBuffer.forEach((row) => {
-        signalBufferProcessed.push(...row);
-      });
+    var outputTex = this.dft(signalBuffer, nSamples);
+    var output = null;
+    if(texOut === false){
+      var freqDist = this.makeFrequencyDistribution(nSamples, sampleRate);
+      var signalBufferProcessed = outputTex.toArray();
       //console.log(signalBufferProcessed);
-    
-      var nSamplesPerChannel = signalBuffer[0].length;
-      var sampleRate = nSamplesPerChannel/nSeconds
-
-      this.listdft1D.setOutput([signalBufferProcessed.length]); //Set output to length of list of signals
-      this.listdft1D.setLoopMaxIterations(nSamplesPerChannel); //Set loop size to the length of one signal (assuming all are uniform length)
-          
-      var outputTex = this.listdft1D(signalBufferProcessed,nSamplesPerChannel);
-      if(texOut === false){
-        var orderedMagsList = [];
-
-        var freqDist = this.makeFrequencyDistribution(nSamplesPerChannel, sampleRate);
-        signalBufferProcessed = outputTex.toArray();
-        //console.log(signalBufferProcessed);
-
-        for(var i = 0; i < signalBufferProcessed.length; i+=nSamplesPerChannel){
-          orderedMagsList.push(this.orderMagnitudes([...signalBufferProcessed.slice(i,i+nSamplesPerChannel)]));
-        }
-        //Now slice up the big buffer into individual arrays for each signal
-
-        outputTex.delete();
-        return [freqDist,orderedMagsList]; //Returns x (frequencies) and y axis (magnitudes)
-      }
-      else {
-        var tex = outputTex; 
-        outputTex.delete(); 
-        return tex;
-      }
-    }
-
-      
-    //Input buffer of signals [[channel 0],[channel 1],...,[channel n]] with the same number of samples for each signal. Returns arrays of the positive DFT results in the given window.
-    MultiChannelDFT_Bandpass(signalBuffer,nSeconds,freqStart,freqEnd, texOut = false) {
-      
-      var signalBufferProcessed = [];
-        
-      signalBuffer.forEach((row) => {
-        signalBufferProcessed.push(...row);
-      });
-      //console.log(signalBufferProcessed);
-    
-      var freqEnd_nyquist = freqEnd*2;
-      var nSamplesPerChannel = signalBuffer[0].length;
-      var sampleRate = nSamplesPerChannel/nSeconds
-
-      this.listdft1D_windowed.setOutput([signalBufferProcessed.length]); //Set output to length of list of signals
-      this.listdft1D_windowed.setLoopMaxIterations(nSamplesPerChannel); //Set loop size to the length of one signal (assuming all are uniform length)
-          
-      var outputTex = this.listdft1D_windowed(signalBufferProcessed,sampleRate,freqStart,freqEnd_nyquist);
-      if(texOut === true) { return outputTex; }
-      
-      signalBufferProcessed = outputTex.toArray();
       outputTex.delete();
+      return [freqDist,this.orderMagnitudes(signalBufferProcessed)]; //Returns x (frequencies) and y axis (magnitudes)
+    }
+    else {
+      var tex = outputTex; 
+      outputTex.delete(); 
+      return tex;
+    }
+  }
 
-      //TODO: Optimize for SPEEEEEEED.. or just pass it str8 to a shader
-      var freqDist = this.bandPassWindow(freqStart,freqEnd,sampleRate);
-      return [freqDist, this.orderBPMagnitudes(signalBufferProcessed,nSeconds,sampleRate,nSamplesPerChannel)]; //Returns x (frequencies) and y axis (magnitudes)
+  //Input array of array buffers of the same length and the number of seconds recorded
+  MultiChannelDFT(signalBuffer, nSeconds, texOut = false) {
+    
+    var signalBufferProcessed = [];
+      
+    signalBuffer.forEach((row) => {
+      signalBufferProcessed.push(...row);
+    });
+    //console.log(signalBufferProcessed);
+  
+    var nSamplesPerChannel = signalBuffer[0].length;
+    var sampleRate = nSamplesPerChannel/nSeconds
+
+    this.listdft1D.setOutput([signalBufferProcessed.length]); //Set output to length of list of signals
+    this.listdft1D.setLoopMaxIterations(nSamplesPerChannel); //Set loop size to the length of one signal (assuming all are uniform length)
+        
+    var outputTex = this.listdft1D(signalBufferProcessed,nSamplesPerChannel);
+    if(texOut === false){
+      var orderedMagsList = [];
+
+      var freqDist = this.makeFrequencyDistribution(nSamplesPerChannel, sampleRate);
+      signalBufferProcessed = outputTex.toArray();
+      //console.log(signalBufferProcessed);
+
+      for(var i = 0; i < signalBufferProcessed.length; i+=nSamplesPerChannel){
+        orderedMagsList.push(this.orderMagnitudes([...signalBufferProcessed.slice(i,i+nSamplesPerChannel)]));
+      }
+      //Now slice up the big buffer into individual arrays for each signal
+
+      outputTex.delete();
+      return [freqDist,orderedMagsList]; //Returns x (frequencies) and y axis (magnitudes)
+    }
+    else {
+      var tex = outputTex; 
+      outputTex.delete(); 
+      return tex;
+    }
+  }
+
+      
+  //Input buffer of signals [[channel 0],[channel 1],...,[channel n]] with the same number of samples for each signal. Returns arrays of the positive DFT results in the given window.
+  MultiChannelDFT_Bandpass(signalBuffer,nSeconds,freqStart,freqEnd, texOut = false) {
+    
+    var signalBufferProcessed = [];
+      
+    signalBuffer.forEach((row) => {
+      signalBufferProcessed.push(...row);
+    });
+    //console.log(signalBufferProcessed);
+  
+    var freqEnd_nyquist = freqEnd*2;
+    var nSamplesPerChannel = signalBuffer[0].length;
+    var sampleRate = nSamplesPerChannel/nSeconds
+
+    this.listdft1D_windowed.setOutput([signalBufferProcessed.length]); //Set output to length of list of signals
+    this.listdft1D_windowed.setLoopMaxIterations(nSamplesPerChannel); //Set loop size to the length of one signal (assuming all are uniform length)
+        
+    var outputTex = this.listdft1D_windowed(signalBufferProcessed,sampleRate,freqStart,freqEnd_nyquist);
+    if(texOut === true) { return outputTex; }
+    
+    signalBufferProcessed = outputTex.toArray();
+    outputTex.delete();
+
+    //TODO: Optimize for SPEEEEEEED.. or just pass it str8 to a shader
+    var freqDist = this.bandPassWindow(freqStart,freqEnd,sampleRate);
+    return [freqDist, this.orderBPMagnitudes(signalBufferProcessed,nSeconds,sampleRate,nSamplesPerChannel)]; //Returns x (frequencies) and y axis (magnitudes)
   }
 
   orderMagnitudes(unorderedMags){
@@ -409,126 +203,126 @@ export class gpuUtils {
 
 //Include gpu-browser.min.js before this script
 var kernels = ({
-    edgeDetection: [
-      -1, -1, -1,
-      -1,  8, -1,
-      -1, -1, -1
-    ],
-    boxBlur: [
-      1/9, 1/9, 1/9,
-      1/9, 1/9, 1/9,
-      1/9, 1/9, 1/9
-    ],
-    sobelLeft: [
-        1,  0, -1,
-        2,  0, -2,
-        1,  0, -1
-    ],
-    sobelRight: [
-        -1, 0, 1,
-        -2, 0, 2,
-        -1, 0, 1
-    ],
-    sobelTop: [
-        1,  2,  1,
-        0,  0,  0,
-       -1, -2, -1  
-    ],
-    sobelBottom: [
-        -1, 2, 1,
-         0, 0, 0,
-         1, 2, 1
-    ],
-    identity: [
-        0, 0, 0, 
-        0, 1, 0, 
-        0, 0, 0
-    ],
-    gaussian3x3: [
-        1,  2,  1, 
-        2,  4,  2, 
-        1,  2,  1
-    ],
-    guassian7x7: [
-        0, 0,  0,   5,   0,   0,  0,
-        0, 5,  18,  32,  18,  5,  0,
-        0, 18, 64,  100, 64,  18, 0,
-        5, 32, 100, 100, 100, 32, 5,
-        0, 18, 64,  100, 64,  18, 0,
-        0, 5,  18,  32,  18,  5,  0,
-        0, 0,  0,   5,   0,   0,  0,
-    ],
-    emboss: [
-        -2, -1,  0, 
-        -1,  1,  1, 
-         0,  1,  2
-    ],
-    sharpen: [
-        0, -1,  0,
-       -1,  5, -1,
-        0, -1,  0
-    ]
-  });
+  edgeDetection: [
+    -1, -1, -1,
+    -1,  8, -1,
+    -1, -1, -1
+  ],
+  boxBlur: [
+    1/9, 1/9, 1/9,
+    1/9, 1/9, 1/9,
+    1/9, 1/9, 1/9
+  ],
+  sobelLeft: [
+    1,  0, -1,
+    2,  0, -2,
+    1,  0, -1
+  ],
+  sobelRight: [
+    -1, 0, 1,
+    -2, 0, 2,
+    -1, 0, 1
+  ],
+  sobelTop: [
+    1,  2,  1,
+    0,  0,  0,
+    -1, -2, -1  
+  ],
+  sobelBottom: [
+    -1, 2, 1,
+    0, 0, 0,
+    1, 2, 1
+  ],
+  identity: [
+    0, 0, 0, 
+    0, 1, 0, 
+    0, 0, 0
+  ],
+  gaussian3x3: [
+    1,  2,  1, 
+    2,  4,  2, 
+    1,  2,  1
+  ],
+  guassian7x7: [
+    0, 0,  0,   5,   0,   0,  0,
+    0, 5,  18,  32,  18,  5,  0,
+    0, 18, 64,  100, 64,  18, 0,
+    5, 32, 100, 100, 100, 32, 5,
+    0, 18, 64,  100, 64,  18, 0,
+    0, 5,  18,  32,  18,  5,  0,
+    0, 0,  0,   5,   0,   0,  0,
+  ],
+  emboss: [
+    -2, -1,  0, 
+    -1,  1,  1, 
+    0,  1,  2
+  ],
+  sharpen: [
+    0, -1,  0,
+    -1,  5, -1,
+    0, -1,  0
+  ]
+});
 
 
 function includeGPUJS() {
-    var link1 = document.createElement("script");
-    link1.src = "https://raw.githubusercontent.com/gpujs/gpu.js/master/dist/gpu-browser.min.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
-    link1.async = false; // Load synchronously
-    link1.charset = "UTF-8";
-    document.head.appendChild(link1); //Append script
+  var link1 = document.createElement("script");
+  link1.src = "https://raw.githubusercontent.com/gpujs/gpu.js/master/dist/gpu-browser.min.js"; // Can set this to be a nonlocal link like from cloudflare or a special script with a custom app
+  link1.async = false; // Load synchronously
+  link1.charset = "UTF-8";
+  document.head.appendChild(link1); //Append script
 }
 
 function testGPUmath() {
-    const gpu = new GPU();
-    const multiplyMatrix = gpu.createKernel(function(a, b) {
-        let sum = 0;
-        for (let i = 0; i < 20; i++) {
-            sum += this.thread.y * this.thread.x;//a[this.thread.y][i] * b[i][this.thread.x];
-        }
-        return sum;
-    }).setOutput([20, 20]);
-
-    var a = [], b = [];
-    for(var i = 0; i < 20; i++){
-        a.push([Math.floor(Math.random()*10),Math.floor(Math.random()*10)]);
-        b.push([Math.floor(Math.random()*10),Math.floor(Math.random()*10)]);
+  const gpu = new GPU();
+  const multiplyMatrix = gpu.createKernel(function(a, b) {
+    let sum = 0;
+    for (let i = 0; i < 20; i++) {
+      sum += this.thread.y * this.thread.x;//a[this.thread.y][i] * b[i][this.thread.x];
     }
+    return sum;
+  }).setOutput([20, 20]);
 
-    var result = null;
-    console.time('testGPUmath');
-    result = multiplyMatrix(a, b);
-    console.timeEnd('testGPUmath');
-    console.info(result);
+  var a = [], b = [];
+  for(var i = 0; i < 20; i++){
+    a.push([Math.floor(Math.random()*10),Math.floor(Math.random()*10)]);
+    b.push([Math.floor(Math.random()*10),Math.floor(Math.random()*10)]);
+  }
+
+  var result = null;
+  console.time('testGPUmath');
+  result = multiplyMatrix(a, b);
+  console.timeEnd('testGPUmath');
+  console.info(result);
 }
 
 function testGPUrender() {
-    const canvas = document.getElementById('c');
-    const gpu = new GPU({
-        canvas: canvas,
-        mode: 'gpu'
-    });
-    
-    const render = gpu.createKernel(function(time) {
-        this.color(this.thread.x/(Math.abs(.5+Math.sin(time)*Math.cos(time))*500),this.thread.y/(1+Math.abs((.5+Math.sin(time)*Math.cos(time)))*500), 0.4, 1);
-    })
-    .setOutput([500, 500])
-    .setGraphical(true);
-    
-    var tick = 0;
-    var animate = () => {
-        render(tick);
-        tick+=0.01;
-        setTimeout(requestAnimationFrame(animate),15);
-    }
+  const canvas = document.getElementById('c');
+  const gpu = new GPU({
+      canvas: canvas,
+      mode: 'gpu'
+  });
+  
+  const render = gpu.createKernel(function(time) {
+      this.color(this.thread.x/(Math.abs(.5+Math.sin(time)*Math.cos(time))*500),this.thread.y/(1+Math.abs((.5+Math.sin(time)*Math.cos(time)))*500), 0.4, 1);
+  })
+  .setOutput([500, 500])
+  .setGraphical(true);
+  
+  var tick = 0;
+  var animate = () => {
+      render(tick);
+      tick+=0.01;
+      setTimeout(requestAnimationFrame(animate),15);
+  }
 
-    //gpu.addNativeFunction('4DMean',
-    //    `vec4`
-    //);
-    var result = null;
-    console.time('square render');
-    requestAnimationFrame(animate);
-    console.timeEnd('square render');
+  //gpu.addNativeFunction('4DMean',
+  //    `vec4`
+  //);
+  var result = null;
+  console.time('square render');
+  requestAnimationFrame(animate);
+  console.timeEnd('square render');
 }
 
 function testGPUKernels() {
@@ -831,7 +625,6 @@ function testGPUCameraWobble() {
     }
 
     image();
-
 }
 
 var mandebrotFrag = 
