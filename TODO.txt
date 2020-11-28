@@ -8,6 +8,8 @@ DONE:
    -- The canvas creates points based off the given MNI atlas coordinates with tags e.g. Fp1, Fp2, Fz, etc.
    -- Points assigned to channels are highlighted with the channel index listed
    -- Visualize coherence networks automatically
+- Color coded bar chart for EEG data
+- Spectrogram with auto interpolation to fit arrays to canvas
 - Web workers
 - Nodejs pwa implementation for better worker functionality and web-hostability
 
@@ -30,7 +32,7 @@ Visuals:
 
 Performance:
 - I could definitely optimize most of the math but if it ain't broke don't fix it.. yet.. 
-- Definitely optimize the coherence results calculating in the web worker, could do a bulk matrix math dispatch to gpujs (in fact I will!)
+- Optimize correlograms function, either switch to .reduce instead of forEach or do a bulk gpu dispatch
 
 Use cases:
 - Finish Alpha Coherence
