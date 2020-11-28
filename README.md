@@ -1,8 +1,8 @@
 # Test for EEG browser PWA
 
-Not fully working yet in this node implementation but you can at least test the EEG worker. [old repo](https://github.com/moothyknight/free_eeg32_web)
+See Web BCI test at https://webbci.netlify.app
 
-with node installed, cd to where you extracted this folder from your command prompt then use the command
+With node installed, cd to where you extracted this folder from your command prompt then use the command
 
 `npm install`
 
