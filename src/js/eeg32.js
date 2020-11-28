@@ -378,25 +378,25 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 
 		return {shared: {sps: this.sps, bandPassWindow:[], bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], lowgamma:[[],[]], highgamma:[[],[]]} //x axis values and indices for named EEG frequency bands
 		}, map:[
-			{tag:"Fp1", data: { x: -21.5, y: 70.2,   z: -0.1,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"Fp2", data: { x: 28.4,  y: 69.1,   z: -0.4,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"Fz",  data: { x: 0.6,   y: 40.9,   z: 53.9,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"F3",  data: { x: -35.5, y: 49.4,   z: 32.4,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"F4",  data: { x: 40.2,  y: 47.6,   z: 32.1,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"F7",  data: { x: -54.8, y: 33.9,   z: -3.5,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"F8",  data: { x: 56.6,  y: 30.8,   z: -4.1,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},  
-			{tag:"Cz",  data: { x: 0.8,   y: -14.7,  z: 73.9,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"C3",  data: { x: -52.2, y: -16.4,  z: 57.8,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"C4",  data: { x: 54.1,  y: -18.0,  z: 57.5,  times: [], amplitudes: [], slices: freqBins, means: freqBins}}, 
-			{tag:"T3",  data: { x: -70.2, y: -21.3,  z: -10.7, times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"T4",  data: { x: 71.9,  y: -25.2,  z: -8.2,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"Pz",  data: { x: 0.2,   y: -62.1,  z: 64.5,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"P3",  data: { x: -39.5, y: -76.3,  z: 47.4,  times: [], amplitudes: [], slices: freqBins, means: freqBins}}, 
-			{tag:"P4",  data: { x: 36.8,  y: -74.9,  z: 49.2,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"T5",  data: { x: -61.5, y: -65.3,  z: 1.1,   times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"T6",  data: { x: 59.3,  y: -67.6,  z: 3.8,   times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"O1",  data: { x: -26.8, y: -100.2, z: 12.8,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
-			{tag:"O2",  data: { x: 24.1,  y: -100.5, z: 14.1,  times: [], amplitudes: [], slices: freqBins, means: freqBins}}
+			{tag:"Fp1", data: { x: -21.5, y: 70.2,   z: -0.1,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"Fp2", data: { x: 28.4,  y: 69.1,   z: -0.4,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"Fz",  data: { x: 0.6,   y: 40.9,   z: 53.9,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"F3",  data: { x: -35.5, y: 49.4,   z: 32.4,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"F4",  data: { x: 40.2,  y: 47.6,   z: 32.1,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"F7",  data: { x: -54.8, y: 33.9,   z: -3.5,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"F8",  data: { x: 56.6,  y: 30.8,   z: -4.1,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},  
+			{tag:"Cz",  data: { x: 0.8,   y: -14.7,  z: 73.9,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"C3",  data: { x: -52.2, y: -16.4,  z: 57.8,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"C4",  data: { x: 54.1,  y: -18.0,  z: 57.5,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}}, 
+			{tag:"T3",  data: { x: -70.2, y: -21.3,  z: -10.7, times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"T4",  data: { x: 71.9,  y: -25.2,  z: -8.2,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"Pz",  data: { x: 0.2,   y: -62.1,  z: 64.5,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"P3",  data: { x: -39.5, y: -76.3,  z: 47.4,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}}, 
+			{tag:"P4",  data: { x: 36.8,  y: -74.9,  z: 49.2,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"T5",  data: { x: -61.5, y: -65.3,  z: 1.1,   times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"T6",  data: { x: 59.3,  y: -67.6,  z: 3.8,   times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"O1",  data: { x: -26.8, y: -100.2, z: 12.8,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
+			{tag:"O2",  data: { x: 24.1,  y: -100.5, z: 14.1,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
 		]};
 
 	}
@@ -409,7 +409,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		for( var i = 0; i < (channelTags.length*(channelTags.length + 1)/2)-channelTags.length; i++){
 			var coord0 = this.getAtlasCoordByTag(channelTags[k].tag);
 			var coord1 = this.getAtlasCoordByTag(channelTags[k+l].tag);
-			coherenceMap.map.push({tag:channelTags[k].tag+":"+channelTags[l+k].tag, data:{x0:coord0.data.x,y0:coord0.data.y,z0:coord0.data.z,x1:coord1.data.x,y1:coord1.data.y,z1:coord1.data.z, amplitudes:[], slices: freqBins, means: freqBins}});
+			coherenceMap.map.push({tag:channelTags[k].tag+":"+channelTags[l+k].tag, data:{x0:coord0.data.x,y0:coord0.data.y,z0:coord0.data.z,x1:coord1.data.x,y1:coord1.data.y,z1:coord1.data.z, amplitudes:[], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}});
 			l++;
 			if(l+k === channelTags.length){
 				k++;

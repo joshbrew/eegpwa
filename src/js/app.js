@@ -98,7 +98,7 @@ var channelBands = (channel,tag) => {
   //console.time("slicing bands");
   let atlasCoord = EEG.atlas.map.find((o, i) => {
     if(o.tag === tag){
-    EEG.atlas.map[i].data.times.push(performance.now());
+      EEG.atlas.map[i].data.times.push(performance.now());
       EEG.atlas.map[i].data.amplitudes.push(posFFTList[channel]);
       var scp = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.scp[1][0], EEG.atlas.shared.bandFreqs.scp[1][EEG.atlas.shared.bandFreqs.scp[1].length-1]+1);
       EEG.atlas.map[i].data.slices.scp.push(scp);
@@ -115,13 +115,12 @@ var channelBands = (channel,tag) => {
       var beta  = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.beta[1][0],  EEG.atlas.shared.bandFreqs.beta[1][EEG.atlas.shared.bandFreqs.beta[1].length-1]+1);
       EEG.atlas.map[i].data.slices.beta.push(beta);
       EEG.atlas.map[i].data.means.beta.push(eegmath.mean(beta));
-      var lowgamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.lowgamma[1][0], EEG.atlas.shared.bandFreqs.lowgamma[1][EEG.atlas.shared.bandFreqs.lowgamma[1].length-1]);
+      var lowgamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.lowgamma[1][0], EEG.atlas.shared.bandFreqs.lowgamma[1][EEG.atlas.shared.bandFreqs.lowgamma[1].length-1]+1);
       EEG.atlas.map[i].data.slices.lowgamma.push(lowgamma);
       EEG.atlas.map[i].data.means.lowgamma.push(eegmath.mean(lowgamma));
-      var highgamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.highgamma[1][0], EEG.atlas.shared.bandFreqs.highgamma[1][EEG.atlas.shared.bandFreqs.highgamma[1].length-1]);
+      var highgamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.highgamma[1][0], EEG.atlas.shared.bandFreqs.highgamma[1][EEG.atlas.shared.bandFreqs.highgamma[1].length-1]+1);
       EEG.atlas.map[i].data.slices.highgamma.push(highgamma);
       EEG.atlas.map[i].data.means.highgamma.push(eegmath.mean(highgamma));
-      
       //console.timeEnd("slicing bands");
       return true;
     }
@@ -242,7 +241,7 @@ var updateVisuals = () => { //TODO: adjust visuals based on expected voltages to
         Math.max(...coord.data.slices.theta[coord.data.slices.theta.length-1]),
         Math.max(...coord.data.slices.alpha[coord.data.slices.alpha.length-1]),
         Math.max(...coord.data.slices.beta[coord.data.slices.beta.length-1]),
-        Math.max(...coord.data.slices.gamma[coord.data.slices.gamma.length-1])
+        Math.max(...coord.data.slices.lowgamma[coord.data.slices.lowgamma.length-1])
       ]);
     }
     if(i < smoothie2.series.length - 1){
