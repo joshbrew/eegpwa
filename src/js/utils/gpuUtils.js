@@ -35,13 +35,13 @@ export class gpuUtils {
   addFunctions() { //Use kernel map instead? or this.kernel.addfunction? Test performance!
     addGpuFunctions.forEach(f => this.gpu.addFunction(f));
 
-    this.correlograms = makeKrnl(this.gpu, krnl);
-    this.dft = makeKrnl(this.gpu, krnl.dft);
-    this.idft = makeKrnl(this.gpu, krnl.idft);
-    this.listdft2D = makeKrnl(this.gpu, krnl.listdft2D);
-    this.listdft1D = makeKrnl(this.gpu, krnl.listdft1D);
-    this.listdft1D_windowed = makeKrnl(this.gpu, krnl.listdft1D_windowed);
-    this.bulkArrayMul = makeKrnl(this.gpu, krnl.bulkArrayMul);
+    this.correlograms = makeKrnl(this.gpu, krnl.correlogramsKern);
+    this.dft = makeKrnl(this.gpu, krnl.dftKern);
+    this.idft = makeKrnl(this.gpu, krnl.idftKern);
+    this.listdft2D = makeKrnl(this.gpu, krnl.listdft2DKern);
+    this.listdft1D = makeKrnl(this.gpu, krnl.listdft1DKern);
+    this.listdft1D_windowed = makeKrnl(this.gpu, krnl.listdft1D_windowedKern);
+    this.bulkArrayMul = makeKrnl(this.gpu, krnl.bulkArrayMulKern);
   }
 
   //Input array buffer and the number of seconds of data
@@ -200,7 +200,6 @@ export class gpuUtils {
 
 
 
-//Include gpu-browser.min.js before this script
 var kernels = ({
   edgeDetection: [
     -1, -1, -1,

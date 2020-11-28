@@ -16,7 +16,6 @@
   "license": "ISC",
   "dependencies": {
     "@giveback007/util-lib": "^0.16.4",
-    "chroma-js": "^2.1.0",
     "gpu.js": "^2.10.5",
     "normalize.css": "^8.0.1",
     "postprocessing": "^6.17.4",
