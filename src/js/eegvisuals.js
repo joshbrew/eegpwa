@@ -543,10 +543,10 @@ export class eegBarChart {
 
 
 export class thetaGamma2Octave {
-	constructor(canvasId = null) {
+	constructor(canvasId = null, normalizeFactor) {
 		this.spect = new Spectrogram(canvasId);
 		this.anim = null;
-		this.spect.normalizeFactor = 
+		this.spect.normalizeFactor = normalizeFactor;
 
 		this.audioctx = new SoundJS();
 	}
