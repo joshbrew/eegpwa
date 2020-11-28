@@ -398,8 +398,11 @@ export class brainMap2D {
 				  points[points.length - 1].size = Math.max(...o.data.slices.alpha[o.data.slices.alpha.length-1])}//o.data.means.alpha[o.data.means.alpha.length - 1];}
 				else if(viewing === "beta"){
 				  points[points.length - 1].size = Math.max(...o.data.slices.beta[o.data.slices.beta.length-1])}//o.data.means.beta[o.data.means.beta.length - 1];}
-				else if(viewing === "gamma"){
-				  points[points.length - 1].size = Math.max(...o.data.slices.gamma[o.data.slices.gamma.length-1])}//o.data.means.gamma[o.data.means.gamma.length - 1];}
+				else if(viewing === "lowgamma"){
+				  points[points.length - 1].size = Math.max(...o.data.slices.lowgamma[o.data.slices.lowgamma.length-1])}//o.data.means.gamma[o.data.means.gamma.length - 1];}
+				else if(viewing === "highgamma"){
+					points[points.length - 1].size = Math.max(...o.data.slices.highgamma[o.data.slices.highgamma.length-1])}//o.data.means.gamma[o.data.means.gamma.length - 1];}
+				
 				points[points.length - 1].size *= sizeMul; //Need a better method
 	
 				//simplecoherence *= points[points.length-1].size;
@@ -473,7 +476,9 @@ export class brainMap2D {
 			strokeStyle = "rgba(0,100,255,";}
 		else if(viewing === "beta") {
 			strokeStyle = "rgba(255,0,255,";}
-		else if(viewing === "gamma") {
+		else if(viewing === "lowgamma") {
+			strokeStyle = "rgba(255,255,0,";}
+		else if(viewing === "highgamma") {
 			strokeStyle = "rgba(255,255,0,";}
 			//console.log(strokeStyle);
 		coherenceMap.map.forEach((row,i) => {
@@ -487,8 +492,10 @@ export class brainMap2D {
 				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.alpha[row.data.slices.alpha.length-1])*alphaMul + ")";}//(row.data.means.alpha[row.data.means.alpha.length-1]*alphaMul) + ")";}
 			else if(viewing === "beta") {
 				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.beta[row.data.slices.beta.length-1])*alphaMul + ")";}//(row.data.means.beta[row.data.means.beta.length-1]*alphaMul) + ")";}
-			else if(viewing === "gamma") {
-				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.gamma[row.data.slices.gamma.length-1])*alphaMul + ")";}//(row.data.means.gamma[row.data.means.gamma.length-1]*alphaMul) + ")";}
+			else if(viewing === "lowgamma") {
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.lowgamma[row.data.slices.lowgamma.length-1])*alphaMul + ")";}//(row.data.means.gamma[row.data.means.gamma.length-1]*alphaMul) + ")";}
+			else if(viewing === "highgamma") {
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.highgamma[row.data.slices.highgamma.length-1])*alphaMul + ")";}//(row.data.means.gamma[row.data.means.gamma.length-1]*alphaMul) + ")";}
 			//console.log(ctx.strokeStyle)
 			//console.log(ctx.strokeStyle);
 			ctx.beginPath();
@@ -556,10 +563,10 @@ export class thetaGamma2Octave {
 		channelTags.forEach((row,i) => {
 			atlas.map.forEach((o,j) => {
 				if(o.tag === row.tag) {
-					var thetaMax = Math.max(...o.data.slices[o.data.slices.length-1].theta);
-					var gammaMax = Math.max(...o.data.slices[o.data.slices.length-1].gamma);
-					gammaMaxidx = o.data.slices.gamma.indexOf(gammaMax);
-					gammaFreq = atlas.shared.bandFreqs.gamma[1][gammaMaxidx];
+					var thetaMax = Math.max(...o.data.slices.theta[o.data.slices.theta.length-1]);
+					var gammaMax = Math.max(...o.data.slices.lowgamma[o.data.slices.lowgamma.length-1]);
+					gammaMaxidx = o.data.slices.lowgamma.indexOf(gammaMax);
+					gammaFreq = atlas.shared.bandFreqs.lowgamma[1][gammaMaxidx];
 					if(thetaMax > 1000) {
 						this.audioctx.playFreq(450,0.1,'sine');
 					}

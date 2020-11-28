@@ -115,9 +115,12 @@ var channelBands = (channel,tag) => {
       var beta  = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.beta[1][0],  EEG.atlas.shared.bandFreqs.beta[1][EEG.atlas.shared.bandFreqs.beta[1].length-1]+1);
       EEG.atlas.map[i].data.slices.beta.push(beta);
       EEG.atlas.map[i].data.means.beta.push(eegmath.mean(beta));
-      var gamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.gamma[1][0], EEG.atlas.shared.bandFreqs.gamma[1][EEG.atlas.shared.bandFreqs.gamma[1].length-1]);
-      EEG.atlas.map[i].data.slices.gamma.push(gamma);
-      EEG.atlas.map[i].data.means.gamma.push(eegmath.mean(gamma));
+      var lowgamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.lowgamma[1][0], EEG.atlas.shared.bandFreqs.lowgamma[1][EEG.atlas.shared.bandFreqs.lowgamma[1].length-1]);
+      EEG.atlas.map[i].data.slices.lowgamma.push(lowgamma);
+      EEG.atlas.map[i].data.means.lowgamma.push(eegmath.mean(lowgamma));
+      var highgamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.highgamma[1][0], EEG.atlas.shared.bandFreqs.highgamma[1][EEG.atlas.shared.bandFreqs.highgamma[1].length-1]);
+      EEG.atlas.map[i].data.slices.highgamma.push(highgamma);
+      EEG.atlas.map[i].data.means.highgamma.push(eegmath.mean(highgamma));
       
       //console.timeEnd("slicing bands");
       return true;
@@ -362,9 +365,12 @@ function processFFTs() {
           var beta  = row.slice( EEG.coherenceMap.shared.bandFreqs.beta[1][0],  EEG.coherenceMap.shared.bandFreqs.beta[1][EEG.coherenceMap.shared.bandFreqs.beta[1].length-1]+1);
           EEG.coherenceMap.map[i].data.slices.beta.push(beta);
           EEG.coherenceMap.map[i].data.means.beta.push(eegmath.mean(beta));
-          var gamma = row.slice( EEG.coherenceMap.shared.bandFreqs.gamma[1][0], EEG.coherenceMap.shared.bandFreqs.gamma[1][EEG.coherenceMap.shared.bandFreqs.gamma[1].length-1]+1);
-          EEG.coherenceMap.map[i].data.slices.gamma.push(gamma);
-          EEG.coherenceMap.map[i].data.means.gamma.push(eegmath.mean(gamma));
+          var lowgamma = row.slice( EEG.coherenceMap.shared.bandFreqs.lowgamma[1][0], EEG.coherenceMap.shared.bandFreqs.lowgamma[1][EEG.coherenceMap.shared.bandFreqs.lowgamma[1].length-1]+1);
+          EEG.coherenceMap.map[i].data.slices.lowgamma.push(lowgamma);
+          EEG.coherenceMap.map[i].data.means.lowgamma.push(eegmath.mean(lowgamma));
+          var highgamma = row.slice( EEG.coherenceMap.shared.bandFreqs.highgamma[1][0], EEG.coherenceMap.shared.bandFreqs.highgamma[1][EEG.coherenceMap.shared.bandFreqs.highgamma[1].length-1]+1);
+          EEG.coherenceMap.map[i].data.slices.highgamma.push(highgamma);
+          EEG.coherenceMap.map[i].data.means.highgamma.push(eegmath.mean(highgamma));
         })
       }
 

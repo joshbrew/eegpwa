@@ -304,7 +304,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	//---------------------end copy/pasted solution------------------------
 
 	//EEG Atlas generator
-	newCoord(x,y,z, times=[], amplitudes=[], slices= {delta: [], theta: [], alpha: [], beta: [], gamma: []}, means={delta: [], theta: [], alpha: [], beta: [], gamma: []}){
+	newCoord(x,y,z, times=[], amplitudes=[], slices= {delta: [], theta: [], alpha: [], beta: [], lowgamma: [], highgamma: []}, means={delta: [], theta: [], alpha: [], beta: [], lowgamma:[], highgamma: []}){
 		return {x: x, y:y, z:z, times:times, amplitudes:amplitudes, slices:slices, means:means};
 	}
 
@@ -374,38 +374,42 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	makeAtlas10_20(){
 		// 19 channel coordinate space spaghetti primitive. 
 		// Based on MNI atlas. 
-		return {shared: {sps: this.sps, bandPassWindow:[], bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], gamma:[[],[]]} //x axis values and indices for named EEG frequency bands
+		var freqBins = {scp: [], delta: [], theta: [], alpha: [], beta: [], lowgamma: [], highgamma: []}
+
+		return {shared: {sps: this.sps, bandPassWindow:[], bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], lowgamma:[[],[]], highgamma:[[],[]]} //x axis values and indices for named EEG frequency bands
 		}, map:[
-			{tag:"Fp1", data: { x: -21.5, y: 70.2,   z: -0.1,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"Fp2", data: { x: 28.4,  y: 69.1,   z: -0.4,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"Fz",  data: { x: 0.6,   y: 40.9,   z: 53.9,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"F3",  data: { x: -35.5, y: 49.4,   z: 32.4,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"F4",  data: { x: 40.2,  y: 47.6,   z: 32.1,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"F7",  data: { x: -54.8, y: 33.9,   z: -3.5,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"F8",  data: { x: 56.6,  y: 30.8,   z: -4.1,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},  
-			{tag:"Cz",  data: { x: 0.8,   y: -14.7,  z: 73.9,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"C3",  data: { x: -52.2, y: -16.4,  z: 57.8,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"C4",  data: { x: 54.1,  y: -18.0,  z: 57.5,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}}, 
-			{tag:"T3",  data: { x: -70.2, y: -21.3,  z: -10.7, times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"T4",  data: { x: 71.9,  y: -25.2,  z: -8.2,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"Pz",  data: { x: 0.2,   y: -62.1,  z: 64.5,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"P3",  data: { x: -39.5, y: -76.3,  z: 47.4,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}}, 
-			{tag:"P4",  data: { x: 36.8,  y: -74.9,  z: 49.2,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"T5",  data: { x: -61.5, y: -65.3,  z: 1.1,   times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"T6",  data: { x: 59.3,  y: -67.6,  z: 3.8,   times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"O1",  data: { x: -26.8, y: -100.2, z: 12.8,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}},
-			{tag:"O2",  data: { x: 24.1,  y: -100.5, z: 14.1,  times: [], amplitudes: [], slices: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}} 
+			{tag:"Fp1", data: { x: -21.5, y: 70.2,   z: -0.1,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"Fp2", data: { x: 28.4,  y: 69.1,   z: -0.4,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"Fz",  data: { x: 0.6,   y: 40.9,   z: 53.9,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"F3",  data: { x: -35.5, y: 49.4,   z: 32.4,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"F4",  data: { x: 40.2,  y: 47.6,   z: 32.1,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"F7",  data: { x: -54.8, y: 33.9,   z: -3.5,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"F8",  data: { x: 56.6,  y: 30.8,   z: -4.1,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},  
+			{tag:"Cz",  data: { x: 0.8,   y: -14.7,  z: 73.9,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"C3",  data: { x: -52.2, y: -16.4,  z: 57.8,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"C4",  data: { x: 54.1,  y: -18.0,  z: 57.5,  times: [], amplitudes: [], slices: freqBins, means: freqBins}}, 
+			{tag:"T3",  data: { x: -70.2, y: -21.3,  z: -10.7, times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"T4",  data: { x: 71.9,  y: -25.2,  z: -8.2,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"Pz",  data: { x: 0.2,   y: -62.1,  z: 64.5,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"P3",  data: { x: -39.5, y: -76.3,  z: 47.4,  times: [], amplitudes: [], slices: freqBins, means: freqBins}}, 
+			{tag:"P4",  data: { x: 36.8,  y: -74.9,  z: 49.2,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"T5",  data: { x: -61.5, y: -65.3,  z: 1.1,   times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"T6",  data: { x: 59.3,  y: -67.6,  z: 3.8,   times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"O1",  data: { x: -26.8, y: -100.2, z: 12.8,  times: [], amplitudes: [], slices: freqBins, means: freqBins}},
+			{tag:"O2",  data: { x: 24.1,  y: -100.5, z: 14.1,  times: [], amplitudes: [], slices: freqBins, means: freqBins}}
 		]};
 
 	}
 
 	genCoherenceMap(channelTags) {
-		var coherenceMap = {shared:{bandPassWindow:[],bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], gamma:[[],[]]}},map:[]};
+		var coherenceMap = {shared:{bandPassWindow:[],bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], lowgamma:[[],[]], highgamma:[[],[]]}},map:[]};
 		var l = 1, k = 0;
+		var freqBins = {scp: [], delta: [], theta: [], alpha: [], beta: [], lowgamma: [], highgamma: []}
+
 		for( var i = 0; i < (channelTags.length*(channelTags.length + 1)/2)-channelTags.length; i++){
 			var coord0 = this.getAtlasCoordByTag(channelTags[k].tag);
 			var coord1 = this.getAtlasCoordByTag(channelTags[k+l].tag);
-			coherenceMap.map.push({tag:channelTags[k].tag+":"+channelTags[l+k].tag, data:{x0:coord0.data.x,y0:coord0.data.y,z0:coord0.data.z,x1:coord1.data.x,y1:coord1.data.y,z1:coord1.data.z, amplitudes:[], slices:{scp:[], delta:[],theta:[],alpha:[],beta:[],gamma:[]}, means: {scp: [], delta: [], theta: [], alpha: [], beta: [], gamma: []}}});
+			coherenceMap.map.push({tag:channelTags[k].tag+":"+channelTags[l+k].tag, data:{x0:coord0.data.x,y0:coord0.data.y,z0:coord0.data.z,x1:coord1.data.x,y1:coord1.data.y,z1:coord1.data.z, amplitudes:[], slices: freqBins, means: freqBins}});
 			l++;
 			if(l+k === channelTags.length){
 				k++;
@@ -429,7 +433,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	}
 
 	getBandFreqs(bandPassWindow) {//Returns an object with the frequencies and indices associated with the bandpass window (for processing the FFT results)
-		var scpFreqs = [[],[]], deltaFreqs = [[],[]], thetaFreqs = [[],[]], alphaFreqs = [[],[]], betaFreqs = [[],[]], gammaFreqs = [[],[]]; //x axis values and indices for named EEG frequency bands
+		var scpFreqs = [[],[]], deltaFreqs = [[],[]], thetaFreqs = [[],[]], alphaFreqs = [[],[]], betaFreqs = [[],[]], lowgammaFreqs = [[],[]], highgammaFreqs = [[],[]]; //x axis values and indices for named EEG frequency bands
 		bandPassWindow.forEach((item,idx) => {
 			if((item >= 0.1) && (item <= 1)){
 				scpFreqs[0].push(item); scpFreqs[1].push(idx);
@@ -446,11 +450,14 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			else if((item > 12) && (item <= 35)){
 				betaFreqs[0].push(item); betaFreqs[1].push(idx);
 			}
-			else if(item > 35) {
-				gammaFreqs[0].push(item); gammaFreqs[1].push(idx);
+			else if((item > 35) && (item <= 48)) {
+				lowgammaFreqs[0].push(item); lowgammaFreqs[1].push(idx);
+			}
+			else if(item > 48) {
+				highgammaFreqs[0].push(item); highgammaFreqs[1].push(idx);
 			}
 		});
-		return {scp: scpFreqs, delta: deltaFreqs, theta: thetaFreqs, alpha: alphaFreqs, beta: betaFreqs, gamma: gammaFreqs}
+		return {scp: scpFreqs, delta: deltaFreqs, theta: thetaFreqs, alpha: alphaFreqs, beta: betaFreqs, lowgamma: lowgammaFreqs, highgamma: highgammaFreqs}
 	}
 
 }

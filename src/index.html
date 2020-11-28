@@ -67,12 +67,13 @@
       <tr><td><h3>Brain Map (see "atlas" in the console and set corresponding channel tags (see "channelTags")) | </h3></td>
       <td><h4>Viewing:</h4></td>
       <td><select id="bandview">
-        <option value="scp">SCP</option>
-        <option value="delta">Delta</option>
-        <option value="theta">Theta</option>
-        <option value="alpha" selected="selected">Alpha</option>
-        <option value="beta">Beta</option>
-        <option value="gamma">Gamma</option>
+        <option value="scp">SCP (0.1Hz-1Hz)</option>
+        <option value="delta">Delta (1Hz-4Hz)</option>
+        <option value="theta">Theta (4Hz-8Hz)</option>
+        <option value="alpha" selected="selected">Alpha (8Hz-12Hz)</option>
+        <option value="beta">Beta (12Hz-35Hz)</option>
+        <option value="lowgamma">Low Gamma (35Hz-48Hz)</option>
+        <option value="highgamma">High Gamma (48Hz+)</option>
       </select></td></tr>
     </table>
     <canvas id="brainmap"></canvas>
