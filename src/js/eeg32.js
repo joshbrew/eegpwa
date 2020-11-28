@@ -374,7 +374,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	makeAtlas10_20(){
 		// 19 channel coordinate space spaghetti primitive. 
 		// Based on MNI atlas. 
-		var freqBins = {scp: [], delta: [], theta: [], alpha: [], beta: [], lowgamma: [], highgamma: []}
+		var freqBins = {scp: [], delta: [], theta: [], alpha: [], beta: [], lowgamma: [], highgamma: []};
 
 		return {shared: {sps: this.sps, bandPassWindow:[], bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], lowgamma:[[],[]], highgamma:[[],[]]} //x axis values and indices for named EEG frequency bands
 		}, map:[

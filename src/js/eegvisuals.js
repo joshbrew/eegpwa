@@ -80,12 +80,18 @@ export class SmoothieChartMaker {
 	}
 }
 
-//Lightweight plotter based on uplot.iife.min.js
-//TODO - big vertical chart comparing all channel data 
-//E.g. y-shifted series https://leeoniya.github.io/uPlot/demos/y-shifted-series.html
-//Other examples to draw from: https://leeoniya.github.io/uPlot/demos/resize.html
-// https://leeoniya.github.io/uPlot/demos/draw-hooks.html
-// https://leeoniya.github.io/uPlot/demos/latency-heatmap.html
+
+
+
+
+
+
+
+
+
+
+
+
 export class uPlotMaker {
 	constructor(canvasId = null) {
 		if(uPlot === 'undefined') {
@@ -326,6 +332,16 @@ export class uPlotMaker {
 }
 
 
+
+
+
+
+
+
+
+
+
+
 //heatmap-js based brain mapping with active channel markers (incl assigned ADC input), based on the atlas system in eeg32
 export class brainMap2D {
 	constructor(heatmapCanvasId = null, pointsCanvasId = null) {
@@ -518,12 +534,39 @@ export class brainMap2D {
 }
 
 
+
+
+
+
+
+
+
+
+
+
 //Makes a color coded bar chart to apply frequency bins to for a classic visualization
 export class eegBarChart {
-	constructor(canvasId = null) {
-		this.canvas = canvasId;
+	constructor(canvasId = null, normalizeFactor = 1) {
+		this.canvas = document.getElementById(canvasId);
+		this.ctx = this.canvas.getContext("2d");
 		this.anim = null;
 
+		//push the latest slices to this then call this.draw();
+		this.slices = {scp: [1], delta: [1], theta: [1], alpha: [1], beta: [1], lowgamma: [1], highgamma: [1]};
+		
+		this.allCapsReachBottom = false;
+		this.meterWidth = 14; //relative width of the meters in the spectrum
+		this.meterGap = 2; //relative gap between meters
+		this.capHeight = 2; //relative cap height
+		this.capStyle = '#fff';
+		this.capYPositionArray = []; //store the vertical position of the caps for the previous frame
+		this.capYnormalizeFactor = normalizeFactor;
+
+		this.relativeWidth = this.meterNum*(this.meterWidth+this.meterGap); //Width of the meter (px)
+		
+		this.animationDelay = 15;
+		
+		this.init();
 	}
 
 	deInit() {
@@ -532,47 +575,103 @@ export class eegBarChart {
 	}
 
 	init() {
-		this.anim = requestAnimationFrame(draw);
+		
+		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		this.ctx.fillStyle = "black";
+		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 	}
 
 	draw = () => {
+		var cwidth = this.canvas.width;
+		var cheight = this.canvas.height;
 
-		setTimeout(() => {if(this.anim !== "cancel") this.anim = requestAnimationFrame(draw)},20); // 50 FPS hard limit
+		var nbins = this.slices.scp.length + this.slices.delta.length + this.slices.theta.length + this.slices.alpha.length + this.slices.beta.length + this.slices.lowgamma.length;
+		var combinedbins = [].concat(this.slices.scp,this.slices.delta,this.slices.theta,this.slices.alpha,this.slices.beta,this.slices.lowgamma);
+		
+		var wscale = cwidth / this.relativeWidth;
+		var xoffset = (this.meterWidth+this.meterGap)*wscale;
+		
+		this.canvas.context.clearRect(0, 0, cwidth, cheight);
+		for (var i = 0; i < nbins; i++) {
+			var value = combinedbins[i]*this.capYnormalizeFactor*cheight; // normalized y values
+			if(value < 0){ value = 0;}
+			if (capYPositionArray.length < Math.round(nbins)) {
+				capYPositionArray.push(value);
+			}
+			this.ctx.fillStyle = this.capStyle;
+			//draw the cap, with transition effect
+			if (value < capYPositionArray[i]) {
+				this.ctx.fillRect(i * xoffset, (cheight - (--capYPositionArray[i])), this.meterWidth*wscale, this.capHeight);
+			} else {
+				this.ctx.fillRect(i * xoffset, (cheight - value), this.meterWidth*wscale, this.capHeight);
+				capYPositionArray[i] = value;
+			}
+
+			this.ctx.fillStyle = "white"; 
+			if(i < this.slices.scp.length){
+				this.ctx.fillStyle = "purple"; 
+			} else if(i < this.slices.scp.length+this.slices.theta.length){
+				this.ctx.fillstyle = "violet";
+			} else if(i < this.slices.scp.length+this.slices.theta.length){
+				this.ctx.fillstyle = "blue";
+			} else if(i < this.slices.scp.length+this.slices.theta.length+this.slices.alpha.length){
+				this.ctx.fillstyle = "green";
+			} else if(i < this.slices.scp.length+this.slices.theta.length+this.slices.alpha.length+this.slices.beta.length){
+				this.ctx.fillstyle = "gold";
+			} else if(i < this.slices.scp.length+this.slices.theta.length+this.slices.alpha.length+this.slices.beta.length+this.slices.lowgamma.length){
+				this.ctx.fillstyle = "red";
+			}
+
+			this.ctx.fillRect(i * xoffset /*meterWidth+gap*/ , (cheight - value + this.capHeight), this.meterWidth*wscale, cheight);
+		}
+	}
+
+	animate = () => {
+		this.draw();
+		setTimeout(() => {if(this.anim !== "cancel") this.anim = requestAnimationFrame(this.animate)},this.animationDelay); 
 	}
 }
 
 
+
+
+
+
+
+
+
+
+
+
 export class thetaGamma2Octave {
-	constructor(canvasId = null, normalizeFactor) {
+	constructor(canvasId = null, spectNormalizeFactor, scalingFactor) {
 		this.spect = new Spectrogram(canvasId);
 		this.anim = null;
-		this.spect.normalizeFactor = normalizeFactor;
+		this.spect.normalizeFactor = spectNormalizeFactor;
+		this.adcScalingFactor = scalingFactor;
 
-		this.audioctx = new SoundJS();
+		this.audio = null;
+		try{ this.makeAudioCtx(); }
+		catch(err){ console.log(err); }
 	}
 
-	deInit() {
-		cancelAnimationFrame(anim);
-		this.anim = "cancel";
+	makeAudioCtx() {
+		this.audio = new SoundJS();
 	}
 
-	init() {
-		this.anim = requestAnimationFrame(draw);
-	}
-
-	getBandPowers(channelTags,atlas,scalingFactor) {
+	getBandPowers(channelTags,atlas) {
 
 		channelTags.forEach((row,i) => {
 			atlas.map.forEach((o,j) => {
 				if(o.tag === row.tag) {
-					var thetaMax = Math.max(...o.data.slices.theta[o.data.slices.theta.length-1])*scalingFactor;
-					var gammaMax = Math.max(...o.data.slices.lowgamma[o.data.slices.lowgamma.length-1])*scalingFactor;
+					var thetaMax = Math.max(...o.data.slices.theta[o.data.slices.theta.length-1])*this.adcScalingFactor;
+					var gammaMax = Math.max(...o.data.slices.lowgamma[o.data.slices.lowgamma.length-1])*this.adcScalingFactor;
 					gammaMaxidx = o.data.slices.lowgamma.indexOf(gammaMax);
 					gammaFreq = atlas.shared.bandFreqs.lowgamma[1][gammaMaxidx];
-					if(thetaMax > 0.0001) { //Threshold in Volts
+					if(thetaMax > 0.00005) { //Threshold in Volts
 						this.audioctx.playFreq(450,0.1,'sine');
 					}
-					if(gammaMax > 0.00005) { //Threshold in Volts
+					if((gammaMax > 0.00003) && (thetaMax > 0.000001)) { //Threshold in Volts, only use gamma when theta is over a certain threshold
 						this.audioctx.playFreq(800,0.1,'sine');
 					}
 					return true;
@@ -582,19 +681,37 @@ export class thetaGamma2Octave {
 	}
 
 	updateSpect(array){
+		//var array = new Uint8Array(this.audio.analyser.frequencyBinCount);
+      	//this.audio.analyser.getByteFrequencyData(array);
+
 		this.spect.latestData = array;
 		this.spect.draw();
 	}
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
 export class Spectrogram {
-	constructor(canvasId, peakAmp = 1){
+	constructor(canvasId, peakAmp = 1, height, width){
 		this.canvas = document.getElementById(canvasId);
 		this.ctx = this.canvas.getContext("2d");
+		
+		this.canvas.height = height;
+		this.canvas.width = width;
+
 		this.anim = null;
 
-		//Chromajs generated color scale from: https://gka.github.io/palettes/
+		//Chromajs generated color scale from: https://vis4.net/labs/multihue/
 		this.colorScale = ['#000000', '#030106', '#06010c', '#090211', '#0c0215', '#0e0318', '#10031b', '#12041f', '#130522', '#140525', '#150628', '#15072c', '#16082f', '#160832', '#160936', '#160939', '#17093d', '#170a40', '#170a44', '#170a48', '#17094b', '#17094f', '#170953', '#170956', '#16085a', '#16085e', '#150762', '#140766', '#140669', '#13066d', '#110571', '#100475', '#0e0479', '#0b037d', '#080281', '#050185', '#020089', '#00008d', '#000090', '#000093', '#000096', '#000099', '#00009c', '#00009f', '#0000a2', '#0000a5', '#0000a8', '#0000ab', '#0000ae', '#0000b2', '#0000b5', '#0000b8', '#0000bb', '#0000be', '#0000c1', '#0000c5', '#0000c8', '#0000cb', '#0000ce', '#0000d1', '#0000d5', '#0000d8', '#0000db', '#0000de', '#0000e2', '#0000e5', '#0000e8', '#0000ec', '#0000ef', '#0000f2', '#0000f5', '#0000f9', '#0000fc', '#0803fe', '#2615f9', '#3520f4', '#3f29ef', '#4830eb', '#4e37e6', '#543ee1', '#5944dc', '#5e49d7', '#614fd2', '#6554cd', '#6759c8', '#6a5ec3', '#6c63be', '#6e68b9', '#6f6db4', '#7072af', '#7177aa', '#717ba5', '#7180a0', '#71859b', '#718996', '#708e91', '#6f928b', '#6e9786', '#6c9b80', '#6aa07b', '#68a475', '#65a96f', '#62ad69', '#5eb163', '#5ab65d', '#55ba56', '#4fbf4f', '#48c347', '#40c73f', '#36cc35', '#34ce32', '#37cf31', '#3ad130', '#3cd230', '#3fd32f', '#41d52f', '#44d62e', '#46d72d', '#48d92c', '#4bda2c', '#4ddc2b', '#4fdd2a', '#51de29', '#53e029', '#55e128', '#58e227', '#5ae426', '#5ce525', '#5ee624', '#60e823', '#62e922', '#64eb20', '#66ec1f', '#67ed1e', '#69ef1d', '#6bf01b', '#6df11a', '#6ff318', '#71f416', '#73f614', '#75f712', '#76f810', '#78fa0d', '#7afb0a', '#7cfd06', '#7efe03', '#80ff00', '#85ff00', '#89ff00', '#8eff00', '#92ff00', '#96ff00', '#9aff00', '#9eff00', '#a2ff00', '#a6ff00', '#aaff00', '#adff00', '#b1ff00', '#b5ff00', '#b8ff00', '#bcff00', '#bfff00', '#c3ff00', '#c6ff00', '#c9ff00', '#cdff00', '#d0ff00', '#d3ff00', '#d6ff00', '#daff00', '#ddff00', '#e0ff00', '#e3ff00', '#e6ff00', '#e9ff00', '#ecff00', '#efff00', '#f3ff00', '#f6ff00', '#f9ff00', '#fcff00', '#ffff00', '#fffb00', '#fff600', '#fff100', '#ffec00', '#ffe700', '#ffe200', '#ffdd00', '#ffd800', '#ffd300', '#ffcd00', '#ffc800', '#ffc300', '#ffbe00', '#ffb900', '#ffb300', '#ffae00', '#ffa900', '#ffa300', '#ff9e00', '#ff9800', '#ff9300', '#ff8d00', '#ff8700', '#ff8100', '#ff7b00', '#ff7500', '#ff6f00', '#ff6800', '#ff6100', '#ff5a00', '#ff5200', '#ff4900', '#ff4000', '#ff3600', '#ff2800', '#ff1500', '#ff0004', '#ff000c', '#ff0013', '#ff0019', '#ff001e', '#ff0023', '#ff0027', '#ff002b', '#ff012f', '#ff0133', '#ff0137', '#ff013b', '#ff023e', '#ff0242', '#ff0246', '#ff0349', '#ff034d', '#ff0450', '#ff0454', '#ff0557', '#ff065b', '#ff065e', '#ff0762', '#ff0865', '#ff0969', '#ff0a6c', '#ff0a70', '#ff0b73', '#ff0c77', '#ff0d7a', '#ff0e7e', '#ff0f81', '#ff1085', '#ff1188', '#ff128c', '#ff138f', '#ff1493'];
 		this.latestData = [];
 		this.animationDelay = 15;
@@ -622,6 +739,11 @@ export class Spectrogram {
 		newData[fitCount - 1] = data[data.length - 1]; // for new allocation
 		return newData;
 	};
+
+	deInit() {
+		cancelAnimationFrame(this.anim);
+		this.anim = "cancel";
+	}
 
 	init() {
 		this.ctx.fillStyle = "black";
@@ -665,9 +787,22 @@ export class Spectrogram {
 
 	animate = () => { 
 		this.draw();
-		setTimeout(()=>{this.anim = requestAnimationFrame(this.animate);},this.animationDelay);
+		setTimeout(()=>{if(this.anim !== "cancel") {this.anim = requestAnimationFrame(this.animate);}},this.animationDelay);
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
