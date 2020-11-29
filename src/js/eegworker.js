@@ -44,9 +44,9 @@ onmessage = (e) => {
       var dfts;
       
       dfts = gpu.MultiChannelDFT_Bandpass(buffer, e.data.input[1], e.data.input[2], e.data.input[3]);
-  
-      const cordfts = dfts[1].splice(e.data.input[0].length, dfts[1].length-e.data.input[0].length);
-
+      
+      const cordfts = dfts[1].splice(e.data.input[0].length, buffer.length-e.data.input[0].length);
+      
       const coherenceResults = []; 
       const nChannels = e.data.input[0].length;
       

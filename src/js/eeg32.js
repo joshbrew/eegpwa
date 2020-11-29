@@ -123,8 +123,8 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	}
 
 	async onPortSelected(port,baud) {
-		try {await port.open({ baudRate: baud, bufferSize: 200000 });} //API inconsistency in syntax between linux and windows
-		catch {await port.open({ baudrate: baud, buffersize: 200000 });}
+		try {await port.open({ baudRate: baud, bufferSize: 20000 });} //API inconsistency in syntax between linux and windows
+		catch {await port.open({ baudrate: baud, buffersize: 20000 });}
 		this.onConnectedCallback();
 		this.subscribe(port);//this.subscribeSafe(port);
 	}

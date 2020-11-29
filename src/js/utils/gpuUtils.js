@@ -122,7 +122,7 @@ export class gpuUtils {
     var freqEnd_nyquist = freqEnd*2;
     var nSamplesPerChannel = signalBuffer[0].length;
     var sampleRate = nSamplesPerChannel/nSeconds
-
+    
     this.listdft1D_windowed.setOutput([signalBufferProcessed.length]); //Set output to length of list of signals
     this.listdft1D_windowed.setLoopMaxIterations(nSamplesPerChannel); //Set loop size to the length of one signal (assuming all are uniform length)
         
