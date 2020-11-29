@@ -771,7 +771,7 @@ function testCoherence(){
 
 
 
-  setTimeout(()=>{testGPU(); setTimeout(()=>{testCoherence();},500)},1000); //Need to delay this call since app.js is made before the worker script is made
+//setTimeout(()=>{testGPU(); setTimeout(()=>{testCoherence();},500)},1000); //Need to delay this call since app.js is made before the worker script is made
 
 
 
