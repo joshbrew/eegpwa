@@ -111,7 +111,6 @@ export class gpuUtils {
       
   //Input buffer of signals [[channel 0],[channel 1],...,[channel n]] with the same number of samples for each signal. Returns arrays of the positive DFT results in the given window.
   MultiChannelDFT_Bandpass(signalBuffer,nSeconds,freqStart,freqEnd, texOut = false) {
-    
 
     var signalBufferProcessed = [];
       
@@ -119,7 +118,6 @@ export class gpuUtils {
       signalBufferProcessed.push(...row);
     });
     //console.log(signalBufferProcessed);
-  
 
     var freqEnd_nyquist = freqEnd*2;
     var nSamplesPerChannel = signalBuffer[0].length;
@@ -137,6 +135,7 @@ export class gpuUtils {
     //TODO: Optimize for SPEEEEEEED.. or just pass it str8 to a shader
     var freqDist = this.bandPassWindow(freqStart,freqEnd,sampleRate);
     return [freqDist, this.orderBPMagnitudes(signalBufferProcessed,nSeconds,sampleRate,nSamplesPerChannel)]; //Returns x (frequencies) and y axis (magnitudes)
+  
   }
 
   orderMagnitudes(unorderedMags){

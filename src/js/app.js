@@ -10,7 +10,7 @@ if(!navigator.serial)
 try { window.EEG = new eeg32(); }
 catch (error) { alert("eeg32.js err: ", error) }
 
-var gfx = new GPU()
+var gfx = new GPU();
 
 try { window.gpu = new gpuUtils(gfx); }
 catch (err) { alert("gpu.js utils error: ", err); }

@@ -52,17 +52,27 @@ function mean(arr, len) {
     return mean/len;
 }
 
-function estimator(arr, mean, len) {
+function mse(arr, mean, len) { //mean squared error
     var est = 0;
     var vari = 0;
     for (var i = 0; i < len; i++) {
         vari = arr[i]-mean;
         est += vari*vari;
     }
-    return Math.sqrt(est);
+    return est/len;
 }
 
-function xcor(arr1, arr1mean, arr1Est, arr2buf, arr2mean, arr2Est, len, delay) {
+function rms(arr, mean, len) { //root mean square error
+    var est = 0;
+    var vari = 0;
+    for (var i = 0; i < len; i++) {
+        vari = arr[i]-mean;
+        est += vari*vari;
+    }
+    return Math.sqrt(est/len);
+}
+
+function xcor(arr1, arr1mean, arr1Est, arr2buf, arr2mean, arr2Est, len, delay) { //performs a single pass of a cross correlation equation, see correlogramsKern
     var correlation = 0;
     for (var i = 0; i < len; i++) {
         correlation += (arr1[i]-arr1mean)*(arr2buf[i+delay]-arr2mean);
@@ -98,7 +108,7 @@ function DFT(signal, len, freq){ //Extract a particular frequency
     return [real*_len,imag*_len]; //mag(real,imag)
 }
 
-//Conjugated real and imaginary parts for iDFT
+//Conjugated real and imaginary parts for iDFT (need to test still)
 function iDFT(amplitudes, len, freq){ //inverse DFT to return time domain
     var real = 0;
     var imag = 0;
@@ -136,7 +146,12 @@ function iDFTlist(amplitudes,len,freq,n){ //inverse DFT to return time domain
 //------------------------------------
 
 
-function correlogramsKern(arrays, len) {
+function correlogramsKern(arrays, means, estimators, n, len) {
+
+    var result;
+    var j = Math.floor(this.thread.x / len);
+    
+
     return this.thread.x;
 }
 
@@ -206,6 +221,6 @@ export const createGpuKernels = {
 export const addGpuFunctions = [
     add, sub, mul, div, cadd, csub,
     cmul, cexp, mag, conj, lof, mean,
-    estimator, xcor, DFTlist, DFT,
+    mse, rms, xcor, DFTlist, DFT,
     iDFT, iDFTlist
 ];
