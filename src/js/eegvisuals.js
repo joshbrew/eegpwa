@@ -294,7 +294,7 @@ export class uPlotMaker {
 		}
 		else { uPlotOptions = options; }
 
-		if(this.plot !== null) { this.plot.destroy();}
+		if(this.plot !== null) { this.plot.destroy(); }
 		this.plot = new uPlot(uPlotOptions, uPlotData, document.getElementById(this.canvasId));
 		
 	}

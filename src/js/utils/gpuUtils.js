@@ -112,6 +112,7 @@ export class gpuUtils {
   //Input buffer of signals [[channel 0],[channel 1],...,[channel n]] with the same number of samples for each signal. Returns arrays of the positive DFT results in the given window.
   MultiChannelDFT_Bandpass(signalBuffer,nSeconds,freqStart,freqEnd, texOut = false) {
     
+
     var signalBufferProcessed = [];
       
     signalBuffer.forEach((row) => {
@@ -119,9 +120,10 @@ export class gpuUtils {
     });
     //console.log(signalBufferProcessed);
   
+
     var freqEnd_nyquist = freqEnd*2;
     var nSamplesPerChannel = signalBuffer[0].length;
-    var sampleRate = nSamplesPerChannel/nSeconds
+    var sampleRate = nSamplesPerChannel/nSeconds;
     
     this.listdft1D_windowed.setOutput([signalBufferProcessed.length]); //Set output to length of list of signals
     this.listdft1D_windowed.setLoopMaxIterations(nSamplesPerChannel); //Set loop size to the length of one signal (assuming all are uniform length)
@@ -187,6 +189,7 @@ export class gpuUtils {
 
   //Returns the x axis (frequencies) for the bandpass filter amplitudes
   bandPassWindow(freqStart,freqEnd,sampleRate) {
+ 
     var freqEnd_nyquist = freqEnd*2;
     var fftwindow = [];
       for (var i = 0; i < Math.ceil(0.5*sampleRate); i++){

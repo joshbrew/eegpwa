@@ -179,7 +179,7 @@ function listdft1D_windowedKern(signals, sampleRate, freqStart, freqEnd) { //Wil
       result = DFT(signals,sampleRate,freq);
     } else {
       var n = Math.floor(this.thread.x/sampleRate);
-      var freq = ( ( ( this.thread.x - n * sampleRate ) / sampleRate ) * ( freqEnd - freqStart ) ) + freqStart;
+      var freq = ( ( ( this.thread.x - n * sampleRate) / sampleRate ) * ( freqEnd - freqStart ) ) + freqStart;
       result = DFTlist(signals,sampleRate,freq-n*sampleRate,n);
     }
     //var mags = mag(result[0],result[1]);

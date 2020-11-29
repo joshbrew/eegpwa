@@ -24,7 +24,7 @@ var posFFTList = [];
 var bandPassWindow = gpu.bandPassWindow(freqStart,freqEnd,EEG.sps); // frequencies (x-axis)
 var analyze = false;
 
-var coherenceResults = [bandPassWindow, bandPassWindow];
+var coherenceResults = [];
 
 var graphmode = "FFT"; //"TimeSeries", "Stacked", "Coherence"
 var fdbackmode = "coherence"; //"tg2o"
@@ -92,27 +92,41 @@ var channelBands = (channel,tag) => {
     if(o.tag === tag){
       EEG.atlas.map[i].data.times.push(performance.now());
       EEG.atlas.map[i].data.amplitudes.push(posFFTList[channel]);
-      var scp = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.scp[1][0], EEG.atlas.shared.bandFreqs.scp[1][EEG.atlas.shared.bandFreqs.scp[1].length-1]+1);
-      EEG.atlas.map[i].data.slices.scp.push(scp);
-      EEG.atlas.map[i].data.means.scp.push(eegmath.mean(scp));
-      var delta = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.delta[1][0], EEG.atlas.shared.bandFreqs.delta[1][EEG.atlas.shared.bandFreqs.delta[1].length-1]+1);
-      EEG.atlas.map[i].data.slices.delta.push(delta);
-      EEG.atlas.map[i].data.means.delta.push(eegmath.mean(delta));
-      var theta = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.theta[1][0], EEG.atlas.shared.bandFreqs.theta[1][EEG.atlas.shared.bandFreqs.theta[1].length-1]+1);
-      EEG.atlas.map[i].data.slices.theta.push(theta);
-      EEG.atlas.map[i].data.means.theta.push(eegmath.mean(theta));
-      var alpha = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.alpha[1][0], EEG.atlas.shared.bandFreqs.alpha[1][EEG.atlas.shared.bandFreqs.alpha[1].length-1]+1);
-      EEG.atlas.map[i].data.slices.alpha.push(alpha);
-      EEG.atlas.map[i].data.means.alpha.push(eegmath.mean(alpha));
-      var beta  = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.beta[1][0],  EEG.atlas.shared.bandFreqs.beta[1][EEG.atlas.shared.bandFreqs.beta[1].length-1]+1);
-      EEG.atlas.map[i].data.slices.beta.push(beta);
-      EEG.atlas.map[i].data.means.beta.push(eegmath.mean(beta));
-      var lowgamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.lowgamma[1][0], EEG.atlas.shared.bandFreqs.lowgamma[1][EEG.atlas.shared.bandFreqs.lowgamma[1].length-1]+1);
-      EEG.atlas.map[i].data.slices.lowgamma.push(lowgamma);
-      EEG.atlas.map[i].data.means.lowgamma.push(eegmath.mean(lowgamma));
-      var highgamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.highgamma[1][0], EEG.atlas.shared.bandFreqs.highgamma[1][EEG.atlas.shared.bandFreqs.highgamma[1].length-1]+1);
-      EEG.atlas.map[i].data.slices.highgamma.push(highgamma);
-      EEG.atlas.map[i].data.means.highgamma.push(eegmath.mean(highgamma));
+      if(EEG.atlas.shared.bandFreqs.scp[1].length > 0){
+        var scp = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.scp[1][0], EEG.atlas.shared.bandFreqs.scp[1][EEG.atlas.shared.bandFreqs.scp[1].length-1]+1);
+        EEG.atlas.map[i].data.slices.scp.push(scp);
+        EEG.atlas.map[i].data.means.scp.push(eegmath.mean(scp));
+      }
+      if(EEG.atlas.shared.bandFreqs.scp[1].length > 0){
+        var delta = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.delta[1][0], EEG.atlas.shared.bandFreqs.delta[1][EEG.atlas.shared.bandFreqs.delta[1].length-1]+1);
+        EEG.atlas.map[i].data.slices.delta.push(delta);
+        EEG.atlas.map[i].data.means.delta.push(eegmath.mean(delta));
+      }
+      if(EEG.atlas.shared.bandFreqs.theta[1].length > 0){
+        var theta = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.theta[1][0], EEG.atlas.shared.bandFreqs.theta[1][EEG.atlas.shared.bandFreqs.theta[1].length-1]+1);
+        EEG.atlas.map[i].data.slices.theta.push(theta);
+        EEG.atlas.map[i].data.means.theta.push(eegmath.mean(theta));
+      }
+      if(EEG.atlas.shared.bandFreqs.alpha[1].length > 0){
+        var alpha = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.alpha[1][0], EEG.atlas.shared.bandFreqs.alpha[1][EEG.atlas.shared.bandFreqs.alpha[1].length-1]+1);
+        EEG.atlas.map[i].data.slices.alpha.push(alpha);
+        EEG.atlas.map[i].data.means.alpha.push(eegmath.mean(alpha));
+      }
+      if(EEG.atlas.shared.bandFreqs.beta[1].length > 0){
+        var beta  = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.beta[1][0],  EEG.atlas.shared.bandFreqs.beta[1][EEG.atlas.shared.bandFreqs.beta[1].length-1]+1);
+        EEG.atlas.map[i].data.slices.beta.push(beta);
+        EEG.atlas.map[i].data.means.beta.push(eegmath.mean(beta));
+      }
+      if(EEG.atlas.shared.bandFreqs.lowgamma[1].length > 0){ 
+        var lowgamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.lowgamma[1][0], EEG.atlas.shared.bandFreqs.lowgamma[1][EEG.atlas.shared.bandFreqs.lowgamma[1].length-1]+1);
+        EEG.atlas.map[i].data.slices.lowgamma.push(lowgamma);
+        EEG.atlas.map[i].data.means.lowgamma.push(eegmath.mean(lowgamma));
+      }
+      if(EEG.atlas.shared.bandFreqs.highgamma[1].length > 0){
+        var highgamma = posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.highgamma[1][0], EEG.atlas.shared.bandFreqs.highgamma[1][EEG.atlas.shared.bandFreqs.highgamma[1].length-1]+1);
+        EEG.atlas.map[i].data.slices.highgamma.push(highgamma);
+        EEG.atlas.map[i].data.means.highgamma.push(eegmath.mean(highgamma));
+      }
       //console.timeEnd("slicing bands");
       return true;
     }
@@ -122,27 +136,42 @@ var channelBands = (channel,tag) => {
 var mapCoherenceData = () => {
   coherenceResults.forEach((row,i) => {
     EEG.coherenceMap.map[i].data.amplitudes.push(row);
+  
+  if(EEG.coherenceMap.shared.bandFreqs.scp[1].length > 0){
     var scp = row.slice( EEG.coherenceMap.shared.bandFreqs.scp[1][0], EEG.coherenceMap.shared.bandFreqs.scp[1][EEG.coherenceMap.shared.bandFreqs.scp[1].length-1]+1);
     EEG.coherenceMap.map[i].data.slices.scp.push(scp);
     EEG.coherenceMap.map[i].data.means.scp.push(eegmath.mean(scp));
+  }
+  if(EEG.coherenceMap.shared.bandFreqs.delta[1].length > 0){
     var delta = row.slice( EEG.coherenceMap.shared.bandFreqs.delta[1][0], EEG.coherenceMap.shared.bandFreqs.delta[1][EEG.coherenceMap.shared.bandFreqs.delta[1].length-1]+1);
     EEG.coherenceMap.map[i].data.slices.delta.push(delta);
     EEG.coherenceMap.map[i].data.means.delta.push(eegmath.mean(delta));
+  }
+  if(EEG.coherenceMap.shared.bandFreqs.theta[1].length > 0){
     var theta = row.slice( EEG.coherenceMap.shared.bandFreqs.theta[1][0], EEG.coherenceMap.shared.bandFreqs.theta[1][EEG.coherenceMap.shared.bandFreqs.theta[1].length-1]+1);
     EEG.coherenceMap.map[i].data.slices.theta.push(theta);
     EEG.coherenceMap.map[i].data.means.theta.push(eegmath.mean(theta));
+  }
+  if(EEG.coherenceMap.shared.bandFreqs.alpha[1].length > 0){
     var alpha = row.slice( EEG.coherenceMap.shared.bandFreqs.alpha[1][0], EEG.coherenceMap.shared.bandFreqs.alpha[1][EEG.coherenceMap.shared.bandFreqs.alpha[1].length-1]+1);
     EEG.coherenceMap.map[i].data.slices.alpha.push(alpha);
     EEG.coherenceMap.map[i].data.means.alpha.push(eegmath.mean(alpha));
+  }
+  if(EEG.coherenceMap.shared.bandFreqs.beta[1].length > 0){
     var beta  = row.slice( EEG.coherenceMap.shared.bandFreqs.beta[1][0],  EEG.coherenceMap.shared.bandFreqs.beta[1][EEG.coherenceMap.shared.bandFreqs.beta[1].length-1]+1);
     EEG.coherenceMap.map[i].data.slices.beta.push(beta);
     EEG.coherenceMap.map[i].data.means.beta.push(eegmath.mean(beta));
+  }
+  if(EEG.coherenceMap.shared.bandFreqs.lowgamma[1].length > 0){
     var lowgamma = row.slice( EEG.coherenceMap.shared.bandFreqs.lowgamma[1][0], EEG.coherenceMap.shared.bandFreqs.lowgamma[1][EEG.coherenceMap.shared.bandFreqs.lowgamma[1].length-1]+1);
     EEG.coherenceMap.map[i].data.slices.lowgamma.push(lowgamma);
     EEG.coherenceMap.map[i].data.means.lowgamma.push(eegmath.mean(lowgamma));
+  }
+  if(EEG.coherenceMap.shared.bandFreqs.highgamma[1].length > 0){
     var highgamma = row.slice( EEG.coherenceMap.shared.bandFreqs.highgamma[1][0], EEG.coherenceMap.shared.bandFreqs.highgamma[1][EEG.coherenceMap.shared.bandFreqs.highgamma[1].length-1]+1);
     EEG.coherenceMap.map[i].data.slices.highgamma.push(highgamma);
     EEG.coherenceMap.map[i].data.means.highgamma.push(eegmath.mean(highgamma));
+  }
   });
 }
 
@@ -244,7 +273,7 @@ var updateVisuals = () => { //TODO: adjust visuals based on expected voltages to
 
   //console.log(uPlotData)
   if(graphmode === "Stacked"){
-    uplotter.makeStackeduPlot(undefined,uPlotData,undefined,channelTags);
+    uplotter.makeStackeduPlot(undefined,uPlotData,undefined,EEG.channelTags);
   }
   else {
     uplotter.plot.setData(uPlotData);
@@ -558,7 +587,8 @@ document.getElementById("bandview").onchange = () => {
 
 document.getElementById("graphmode").onclick = () => {
   if(graphmode === "TimeSeries") {
-    graphmode = "Stacked";
+    //graphmode = "Stacked";
+    graphmode = "Coherence";
   }
   else if(graphmode === "Stacked"){
     graphmode = "Coherence";
@@ -771,7 +801,7 @@ function testCoherence(){
 
 
 
-//setTimeout(()=>{testGPU(); setTimeout(()=>{testCoherence();},500)},1000); //Need to delay this call since app.js is made before the worker script is made
+setTimeout(()=>{setTimeout(()=>{testCoherence();},500)},1000); //Need to delay this call since app.js is made before the worker script is made
 
 
 
