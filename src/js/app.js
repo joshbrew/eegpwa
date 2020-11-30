@@ -35,6 +35,9 @@ var nSecAdcGraph = 10; //number of seconds to show on the raw signal graph
 var newMsg = true; //true if new message from worker
 var anim = null;
 
+var vscale = EEG.vref*EEG.stepSize; //ADC to volts
+var stepsPeruV = 0.000001 / vscale; //steps per microvolt
+
 EEG.channelTags = [
   {ch: 5, tag: "T3", viewing: true},
   {ch: 25, tag: "T4", viewing: true}
@@ -235,72 +238,72 @@ function coherence(data, nSec, freqStart, freqEnd) {
 //----------- UPDATE VISUALS ------------
 //---------------------------------------
 
-var updateVisuals = () => { //TODO: adjust visuals based on expected voltages to make it generically applicable
+var updateuPlot = () => {
 
-    //uPlot
     if(graphmode === "FFT"){
 
-      //Animate plot(s)
-      uPlotData = [
-          bandPassWindow
-      ];
-
-      EEG.channelTags.forEach((row,i) => {
-          if(row.viewing === true) {
-              uPlotData.push(posFFTList[i]);
-          }
-      });
-
-  }
-
-  else if ((graphmode === "TimeSeries") || (graphmode === "Stacked")) {
-      var nsamples = Math.floor(EEG.sps*nSecAdcGraph);
-
-      uPlotData = [
-          EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
-      ];
-
-      EEG.channelTags.forEach((row,i) => {
-          if(row.viewing === true) {
-              uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
-          }
-      });
-  }
-
-  else if (graphmode === "Coherence") {
-      uPlotData = [bandPassWindow,...coherenceResults];
-  }
-
-  //console.log(uPlotData)
-  if(graphmode === "Stacked"){
-    uplotter.makeStackeduPlot(undefined,uPlotData,undefined,EEG.channelTags);
-  }
-  else {
-    uplotter.plot.setData(uPlotData);
-  }
-
-  //---------------------------------------------------------------
-
-  //Smoothie charts
-  EEG.channelTags.forEach((row,i) => {
-    var coord = EEG.getAtlasCoordByTag(row.tag);
-    if(i===0) {
-      smoothie1.bulkAppend([
-        Math.max(...coord.data.slices.delta[coord.data.slices.delta.length-1]),
-        Math.max(...coord.data.slices.theta[coord.data.slices.theta.length-1]),
-        Math.max(...coord.data.slices.alpha[coord.data.slices.alpha.length-1]),
-        Math.max(...coord.data.slices.beta[coord.data.slices.beta.length-1]),
-        Math.max(...coord.data.slices.lowgamma[coord.data.slices.lowgamma.length-1])
-      ]);
+        //Animate plot(s)
+        uPlotData = [
+            bandPassWindow
+        ];
+  
+        EEG.channelTags.forEach((row,i) => {
+            if(row.viewing === true) {
+                uPlotData.push(posFFTList[i]);
+            }
+        });
+  
     }
-    if(i < smoothie2.series.length - 1){
-      smoothie2.series[i].append(Date.now(), Math.max(...coord.data.slices.delta[coord.data.slices.delta.length-1]));
+  
+    else if ((graphmode === "TimeSeries") || (graphmode === "Stacked")) {
+        var nsamples = Math.floor(EEG.sps*nSecAdcGraph);
+  
+        uPlotData = [
+            EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
+        ];
+  
+        EEG.channelTags.forEach((row,i) => {
+            if(row.viewing === true) {
+                uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
+            }
+        });
     }
-  });
+  
+    else if (graphmode === "Coherence") {
+        uPlotData = [bandPassWindow,...coherenceResults];
+    }
+  
+    //console.log(uPlotData)
+    if(graphmode === "Stacked"){
+      uplotter.makeStackeduPlot(undefined,uPlotData,undefined,EEG.channelTags);
+    }
+    else {
+      uplotter.plot.setData(uPlotData);
+    }
 
-  //-----------------------------------------------------------------
+}
 
-  //Brainmap
+var updateSmoothieCharts = () => {
+    //Smoothie charts
+    EEG.channelTags.forEach((row,i) => {
+      var coord = EEG.getAtlasCoordByTag(row.tag);
+      if(i===0) {
+        smoothie1.bulkAppend([
+          Math.max(...coord.data.slices.delta[coord.data.slices.delta.length-1]),
+          Math.max(...coord.data.slices.theta[coord.data.slices.theta.length-1]),
+          Math.max(...coord.data.slices.alpha[coord.data.slices.alpha.length-1]),
+          Math.max(...coord.data.slices.beta[coord.data.slices.beta.length-1]),
+          Math.max(...coord.data.slices.lowgamma[coord.data.slices.lowgamma.length-1])
+        ]);
+      }
+      if(i < smoothie2.series.length - 1){
+        smoothie2.series[i].append(Date.now(), Math.max(...coord.data.slices.delta[coord.data.slices.delta.length-1]));
+      }
+    });
+}
+
+var updateBrainMap = () => {
+    //Brainmap
   //normalize the point sizes to a max of 90.
   var viewing = document.getElementById("bandview").value;
   brainMap.updateHeatmapFromAtlas(EEG.atlas,EEG.channelTags,viewing);
@@ -308,13 +311,23 @@ var updateVisuals = () => { //TODO: adjust visuals based on expected voltages to
   if(coherenceResults.length === EEG.coherenceMap.map.length){
     brainMap.updateConnectomeFromAtlas(EEG.coherenceMap,EEG.atlas,EEG.channelTags,viewing);
   }
-
-  //------------------------------------------------------------------
 }
 
+var updateVisuals = () => { //TODO: adjust visuals based on expected voltages to make it generically applicable
 
+  updateuPlot();
 
-var analyzeloop = null;
+  //---------------------------------------------------------------
+
+  updateSmoothieCharts();
+
+  //-----------------------------------------------------------------
+
+  updateBrainMap();
+
+  //------------------------------------------------------------------
+
+}
 
 
 
@@ -324,6 +337,21 @@ var analyzeloop = null;
 //---------------------------------------
 //----------- PERFORM ANALYSIS ----------
 //---------------------------------------
+
+var analyzeloop = null;
+
+
+function processFFTs() {
+    
+  //Separate and report channel results by band
+  EEG.channelTags.forEach((row,i) => {
+      if((row.tag !== null) && (i < EEG.nChannels)){
+          //console.log(tag);
+          channelBands(i,row.tag);
+      }        
+  });
+
+}
 
 
 //Should do a lot of this with a worker to keep the UI smooth and prevent hangups
@@ -367,6 +395,10 @@ var analysisLoop = () => {
           posFFTList = gpu.MultiChannelDFT_Bandpass(buffer, nSec, freqStart, freqEnd)[1]; // Mass FFT
           console.timeEnd("GPU DFT");
           console.log("FFTs processed: ", buffer.length);
+
+          posFFTList.forEach((row,i) => {
+            row.map( x => x * stepsPeruV);
+          });
   
         }
         
@@ -384,19 +416,6 @@ var analysisLoop = () => {
 
 
 
-
-
-function processFFTs() {
-    
-      //Separate and report channel results by band
-      EEG.channelTags.forEach((row,i) => {
-          if((row.tag !== null) && (i < EEG.nChannels)){
-              //console.log(tag);
-              channelBands(i,row.tag);
-          }        
-      });
-
-}
 
 
 
@@ -751,12 +770,21 @@ window.receivedMsg = (msg) => {
   if(msg.foo === "multidftbandpass") {
     //console.log(msg)
     posFFTList = [...msg.output[1]];
+    posFFTList.forEach((row,i) => {
+      row.map( x => x * stepsPeruV);
+    });
+    
     processFFTs();
     anim = requestAnimationFrame(updateVisuals);
     
   }
   if(msg.foo === "coherence") {
     posFFTList = [...msg.output[1]];
+    posFFTList.forEach((row,i) => {
+      row.map( x => x * stepsPeruV);
+    });
+
+
     coherenceResults = [...msg.output[2]];
     processFFTs();
     mapCoherenceData();

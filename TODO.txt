@@ -11,7 +11,7 @@ DONE:
 - Color coded bar chart for EEG data
 - Spectrogram with auto interpolation to fit arrays to canvas
 - Web workers for multithreading and smooth UI
-- Nodejs pwa implementation for better worker functionality and web-hostability
+- Nodejs pwa implementation for better worker functionality and web-hostability. This can bleed into a desktop or even mobile application
 
 
 
@@ -29,11 +29,12 @@ Visuals:
 - Toggling for different visuals
 - Colored bars for bandpowers (another typical EEG visual in home software)
 - Tune the Brain Map with real data
-- Fix stacked charts (would be best to simply assign it to a different canvas)
+- Fix stacked charts (would be best to simply assign it to a different canvas).
 
 Performance:
 - I could definitely optimize most of the math but if it ain't broke don't fix it.. yet.. 
 - Optimize correlograms function, either switch to .reduce instead of forEach or do a bulk gpu dispatch
+
 
 Use cases:
 - Finish Alpha Coherence

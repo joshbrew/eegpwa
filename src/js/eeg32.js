@@ -20,6 +20,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.nPeripheralChannels = 6; // accelerometer and gyroscope (2 bytes * 3 coordinates each)
 		this.updateMs = 1000/this.sps; //even spacing
 		this.stepSize = 1/(Math.pow(2,24));
+		this.vref = 2.50; //2.5V voltage ref +/- 250nV
 
 
 		this.data = { //Data object to keep our head from exploding. Get current data with e.g. this.data.A0[this.data.counter-1]
@@ -593,14 +594,10 @@ export class eegmath {
 		var arrEstsMul = arr1Est * arr2Est
 		var correlations = [];
 
-		arr1.forEach((x,delay) => {
-			var r = 0;
-			r += arr1.reduce((sum,item,i) => sum += (item - mean1)*(arr2buf[delay+i]-mean2));
-			//arr1.forEach((y,i) => {
-			//	r += (x - mean1) * (arr2buf[arr2.length+delay-i] - mean2);
-			//})
+		for(var delay = 0; delay < arr1.length; delay++) {
+			var r = arr1.reduce((sum,item,i) => sum += (item - mean1)*(arr2buf[delay+i]-mean2));
 			correlations.push(r/arrEstsMul);
-		});
+		}
 
 		//console.timeEnd("crosscorrelation");
 		return correlations;
@@ -608,7 +605,6 @@ export class eegmath {
 
 	//Simple autocorrelation. Better method for long series: FFT[x1] .* FFT[x2]
 	static autocorrelation(arr1) {
-		console.time("autocorr");
 		var delaybuf = [...arr1,...Array(arr1.length).fill(0)];
 		var mean1 = this.mean(arr1);
 
@@ -619,13 +615,11 @@ export class eegmath {
 		var arr1estsqrd = arr1Est * arr1Est
 		var correlations = [];
 
-		arr1.forEach((x,delay) => {
-			var r = 0;
-			r += arr1.reduce((sum,item,i) => sum += (item - mean1)*(delaybuf[delay+i]-mean1));
+		for(var delay = 0; delay < arr1.length; delay++) {
+			var r = arr1.reduce((sum,item,i) => sum += (item - mean1)*(delaybuf[delay+i]-mean1));
 			correlations.push(r/arr1estsqrd);
-		});
+		}
 
-		console.timeEnd("autocorr");
 		return correlations;
 	}
 

@@ -22,6 +22,7 @@
     "python-shell": "^2.0.3",
     "smoothie": "^1.35.0",
     "three": "^0.121.1",
+    "timechart": "^0.5.1",
     "tslib": "^2.0.3",
     "uplot": "^1.4.0",
     "webgl-heatmap": "^0.2.3"
