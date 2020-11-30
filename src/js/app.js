@@ -2,6 +2,7 @@ import {eeg32, eegmath} from './eeg32.js'
 import {SmoothieChartMaker, uPlotMaker, brainMap2D, BufferLoader, SoundJS, geolocateJS} from './eegvisuals.js'
 import {GPU} from 'gpu.js'
 import {gpuUtils} from './utils/gpuUtils.js'
+import TimeChart from 'timechart';
 
 
 if(!navigator.serial)
@@ -22,7 +23,6 @@ var freqEnd = 100; //End of DFT frequencies (max = SPS * 0.5, half the nyquist s
 
 var posFFTList = [];
 var bandPassWindow = gpu.bandPassWindow(freqStart,freqEnd,EEG.sps); // frequencies (x-axis)
-var analyze = false;
 
 var coherenceResults = [];
 
@@ -37,6 +37,16 @@ var anim = null;
 
 var vscale = EEG.vref*EEG.stepSize; //ADC to volts
 var stepsPeruV = 0.000001 / vscale; //steps per microvolt
+
+var timecharts = [];
+var timechartsdata = [];
+var lasttimeidx = 0;
+
+
+var analyzeloop = null;
+var datafeedloop = null;
+var analyze = false;
+var feed = false;
 
 EEG.channelTags = [
   {ch: 5, tag: "T3", viewing: true},
@@ -85,7 +95,33 @@ brainMap.updatePointsFromAtlas(EEG.atlas,EEG.channelTags);
 catch (err) {
   console.log("brainMap error: ", err);
 }
-//make analysis loop
+
+//appendId is the element Id you want to append this fragment to
+function appendFragment(HTMLtoAppend, parentId) {
+
+  var fragment = document.createDocumentFragment();
+  var newDiv = document.createElement('div');
+  newDiv.insertAdjacentHTML('afterbegin',HTMLtoAppend);
+  newDiv.setAttribute("id", parentId + '_child');
+
+  fragment.appendChild(newDiv);
+
+  document.getElementById(parentId).appendChild(fragment);
+}
+
+//delete selected fragment. Will delete the most recent fragment if Ids are shared.
+function deleteFragment(parentId,fragmentId) {
+  var this_fragment = document.getElementById(fragmentId);
+  document.getElementById(parentId).removeChild(this_fragment);
+}
+
+//Remove Element Parent By Element Id (for those pesky anonymous child fragment containers)
+function removeParent(elementId) {
+  // Removes an element from the document
+  var element = document.getElementById(elementId);
+  element.parentNode.parentNode.removeChild(element.parentNode);
+}
+
 
 //generalize this for the eeg32 class
 var channelBands = (channel,tag) => {
@@ -313,7 +349,8 @@ var updateBrainMap = () => {
   }
 }
 
-var updateVisuals = () => { //TODO: adjust visuals based on expected voltages to make it generically applicable
+
+var updateFFTVisuals = () => { //TODO: adjust visuals based on expected voltages to make it generically applicable
 
   updateuPlot();
 
@@ -337,8 +374,6 @@ var updateVisuals = () => { //TODO: adjust visuals based on expected voltages to
 //---------------------------------------
 //----------- PERFORM ANALYSIS ----------
 //---------------------------------------
-
-var analyzeloop = null;
 
 
 function processFFTs() {
@@ -405,7 +440,7 @@ var analysisLoop = () => {
         processFFTs();
         
         //Update visuals
-        updateVisuals();
+        updateFFTVisuals();
       }
 
       //console.log(coherenceResults);
@@ -415,7 +450,63 @@ var analysisLoop = () => {
 }
 
 
+//-------------------------------------------
+//---------------RAW DATA VIS----------------
+//-------------------------------------------
 
+var updateTimeCharts = () => {
+  if(timechartsdata[0].length > 20000) { //rebuild timecharts if the data array is too big to prevent slowdowns
+    setTimeCharts();
+  }
+  var latestIdx = EEG.data["ms"].length-1;
+  channelTags.forEach((row,i) => {
+    var latestdat = EEG.data["A"+row.ch].slice(lasttimeidx,latestIdx);
+    timechartsdata[i].push(latestdat);
+    timecharts[i].update();
+  });
+}
+
+
+var updateRawFeed = () => {
+  
+  updateTimeCharts();
+
+  setTimeout(() => {if(feed === true) {requestAnimationFrame(updateRawFeed);}}, 15);
+}
+
+
+//-------------------------------------------
+//----------------Worker stuff---------------
+//-------------------------------------------
+
+
+//For handling worker messages
+window.receivedMsg = (msg) => {
+  if(msg.foo === "multidftbandpass") {
+    //console.log(msg)
+    posFFTList = [...msg.output[1]];
+    posFFTList.forEach((row,i) => {
+      row.map( x => x * stepsPeruV);
+    });
+    
+    processFFTs();
+    anim = requestAnimationFrame(updateFFTVisuals);
+    
+  }
+  if(msg.foo === "coherence") {
+    posFFTList = [...msg.output[1]];
+    posFFTList.forEach((row,i) => {
+      row.map( x => x * stepsPeruV);
+    });
+
+
+    coherenceResults = [...msg.output[2]];
+    processFFTs();
+    mapCoherenceData();
+    anim = requestAnimationFrame(updateFFTVisuals);
+  }
+  newMsg = true;
+}
 
 
 
@@ -424,7 +515,7 @@ var analysisLoop = () => {
 //-------------- UI SETUP ---------------
 //---------------------------------------
 
-var setGraph = (gmode) => {
+var setuPlot = (gmode) => {
   if(gmode === "TimeSeries"){
     document.getElementById("uplottitle").innerHTML = "ADC signals";
     
@@ -557,6 +648,64 @@ var setGraph = (gmode) => {
 }
 
 
+var setTimeCharts = () => {
+
+  channelTags.forEach((row,i) => { // Recycle or make new time charts
+    var chartname = 'timechart'+i;
+    var nsamples = Math.floor(EEG.sps*nSecAdcGraph);
+    var dat = EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter);
+    
+    if(timecharts[i] === undefined){
+      appendFragment("<div id='"+chartname+"'></div>","timechartStack");
+      var elem = document.getElementById(chartname);
+      timechartsdata.push(dat);
+      var timechart = new TimeChart(elem, {
+        series: [{ dat }],
+        lineWidth: 2,
+        xRange: { min: 0, max: 20 * 1000 },
+        realTime: true,
+        zoom: {
+            x: {
+                autoRange: true,
+                minDomainExtent: 50,
+            },
+            y: {
+                autoRange: true,
+                minDomainExtent: 1,
+            }
+        },
+      });
+
+      timecharts.push(timechart);
+    }
+    else {
+      timecharts[i].dispose();
+      timechartsdata[i] = dat;
+      var elem = document.getElementById(chartname);
+      var timechart = new TimeChart(elem, {
+        series: [{ dat }],
+        lineWidth: 2,
+        xRange: { min: 0, max: 20 * 1000 },
+        realTime: true,
+        zoom: {
+            x: {
+                autoRange: true,
+                minDomainExtent: 50,
+            },
+            y: {
+                autoRange: true,
+                minDomainExtent: 1,
+            }
+        },
+      });
+      timecharts[i] = timechart;
+    }
+  });
+
+}
+
+
+
 document.getElementById("connect").onclick = () => {EEG.setupSerialAsync();}
 
 document.getElementById("analyze").onclick = () => {
@@ -620,7 +769,7 @@ document.getElementById("graphmode").onclick = () => {
   }
   //else if(graphmode === "StackedRaw") { graphmode = "StackedFFT" }//Stacked Coherence
   
-  setGraph(graphmode);
+  setuPlot(graphmode);
 }
 
 
@@ -678,7 +827,7 @@ if(uPlotData.length - 1 < EEG.channelTags.length) {
   }
 }
 
-setGraph(graphmode);
+setuPlot(graphmode);
 
 }
 
@@ -755,43 +904,16 @@ document.getElementById("setTags").onclick = () => {
 
   }
   */
-  setGraph(graphmode);
+ setuPlot(graphmode);
 }
 
 
 
+
+
 //-------------------------------------------
-//----------------Worker stuff---------------
+//-------------------TEST--------------------
 //-------------------------------------------
-
-
-//For handling worker messages
-window.receivedMsg = (msg) => {
-  if(msg.foo === "multidftbandpass") {
-    //console.log(msg)
-    posFFTList = [...msg.output[1]];
-    posFFTList.forEach((row,i) => {
-      row.map( x => x * stepsPeruV);
-    });
-    
-    processFFTs();
-    anim = requestAnimationFrame(updateVisuals);
-    
-  }
-  if(msg.foo === "coherence") {
-    posFFTList = [...msg.output[1]];
-    posFFTList.forEach((row,i) => {
-      row.map( x => x * stepsPeruV);
-    });
-
-
-    coherenceResults = [...msg.output[2]];
-    processFFTs();
-    mapCoherenceData();
-    anim = requestAnimationFrame(updateVisuals);
-  }
-  newMsg = true;
-}
 
 
 var sine  = eegmath.genSineWave(10,2000,1,512);
