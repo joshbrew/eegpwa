@@ -776,14 +776,6 @@ document.getElementById("graphmode").onclick = () => {
 
 
 
-document.getElementById("tg2o").onclick = () => {
-  sounds = new SoundJS();
-
-//setup tg2o visuals
-}
-
-
-
 document.getElementById("setChannelView").onclick = () => {
 var val = document.getElementById("channelView").value;
 if(val.length === 0) { return; }
