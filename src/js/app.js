@@ -28,6 +28,8 @@ var coherenceResults = [];
 
 var graphmode = "FFT"; //"TimeSeries", "Stacked", "Coherence"
 var fdbackmode = "coherence"; //"tg2o"
+var channelView = 0;
+
 var sounds = null;//new SoundJS(); //For theta-gamma 2 octave
 
 var nSecAdcGraph = 10; //number of seconds to show on the raw signal graph
@@ -323,7 +325,7 @@ var updateSmoothieCharts = () => {
     //Smoothie charts
     EEG.channelTags.forEach((row,i) => {
       var coord = EEG.getAtlasCoordByTag(row.tag);
-      if(i===0) {
+      if(i === channelView) {
         smoothie1.bulkAppend([
           Math.max(...coord.data.slices.delta[coord.data.slices.delta.length-1]),
           Math.max(...coord.data.slices.theta[coord.data.slices.theta.length-1]),
@@ -728,7 +730,7 @@ document.getElementById("bandPass").onclick = () => {
     freq0 = 0;
   }
   if(freq1 > EEG.sps*0.5){
-    freq1 = EEG.sps*0.5;
+    freq1 = EEG.sps*0.5; document.getElementById("freqEnd").value = freq1;
   }
   freqStart = freq0;
   freqEnd = freq1;
@@ -837,7 +839,7 @@ document.getElementById("setTags").onclick = () => {
   var val = document.getElementById("channelTags").value;
   if(val.length === 0) { return; }
   //console.log(val);
-  var arr = val.split(",");
+  var arr = val.split(";");
   //console.log(arr);
   //channelTags.forEach((row,j) => { channelTags[j].viewing = false; });
   //console.log(arr);
@@ -860,6 +862,22 @@ document.getElementById("setTags").onclick = () => {
           //console.log(o);
           EEG.channelTags[j].tag = dict[1];
           EEG.channelTags[j].viewing = true;
+
+          if(dict[2] !== undefined){
+            var atlasfound = false;
+            var searchatlas = EEG.atlas.map.find((p,k) => {
+              if(p.tag === dict[1]){
+                atlasfound = true;
+                return true;
+              }
+            });
+            if(atlasfound !== true) {
+              var coords = dict[2].split(",");
+              if(coords.length === 3){
+                EEG.addToAtlas(dict[1],parseFloat(coords[0]),parseFloat(coords[1]),parseFloat(coords[2]))
+              }
+            }
+          }
         }
         found = true;
         return true;
@@ -873,6 +891,22 @@ document.getElementById("setTags").onclick = () => {
       if(ch !== NaN) {
         if((ch >= 0) && (ch < EEG.nChannels)){
           EEG.channelTags.push({ch:parseInt(ch), tag: dict[1], viewing: true});
+        
+          if(dict[2] !== undefined){
+            var atlasfound = false;
+            var searchatlas = EEG.atlas.map.find((p,k) => {
+              if(p.tag === dict[1]){
+                atlasfound = true;
+                return true;
+              }
+            });
+            if(atlasfound !== true) {
+              var coords = dict[2].split(",");
+              if(coords.length === 3){
+                EEG.addToAtlas(dict[1],parseFloat(coords[0]),parseFloat(coords[1]),parseFloat(coords[2]))
+              }
+            }
+          }
         }
       }
     }

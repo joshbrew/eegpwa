@@ -82,7 +82,7 @@ onmessage = (e) => {
           //var timeMod = (e.data.input[1]-1)*.3333333; //Scaling for longer time intervals
           //if(timeMod <= 1) { timeMod = 1; }
           dft.forEach((amp,j) => {           
-              newdft[j] = amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]*0.00520833333333;
+              newdft[j] = amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]; //*0.00520833333333
           });
           l++;
           if((l+k) === nChannels) {

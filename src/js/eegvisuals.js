@@ -540,20 +540,42 @@ export class brainMap2D {
 
 
 
+export class mirrorBarChart {
+	constructor(divId = null, normalizeFactor = 1) {
+		this.div = document.getElementById(divId);
+		this.div.insertAdjacentHTML("afterbegin",`<canvas id="leftbars"></canvas><canvas id="rightbars"></canvas>`);
+		this.leftbars = new eegBarChart("leftbars",normalizeFactor);
+		this.rightbars = new eegBarChart("rightbars", normalizeFactor);
+	
+		this.leftbars.ctx.rotate(90 * (Math.PI / 180));
+		
+		this.rightbars.ctx.rotate(90 * (Math.PI / 180));
+		this.rightbars.ctx.translate(canvas.width, 0);
+		this.rightbars.ctx.scale(-1,1);
+	}
+
+	updateCharts(left,right) {
+		this.leftbars.binData = left;
+		this.rightbars.binData = right;
+
+		this.leftbars.draw();
+		this.rightbars.draw();
+	}
+
+}
 
 
 
-
-//Makes a color coded bar chart to apply frequency bins to for a classic visualization
+//Makes a color coded bar chart to apply frequency bins to for a classic visualization. Should upgrade this with smooth transitions in an animation loop
 export class eegBarChart {
 	constructor(canvasId = null, normalizeFactor = 1) {
 		this.canvas = document.getElementById(canvasId);
 		this.ctx = this.canvas.getContext("2d");
 		this.anim = null;
 
-		//push the latest slices to this then call this.draw();
-		this.slices = {scp: [1], delta: [1], theta: [1], alpha: [1], beta: [1], lowgamma: [1], highgamma: [1]};
-		
+		//combine and push the latest slices to this then call eegbarchart.draw() from the class instance
+		this.slices = {scp: [0], delta: [0], theta: [0], alpha: [0], beta: [0], lowgamma: [0], highgamma: [0]};;
+
 		this.allCapsReachBottom = false;
 		this.meterWidth = 14; //relative width of the meters in the spectrum
 		this.meterGap = 2; //relative gap between meters
@@ -575,7 +597,6 @@ export class eegBarChart {
 	}
 
 	init() {
-		
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		this.ctx.fillStyle = "black";
 		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -585,15 +606,15 @@ export class eegBarChart {
 		var cwidth = this.canvas.width;
 		var cheight = this.canvas.height;
 
-		var nbins = this.slices.scp.length + this.slices.delta.length + this.slices.theta.length + this.slices.alpha.length + this.slices.beta.length + this.slices.lowgamma.length;
-		var combinedbins = [].concat(this.slices.scp,this.slices.delta,this.slices.theta,this.slices.alpha,this.slices.beta,this.slices.lowgamma);
-		
+		var slicearr = [...this.slices.scp,...this.slices.delta,...this.slices.theta,...this.slices.alpha,...this.slices.beta,...this.slices.lowgamma];
+		var nbins = this.binData.length;
+
 		var wscale = cwidth / this.relativeWidth;
 		var xoffset = (this.meterWidth+this.meterGap)*wscale;
 		
 		this.canvas.context.clearRect(0, 0, cwidth, cheight);
 		for (var i = 0; i < nbins; i++) {
-			var value = combinedbins[i]*this.capYnormalizeFactor*cheight; // normalized y values
+			var value = this.binData[i]*this.capYnormalizeFactor*cheight; // normalized y values
 			if(value < 0){ value = 0;}
 			if (capYPositionArray.length < Math.round(nbins)) {
 				capYPositionArray.push(value);
@@ -610,15 +631,15 @@ export class eegBarChart {
 			this.ctx.fillStyle = "white"; 
 			if(i < this.slices.scp.length){
 				this.ctx.fillStyle = "purple"; 
-			} else if(i < this.slices.scp.length+this.slices.theta.length){
+			} else if(i < this.slices.scp.length+this.slices.delta.length){
 				this.ctx.fillstyle = "violet";
-			} else if(i < this.slices.scp.length+this.slices.theta.length){
+			} else if(i < this.slices.scp.length+this.slices.delta.length+this.slices.theta.length){
 				this.ctx.fillstyle = "blue";
-			} else if(i < this.slices.scp.length+this.slices.theta.length+this.slices.alpha.length){
+			} else if(i < this.slices.scp.length+this.slices.delta.length+this.slices.theta.length+this.slices.alpha.length){
 				this.ctx.fillstyle = "green";
-			} else if(i < this.slices.scp.length+this.slices.theta.length+this.slices.alpha.length+this.slices.beta.length){
+			} else if(i < this.slices.scp.length+this.slices.delta.length+this.slices.theta.length+this.slices.alpha.length+this.slices.beta.length){
 				this.ctx.fillstyle = "gold";
-			} else if(i < this.slices.scp.length+this.slices.theta.length+this.slices.alpha.length+this.slices.beta.length+this.slices.lowgamma.length){
+			} else if(i < this.slices.scp.length+this.slices.delta.length+this.slices.theta.length+this.slices.alpha.length+this.slices.beta.length+this.slices.lowgamma.length){
 				this.ctx.fillstyle = "red";
 			}
 
@@ -643,7 +664,7 @@ export class eegBarChart {
 
 
 
-export class thetaGamma2Octave {
+export class thetaGamma2Octave { //Not finished
 	constructor(canvasId = null, spectNormalizeFactor, scalingFactor) {
 		this.spect = new Spectrogram(canvasId);
 		this.anim = null;

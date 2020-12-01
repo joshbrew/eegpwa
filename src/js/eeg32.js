@@ -306,7 +306,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	//---------------------end copy/pasted solution------------------------
 
 	//EEG Atlas generator
-	newCoord(x,y,z, times=[], amplitudes=[], slices= {delta: [], theta: [], alpha: [], beta: [], lowgamma: [], highgamma: []}, means={delta: [], theta: [], alpha: [], beta: [], lowgamma:[], highgamma: []}){
+	newAtlasData(x,y,z, times=[], amplitudes=[], slices= {scp: [], delta: [], theta: [], alpha: [], beta: [], lowgamma: [], highgamma: []}, means={scp: [], delta: [], theta: [], alpha: [], beta: [], lowgamma:[], highgamma: []}){
 		return {x: x, y:y, z:z, times:times, amplitudes:amplitudes, slices:slices, means:means};
 	}
 
@@ -315,10 +315,10 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		var newLayout = {shared: {sps: this.sps, bandPassWindows:[]}, map:[]}
 		tags.forEach((tag,i) => {
 			if (amplitudes === undefined) {
-				newLayout.map.push({tag: tag, data: this.newCoord(coords[i][0],coords[i][1],coords[i][2],undefined,undefined,undefined,undefined)});
+				newLayout.map.push({tag: tag, data: this.newAtlasData(coords[i][0],coords[i][1],coords[i][2],undefined,undefined,undefined,undefined)});
 			}
 			else {
-				newLayout.map.push({tag: tag, data: this.newCoord(coords[i][0],coords[i][1],coords[i][2],times[i],amplitudes[i],slices[i],means[i])});
+				newLayout.map.push({tag: tag, data: this.newAtlasData(coords[i][0],coords[i][1],coords[i][2],times[i],amplitudes[i],slices[i],means[i])});
 			}
 		});
 		return newLayout;
@@ -400,7 +400,10 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			{tag:"O1",  data: { x: -26.8, y: -100.2, z: 12.8,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
 			{tag:"O2",  data: { x: 24.1,  y: -100.5, z: 14.1,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
 		]};
+	}
 
+	addToAtlas(tag,x,y,z){
+		this.atlas.map.push({ tag: tag, data: this.newAtlasData(x,y,z) });
 	}
 
 	genCoherenceMap(channelTags) {
@@ -592,12 +595,12 @@ export class eegmath {
 		var arr2Est = arr2.reduce((sum,item) => sum += Math.pow(item-mean1,2));
 		arr2Est = Math.sqrt(arr2Est);
 
-		var arrEstsMul = arr1Est * arr2Est
-		var correlations = [];
+		var _arrEstsMul = 1/(arr1Est * arr2Est);
+		var correlations = new Array(arr1.length).fill(0);
 
 		for(var delay = 0; delay < arr1.length; delay++) {
 			var r = arr1.reduce((sum,item,i) => sum += (item - mean1)*(arr2buf[delay+i]-mean2));
-			correlations.push(r/arrEstsMul);
+			correlations[delay] = r*_arrEstsMul;
 		}
 
 		//console.timeEnd("crosscorrelation");
@@ -613,12 +616,12 @@ export class eegmath {
 		var arr1Est = arr1.reduce((sum,item) => sum += Math.pow(item-mean1,2));
 		arr1Est = Math.sqrt(arr1Est);
 
-		var arr1estsqrd = arr1Est * arr1Est
-		var correlations = [];
+		var _arr1estsqrd = 1/(arr1Est * arr1Est);
+		var correlations = new Array(arr1.length).fill(0);
 
 		for(var delay = 0; delay < arr1.length; delay++) {
 			var r = arr1.reduce((sum,item,i) => sum += (item - mean1)*(delaybuf[delay+i]-mean1));
-			correlations.push(r/arr1estsqrd);
+			correlations[delay] = r*_arr1estsqrd;
 		}
 
 		return correlations;

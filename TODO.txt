@@ -1,4 +1,5 @@
 DONE:
+- Atlas based data system and tagging channels with named atlas coordinates - makes it easy to create different configurations for different channel counts/placements. Feeds into the interface automatically.
 - GPU FFTs + bandpass, handles an arbitrary number of FFTs in <20ms-30ms on average depending on size (<3ms for single channel, <20ms for 128 channels, it beats jsfft by a long shot). Tested up to 128 channels of simulated data on RTX 2060. 
 - Coherence per channel (coherence networks)
 - uPlot for live time series charts for any number of channels. 
@@ -8,7 +9,7 @@ DONE:
    -- The canvas creates points based off the given MNI atlas coordinates with tags e.g. Fp1, Fp2, Fz, etc.
    -- Points assigned to channels are highlighted with the channel index listed
    -- Visualize coherence networks automatically
-- Color coded bar chart for EEG data
+- Color coded bar chart for EEG data, mirrored chart mode (e.g. Mind Mirror)
 - Spectrogram with auto interpolation to fit arrays to canvas
 - Web workers for multithreading and smooth UI
 - Nodejs pwa implementation for better worker functionality and web-hostability. This can bleed into a desktop or even mobile application
@@ -19,21 +20,20 @@ TODO:
 
 Data:
 - CSV saving and replaying, make it sensible!
-- More charting options e.g. bandpower timeseries heatmap (can do in uPlot)
+- More charting options e.g. bandpower timeseries heatmap (can do in uPlot), visualize a full session from accumulated data
 - Post processing e.g. for full session data rather than just the last second of realtime data. E.g. ERP analysis (https://academic.oup.com/schizophreniabulletin/article/34/5/907/1886959)
 - Check out bci.js for applicability, mainly the fast bandpower extraction
 - More signal analysis math as needed, I have to learn it all from scratch usually due to deficiencies in other libraries
 
 Visuals: 
-- Nice UI layout and CSS
-- Toggling for different visuals
-- Colored bars for bandpowers (another typical EEG visual in home software)
+- Nice UI layout and CSS - block out feature areas: Menu, main chart, visual containers.
+- Toggling for different visuals inside their own containers
 - Tune the Brain Map with real data
 - Fix stacked charts (would be best to simply assign it to a different canvas).
 
 Performance:
 - I could definitely optimize most of the math but if it ain't broke don't fix it.. yet.. 
-- Optimize correlograms function, either switch to .reduce instead of forEach or do a bulk gpu dispatch
+- Optimize correlograms function, do a bulk gpu dispatch for getting all correlograms
 
 
 Use cases:
