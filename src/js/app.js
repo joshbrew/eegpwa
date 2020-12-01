@@ -950,7 +950,7 @@ document.getElementById("setTags").onclick = () => {
 //-------------------------------------------
 
 
-var sine  = eegmath.genSineWave(10,2000,1,512);
+var sine  = eegmath.genSineWave(40,500,1,512);
 var sine1 = eegmath.genSineWave(30,3000,1,512);
 var sine2 = eegmath.genSineWave(40,1000,1,512);
 var sine3 = eegmath.genSineWave(20,500,1,512);

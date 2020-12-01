@@ -39,24 +39,25 @@
 
 
 
-
-    <button id="connect">Connect to EEG</button>
-    <button id="analyze">Analyze Data</button>
-    <button id="stop">Stop Analyzing</button>
-    <button id="record">Save CSV (does nothing)</button> 
-    <input type="text" id="freqStart" placeholder="lower bound" value="0">
-    <input type="text" id="freqEnd" placeholder="upper bound" value="100">
-    <button id="bandPass">Set BandPass</button>
-    <button id="graphmode">Graph Mode</button>
-    <button id="tg2o">Theta-Gamma 2 Octave (not set up yet)</button>
-    <br><input type="text" id="channelView" placeholder="Format: 0,1,2,5,6,7,etc">
-    <button id="setChannelView">Set Channel View</button>
-    <input type="text" id="channelTags" placeholder="Format: 0:Fp1;2:Fz;6:P6:0,1,2;etc">
-    <button id="setTags">Set Tags</button>
-    
-
-    <h3 id="uplottitle">ADC FFTs w/ Bandpass</h3>
-    <div id="adc"></div>
+    <div id="menucontainer">
+      <button id="connect">Connect to EEG</button>
+      <button id="analyze">Analyze Data</button>
+      <button id="stop">Stop Analyzing</button>
+      <button id="record">Save CSV (does nothing)</button> 
+      <input type="text" id="freqStart" placeholder="lower bound" value="0">
+      <input type="text" id="freqEnd" placeholder="upper bound" value="100">
+      <button id="bandPass">Set BandPass</button>
+      <button id="graphmode">Graph Mode</button>
+      <button id="tg2o">Theta-Gamma 2 Octave (not set up yet)</button>
+      <br><input type="text" id="channelView" placeholder="Format: 0,1,2,5,6,7,etc">
+      <button id="setChannelView">Set Channel View</button>
+      <input type="text" id="channelTags" placeholder="Format: 0:Fp1;2:Fz;6:P6:0,1,2;etc">
+      <button id="setTags">Set Tags</button>
+    </div>
+    <div id="visualcontainer0">
+      <h3 id="uplottitle">ADC FFTs w/ Bandpass</h3>
+      <div id="adc"></div>
+    </div>
     <div id="visualcontainer1">
       <div id="smoothiecontainer">
         <h3>Band Amplitudes. Color codes: Purple - Delta, Orange - Theta, Green - Alpha, Blue - Beta, Red - Gamma</h3>
@@ -65,24 +66,26 @@
         <canvas id="smoothie2" style="width: 75%; height: 200px"></canvas>
       </div>
     </div>
-
-    <div id="brainmapcontainer">
-      <table id="brainmaptable">
-        <tr><td><h3>Brain Map (see "atlas" in the console and set corresponding channel tags (see "channelTags")) | </h3></td>
-        <td><h4>Viewing:</h4></td>
-        <td><select id="bandview">
-          <option value="scp">SCP (0.1Hz-1Hz)</option>
-          <option value="delta">Delta (1Hz-4Hz)</option>
-          <option value="theta">Theta (4Hz-8Hz)</option>
-          <option value="alpha" selected="selected">Alpha (8Hz-12Hz)</option>
-          <option value="beta">Beta (12Hz-35Hz)</option>
-          <option value="lowgamma">Low Gamma (35Hz-48Hz)</option>
-          <option value="highgamma">High Gamma (48Hz+)</option>
-        </select></td></tr>
-      </table>
-      <canvas id="brainmap"></canvas>
-      <canvas id="brainmappoints"></canvas>
-
+    <div id="visualcontainer2">
+      <div id="brainmapcontainer">
+        <table id="brainmaptable">
+          <tr><td><h3>Brain Map (see "atlas" in the console and set corresponding channel tags (see "channelTags")) | </h3></td>
+          <td><h4>Viewing:</h4></td>
+          <td><select id="bandview">
+            <option value="scp">SCP (0.1Hz-1Hz)</option>
+            <option value="delta">Delta (1Hz-4Hz)</option>
+            <option value="theta">Theta (4Hz-8Hz)</option>
+            <option value="alpha" selected="selected">Alpha (8Hz-12Hz)</option>
+            <option value="beta">Beta (12Hz-35Hz)</option>
+            <option value="lowgamma">Low Gamma (35Hz-48Hz)</option>
+            <option value="highgamma">High Gamma (48Hz+)</option>
+          </select></td></tr>
+        </table>
+        <canvas id="brainmap"></canvas>
+        <canvas id="brainmappoints"></canvas>
+      </div>
+    </div>
+    <div id="visualcontainer3">
       <div id="timechartStack"></div>
     </div>
 
