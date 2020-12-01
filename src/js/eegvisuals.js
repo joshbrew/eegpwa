@@ -554,9 +554,9 @@ export class mirrorBarChart {
 		this.rightbars.ctx.scale(-1,1);
 	}
 
-	updateCharts(left,right) {
-		this.leftbars.binData = left;
-		this.rightbars.binData = right;
+	updateCharts(left,right) { //push latest slices from desired map data
+		this.leftbars.slices = left;
+		this.rightbars.slices = right;
 
 		this.leftbars.draw();
 		this.rightbars.draw();

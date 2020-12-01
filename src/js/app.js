@@ -925,20 +925,8 @@ document.getElementById("setTags").onclick = () => {
   brainMap.updatePointsFromAtlas(EEG.atlas,EEG.channelTags);
 
   brainMap.updateConnectomeFromAtlas(EEG.coherenceMap,EEG.atlas,EEG.channelTags);
-  /*
-  if((graphmode !== "Coherence") || (graphmode !== "Stacked")){
-      console.time("makeplot");
-      uplotter.makeuPlot(uplotter.makeSeriesFromChannelTags(EEG.channelTags), uPlotData);
-      console.timeEnd("makeplot");
-    }
-  if(graphmode === "Stacked"){
-    uplotter.makeStackeduPlot(undefined, uPlotData, undefined, EEG.channelTags);
-  }
-  if(graphmode === "Coherence"){
 
-  }
-  */
- setuPlot(graphmode);
+  setuPlot(graphmode);
 }
 
 

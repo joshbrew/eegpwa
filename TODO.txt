@@ -30,6 +30,7 @@ Visuals:
 - Toggling for different visuals inside their own containers
 - Tune the Brain Map with real data
 - Fix stacked charts (would be best to simply assign it to a different canvas).
+- new uplot legend: more compact
 
 Performance:
 - I could definitely optimize most of the math but if it ain't broke don't fix it.. yet.. 
