@@ -541,9 +541,9 @@ export class brainMap2D {
 
 
 export class mirrorBarChart {
-	constructor(divId = null, normalizeFactor = 1, cwidth, cheight) {
+	constructor(divId = null, normalizeFactor = 1) {
 		this.div = document.getElementById(divId);
-		this.div.insertAdjacentHTML("afterbegin",`<canvas id="leftbars" width="`+cwidth+`px" height="`+cheight+`px"></canvas><canvas id="rightbars" width="`+cwidth+`px" height="`+cheight+`px"></canvas>`);
+		this.div.insertAdjacentHTML("afterbegin",`<canvas id="leftbars"></canvas><canvas id="rightbars"></canvas>`);
 		this.leftbars = new eegBarChart("leftbars",normalizeFactor);
 		this.rightbars = new eegBarChart("rightbars", normalizeFactor);
 	
@@ -723,12 +723,9 @@ export class thetaGamma2Octave { //Not finished
 
 
 export class Spectrogram {
-	constructor(canvasId, peakAmp = 1, height, width){
+	constructor(canvasId, peakAmp = 1){
 		this.canvas = document.getElementById(canvasId);
 		this.ctx = this.canvas.getContext("2d");
-		
-		this.canvas.height = height;
-		this.canvas.width = width;
 
 		this.anim = null;
 		this.reset = false;

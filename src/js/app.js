@@ -517,6 +517,167 @@ window.receivedMsg = (msg) => {
 //-------------- UI SETUP ---------------
 //---------------------------------------
 
+
+var visContainer0 = {
+  height: '400px',
+  width: '600px',
+  mode: null,
+  class: null
+};
+
+var visContainer1 = {
+  height: '200px',
+  width: '600px',
+  mode: null,
+  class: null
+};
+
+var visContainer2 = {
+  height: '200px',
+  width: '600px',
+  mode: null,
+  class: null
+};
+
+var visContainer3 = {
+  height: '200px',
+  width: '600px',
+  mode: null,
+  class: null
+};
+
+//Container HTML and menus to be targeted by the appropriate class
+
+function genSmoothieContainer(containerId, plotId) {
+  return ` 
+  <div id='`+containerId+`'> 
+    Mode:
+    <select id="`+plotId+`mode">
+      <option value="alpha" selected="selected">Alpha Bandpowers</option>
+      <option value="coherence">Alpha Coherence</option>
+      <option value="bandpowers">1Ch All Bandpowers</option>
+    </select>
+    Channels:
+    <select id="`+plotId+`channel">
+      <option value="0">0</option>
+    </select>
+    <div id='`+plotId+`title'>Smoothiejs</div> 
+      <canvas id=`+plotId+`></canvas> 
+  </div>
+  `;
+}
+
+function genBrainMapContainer(containerId, brainmapId){
+  return ` 
+  <div id='`+containerId+`'>  
+    <table id='`+brainmapId+`table'>
+      <tr><td><h3>Brain Map (see "atlas" in the console and set corresponding channel tags (see "channelTags")) | </h3></td>
+      <td><h4>Viewing:</h4></td>
+      <td><select id="`+brainmapId+`bandview">
+        <option value="scp">SCP (0.1Hz-1Hz)</option>
+        <option value="delta">Delta (1Hz-4Hz)</option>
+        <option value="theta">Theta (4Hz-8Hz)</option>
+        <option value="alpha" selected="selected">Alpha (8Hz-12Hz)</option>
+        <option value="beta">Beta (12Hz-35Hz)</option>
+        <option value="lowgamma">Low Gamma (35Hz-48Hz)</option>
+        <option value="highgamma">High Gamma (48Hz+)</option>
+      </select></td></tr>
+    </table>
+    <canvas id=`+brainmapId+`></canvas>
+    <canvas id=`+brainmapId+`points></canvas>
+  `;
+}
+
+function genTimeChartContainer(containerId,timechartsId) {
+  return `
+  <div id=`+containerId+`>
+    <div id=`+timechartsId+`></div>
+  </div>
+  `;
+}
+
+function genSpectrogramContainer(containerId,spectrogramId) {
+  return `
+  <div id=`+containerId+`>
+    Channel
+    <select id="`+spectrogramId+`mode">
+      <option value="fft">FFT</option>
+      <option value="coherence" selected="selected">Coherence</option>
+    </select>
+    <select id="`+spectrogramId+`channel">
+      <option value="0" selected="selected">0</option>
+    </select>
+    <canvas id=`+spectrogramId+`></canvas>
+  </div>
+  `;
+}
+
+function genBarChartContainer(containerId, barchartId) {
+  return `
+  <div id=`+containerId+`>
+    Channel
+    <select id="`+barchartId+`channel">
+      <option value="0" selected="selected">0</option>
+    </select>
+    <canvas id=`+barchartId+`></canvas>
+  </div>
+  `;
+}
+
+function genMirrorChartsContainer(containerId, mirrorchartsId) {
+  return `
+  <div id=`+containerId+`>
+    Channel 1
+    <select id="`+mirrorchartsId+`channel1">
+      <option value="0" selected="selected">0</option>
+      <option value="1">1</option>
+    </select>
+    Channel 2
+    <select id="`+mirrorchartsId+`channel2">
+      <option value="0" selected="selected">0</option>
+      <option value="1">1</option>
+    </select>
+    <div id=`+mirrorchartsId+`></div>
+  </div>
+  `;
+}
+
+
+//Setup for appending HTML and creating class instances
+
+function setupBrainMapContainer(containerId, brainmapId) {
+
+}
+
+function setupTimeChartContainer(containerId, timechartsId) {
+
+}
+
+function setupSpectrogramContainer(containerId, spectrogramId) {
+
+}
+
+function setupBarChartContainer(containerId, barchartId) {
+
+}
+
+function setupMirrorChartsContainer(containerId, mirrorchartsId) {
+
+}
+
+
+function addChannelOptions(selectId) {
+  var select = document.getElementById(selectId);
+  var opts = ``;
+  EEG.channelTags.forEach((row,i) => {
+    opts += `<option value=`+row.ch+`>`+row.ch+`</option>`
+  });
+  select.innerHTML = opts;
+}
+
+
+//-------------- BUTTON SETUP -----------
+
 var setuPlot = (gmode) => {
   if(gmode === "TimeSeries"){
     document.getElementById("uplottitle").innerHTML = "ADC signals";
