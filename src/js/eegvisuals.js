@@ -1,6 +1,7 @@
 import uPlot from 'uplot';
 import { SmoothieChart, TimeSeries } from "smoothie";
 import './utils/webgl-heatmap'
+import {TimeChart} from 'timechart';
 
 //---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
@@ -29,10 +30,20 @@ export class SmoothieChartMaker {
 		}
 
 		if(canvasId !== null) {
-			this.canvas = document.getElementById(this.canvasId);
-			this.makeSmoothieChart(this.canvasId, gridStrokeStyle, gridFillStyle, labelFillStyle);
+			this.init(gridStrokeStyle, gridFillStyle, labelFillStyle);
 		}
 
+	}
+
+	deInit() {
+		this.chart.stop();
+		var ctx = this.canvas.context.getContext('2d')
+		ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+	}
+
+	init(gridStrokeStyle = 'rgb(125, 125, 125)', gridFillStyle = 'rgb(10, 10, 10)', labelFillStyle = 'rgb(255, 255, 255)') {
+		this.canvas = document.getElementById(this.canvasId);
+		this.makeSmoothieChart(this.canvasId, gridStrokeStyle, gridFillStyle, labelFillStyle);
 	}
 
 	makeSmoothieChart( canvasId = null, gridStrokeStyle = 'rgb(125, 125, 125)', gridFillStyle = 'rgb(10, 10, 10)', labelFillStyle = 'rgb(255, 255, 255)') 
@@ -101,6 +112,13 @@ export class uPlotMaker {
 
 		this.canvasId = canvasId;
 		this.plot = null;
+	}
+
+	deInit() {
+		if(this.plot !== null){
+			this.plot.destroy();
+			this.plot = null;
+		}
 	}
 
 	makeuPlot(series=[{}], data=[], width=1000, height=400, options = null) {
@@ -336,6 +354,101 @@ export class uPlotMaker {
 
 
 
+export class TimeChartMaker {
+	constructor(divId){
+		if(TimeChart === "undefined") {
+			alert("timechart not found!");
+			return;
+		}
+
+		this.divId = divId;
+		this.timecharts = [];
+		this.timechartsdata = [];
+		this.lasttimeIdx = 0;
+
+		this.maxpoints = 20000;
+	}
+
+	deInit() {
+		this.timecharts.forEach((chart,i) => {
+			chart.dispose(); //does not delete shadow root
+		});
+	}
+
+	init() {
+
+	}
+
+	setEEGTimeCharts(EEG) { //Creates timecharts from the EEG class data
+		EEG.channelTags.forEach((row,i) => { // Recycle or make new time charts
+		  var chartname = 'timechart'+i;
+		  var nsamples = Math.floor(EEG.sps*nSecAdcGraph);
+		  var dat = EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter);
+		  
+		  if(this.timecharts[i] === undefined){
+			document.getElementById("<div id='"+chartname+"'></div>",this.divId);
+			var elem = document.getElementById(chartname);
+			this.timechartsdata.push(dat);
+			var timechart = new TimeChart(elem, {
+			  series: [{ dat }],
+			  lineWidth: 2,
+			  xRange: { min: 0, max: 20 * 1000 },
+			  realTime: true,
+			  zoom: {
+				  x: {
+					  autoRange: true,
+					  minDomainExtent: 50,
+				  },
+				  y: {
+					  autoRange: true,
+					  minDomainExtent: 1,
+				  }
+			  },
+			});
+	  
+			this.timecharts.push(timechart);
+		  }
+		  else {
+			this.timecharts[i].dispose();
+			this.timechartsdata[i] = dat;
+			var elem = document.getElementById(chartname);
+			var timechart = new TimeChart(elem, {
+			  series: [{ dat }],
+			  lineWidth: 2,
+			  xRange: { min: 0, max: 20 * 1000 },
+			  realTime: true,
+			  zoom: {
+				  x: {
+					  autoRange: true,
+					  minDomainExtent: 50,
+				  },
+				  y: {
+					  autoRange: true,
+					  minDomainExtent: 1,
+				  }
+			  },
+			});
+			this.timecharts[i] = timechart;
+		  }
+		});
+	}
+
+	updateTimeCharts(EEG){
+		if(this.timechartsdata[0].length > this.maxpoints) { //rebuild timecharts if the data array is too big to prevent slowdowns
+		  this.setEEGTimeCharts(EEG);
+		}
+		var latestIdx = EEG.data["ms"].length-1;
+		EEG.channelTags.forEach((row,i) => {
+		  var latestdat = EEG.data["A"+row.ch].slice(this.lasttimeIdx,latestIdx);
+		  this.timechartsdata[i].push(latestdat);
+		  this.timecharts[i].update();
+		});
+		this.lasttimeIdx = latestIdx;
+	  }
+
+}
+
+
 
 
 
@@ -353,6 +466,7 @@ export class brainMap2D {
 		this.heatmapCanvasId = heatmapCanvasId;
 		this.pointsCanvasId = pointsCanvasId;
 		this.anim = null;
+		this.animationDelay = 20; //ms
 
 		this.heatmap = null;
 		this.pointsCanvas = null;
@@ -370,8 +484,9 @@ export class brainMap2D {
 	}
 
 	deInit() {
-		cancelAnimationFrame(anim);
 		this.anim = "cancel";
+		cancelAnimationFrame(anim);
+		this.heatmap.clear();
 	}
 
 	init() {
@@ -529,7 +644,11 @@ export class brainMap2D {
 		this.heatmap.addPoints(this.points); //update size and intensity
 		this.heatmap.update();
 		this.heatmap.display();
-		setTimeout(() => {if(this.anim !== "cancel") this.anim = requestAnimationFrame(draw)},20); // 50 FPS hard limit
+	}
+
+	animate = () => {
+		this.draw();
+		setTimeout(() => {if(this.anim !== "cancel") this.anim = requestAnimationFrame(animate)},this.animationDelay); // 50 FPS hard limit
 	}
 }
 
@@ -552,6 +671,16 @@ export class mirrorBarChart {
 		this.rightbars.ctx.rotate(90 * (Math.PI / 180));
 		this.rightbars.ctx.translate(canvas.width, 0);
 		this.rightbars.ctx.scale(-1,1);
+	}
+
+	deInit() {
+		this.leftbars.deInit();
+		this.rightbars.deInit();
+	}
+
+	init() {
+		this.leftbars.init();
+		this.rightbars.init();
 	}
 
 	updateCharts(left,right) { //push latest slices from desired map data
@@ -588,12 +717,12 @@ export class eegBarChart {
 		
 		this.animationDelay = 15;
 		
-		this.init();
 	}
 
 	deInit() {
-		cancelAnimationFrame(anim);
 		this.anim = "cancel";
+		cancelAnimationFrame(anim);
+		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	}
 
 	init() {
@@ -672,10 +801,21 @@ export class thetaGamma2Octave { //Not finished
 		this.adcScalingFactor = scalingFactor;
 
 		this.audio = null;
-		try{ this.makeAudioCtx(); }
+
+		try{ this.makeAudioCtx(); } //only works if activated on user input
 		catch(err){ console.log(err); }
 	}
 
+	deInit() {
+		this.audio = null;
+		this.spect.deInit();
+	}
+
+	init() {
+		this.makeAudioCtx();
+		this.spect.init();
+	}
+ 
 	makeAudioCtx() {
 		this.audio = new SoundJS();
 	}
@@ -759,9 +899,9 @@ export class Spectrogram {
 		return newData;
 	};
 
-	deInit() {
-		cancelAnimationFrame(this.anim);
+	deInit() {		
 		this.anim = "cancel";
+		cancelAnimationFrame(this.anim);
 	}
 
 	init() {

@@ -1,8 +1,7 @@
 import {eeg32, eegmath} from './eeg32.js'
-import {SmoothieChartMaker, uPlotMaker, brainMap2D, BufferLoader, SoundJS, geolocateJS} from './eegvisuals.js'
+import {SmoothieChartMaker, uPlotMaker, TimeChartMaker, Spectrogram, mirrorBarChart, eegBarChart, brainMap2D, BufferLoader, SoundJS, geolocateJS} from './eegvisuals.js'
 import {GPU} from 'gpu.js'
 import {gpuUtils} from './utils/gpuUtils.js'
-import TimeChart from 'timechart';
 
 
 if(!navigator.serial)
@@ -63,8 +62,8 @@ EEG.coherenceMap.shared.bandPassWindow = bandPassWindow;
 EEG.coherenceMap.shared.bandFreqs = EEG.atlas.shared.bandFreqs;
 
 try {
-  var uplotter = new uPlotMaker("adc");
-  var uPlotData = [bandPassWindow];
+  window.uplotter = new uPlotMaker("adc");
+  window.uPlotData = [bandPassWindow];
   EEG.channelTags.forEach(() => {
     uPlotData.push(bandPassWindow)
   })
@@ -76,8 +75,8 @@ catch (err) {
 }
 
 try {
-  var smoothie1 = new SmoothieChartMaker(5,"smoothie1","rgb(125,0,0)");
-  var smoothie2 = new SmoothieChartMaker(8,"smoothie2","rgb(0,0,125)");
+  window.Smoothie1 = new SmoothieChartMaker(5,"smoothie1","rgb(125,0,0)");
+  window.Smoothie2 = new SmoothieChartMaker(8,"smoothie2","rgb(0,0,125)");
 }
 catch (err) {
   console.log("Smoothiejs error: ", err);
@@ -326,7 +325,7 @@ var updateSmoothieCharts = () => {
     EEG.channelTags.forEach((row,i) => {
       var coord = EEG.getAtlasCoordByTag(row.tag);
       if(i === channelView) {
-        smoothie1.bulkAppend([
+        Smoothie1.bulkAppend([
           Math.max(...coord.data.slices.delta[coord.data.slices.delta.length-1]),
           Math.max(...coord.data.slices.theta[coord.data.slices.theta.length-1]),
           Math.max(...coord.data.slices.alpha[coord.data.slices.alpha.length-1]),
@@ -334,8 +333,8 @@ var updateSmoothieCharts = () => {
           Math.max(...coord.data.slices.lowgamma[coord.data.slices.lowgamma.length-1])
         ]);
       }
-      if(i < smoothie2.series.length - 1){
-        smoothie2.series[i].append(Date.now(), Math.max(...coord.data.slices.delta[coord.data.slices.delta.length-1]));
+      if(i < Smoothie2.series.length - 1){
+        Smoothie2.series[i].append(Date.now(), Math.max(...coord.data.slices.delta[coord.data.slices.delta.length-1]));
       }
     });
 }
@@ -456,17 +455,7 @@ var analysisLoop = () => {
 //---------------RAW DATA VIS----------------
 //-------------------------------------------
 
-var updateTimeCharts = () => {
-  if(timechartsdata[0].length > 20000) { //rebuild timecharts if the data array is too big to prevent slowdowns
-    setTimeCharts();
-  }
-  var latestIdx = EEG.data["ms"].length-1;
-  channelTags.forEach((row,i) => {
-    var latestdat = EEG.data["A"+row.ch].slice(lasttimeidx,latestIdx);
-    timechartsdata[i].push(latestdat);
-    timecharts[i].update();
-  });
-}
+
 
 
 var updateRawFeed = () => {
@@ -518,51 +507,39 @@ window.receivedMsg = (msg) => {
 //---------------------------------------
 
 
-var visContainer0 = {
-  height: '400px',
-  width: '600px',
-  mode: null,
-  class: null
-};
 
-var visContainer1 = {
-  height: '200px',
-  width: '600px',
-  mode: null,
-  class: null
-};
-
-var visContainer2 = {
-  height: '200px',
-  width: '600px',
-  mode: null,
-  class: null
-};
-
-var visContainer3 = {
-  height: '200px',
-  width: '600px',
-  mode: null,
-  class: null
-};
 
 //Container HTML and menus to be targeted by the appropriate class
+
+function genVisualContainer(containerId){
+  return `
+  <div id=`+containerId+`></div>
+  `; //Put menus in here for switching inner visuals?
+}
+
+function genuPlotContainer(containerId, plotId) {
+  return `
+  <div id='`+containerId+`'>
+      <h3 id='`+plotId+`title'>ADC FFTs w/ Bandpass</h3>
+      <div id='`+plotId+`'></div>
+  </div>`
+}
 
 function genSmoothieContainer(containerId, plotId) {
   return ` 
   <div id='`+containerId+`'> 
     Mode:
-    <select id="`+plotId+`mode">
+    <select id='`+plotId+`mode'>
       <option value="alpha" selected="selected">Alpha Bandpowers</option>
       <option value="coherence">Alpha Coherence</option>
       <option value="bandpowers">1Ch All Bandpowers</option>
     </select>
     Channels:
-    <select id="`+plotId+`channel">
+    <select id='`+plotId+`channel'>
       <option value="0">0</option>
     </select>
     <div id='`+plotId+`title'>Smoothiejs</div> 
-      <canvas id=`+plotId+`></canvas> 
+      <canvas id='`+plotId+`'></canvas> 
   </div>
   `;
 }
@@ -573,7 +550,7 @@ function genBrainMapContainer(containerId, brainmapId){
     <table id='`+brainmapId+`table'>
       <tr><td><h3>Brain Map (see "atlas" in the console and set corresponding channel tags (see "channelTags")) | </h3></td>
       <td><h4>Viewing:</h4></td>
-      <td><select id="`+brainmapId+`bandview">
+      <td><select id='`+brainmapId+`bandview'>
         <option value="scp">SCP (0.1Hz-1Hz)</option>
         <option value="delta">Delta (1Hz-4Hz)</option>
         <option value="theta">Theta (4Hz-8Hz)</option>
@@ -583,15 +560,15 @@ function genBrainMapContainer(containerId, brainmapId){
         <option value="highgamma">High Gamma (48Hz+)</option>
       </select></td></tr>
     </table>
-    <canvas id=`+brainmapId+`></canvas>
-    <canvas id=`+brainmapId+`points></canvas>
+    <canvas id='`+brainmapId+`'></canvas>
+    <canvas id='`+brainmapId+`points'></canvas>
   `;
 }
 
 function genTimeChartContainer(containerId,timechartsId) {
   return `
-  <div id=`+containerId+`>
-    <div id=`+timechartsId+`></div>
+  <div id='`+containerId+`'>
+    <div id='`+timechartsId+`'></div>
   </div>
   `;
 }
@@ -600,79 +577,190 @@ function genSpectrogramContainer(containerId,spectrogramId) {
   return `
   <div id=`+containerId+`>
     Channel
-    <select id="`+spectrogramId+`mode">
+    <select id='`+spectrogramId+`mode'>
       <option value="fft">FFT</option>
       <option value="coherence" selected="selected">Coherence</option>
     </select>
-    <select id="`+spectrogramId+`channel">
+    <select id='`+spectrogramId+`channel'>
       <option value="0" selected="selected">0</option>
     </select>
-    <canvas id=`+spectrogramId+`></canvas>
+    <canvas id='`+spectrogramId+`'></canvas>
   </div>
   `;
 }
 
 function genBarChartContainer(containerId, barchartId) {
   return `
-  <div id=`+containerId+`>
+  <div id='`+containerId+`'>
     Channel
-    <select id="`+barchartId+`channel">
+    <select id='`+barchartId+`channel'>
       <option value="0" selected="selected">0</option>
     </select>
-    <canvas id=`+barchartId+`></canvas>
+    <canvas id='`+barchartId+`'></canvas>
   </div>
   `;
 }
 
 function genMirrorChartsContainer(containerId, mirrorchartsId) {
   return `
-  <div id=`+containerId+`>
+  <div id='`+containerId+`'>
     Channel 1
-    <select id="`+mirrorchartsId+`channel1">
+    <select id='`+mirrorchartsId+`channel1'>
       <option value="0" selected="selected">0</option>
       <option value="1">1</option>
     </select>
     Channel 2
-    <select id="`+mirrorchartsId+`channel2">
+    <select id='`+mirrorchartsId+`channel2'>
       <option value="0" selected="selected">0</option>
       <option value="1">1</option>
     </select>
-    <div id=`+mirrorchartsId+`></div>
+    <div id='`+mirrorchartsId+`'></div>
   </div>
   `;
 }
 
 
 //Setup for appending HTML and creating class instances
+function setupVisualContainer(containerId, height, width, appendTo){
+  var containerobj = {
+    id: containerId,
+    elem: null,
+    width: width,
+    height: height,
+    mode: "none",
+    class: null
+  }
 
-function setupBrainMapContainer(containerId, brainmapId) {
+  var HTMLtoAppend = genVisualContainer(containerId);
+  appendFragment(HTMLtoAppend, appendTo);
+  containerobj.id = containerId;
+  containerobj.elem = document.getElementById(containerId);
 
+  return containerobj; //Make sure to store this
 }
-
-function setupTimeChartContainer(containerId, timechartsId) {
-
-}
-
-function setupSpectrogramContainer(containerId, spectrogramId) {
-
-}
-
-function setupBarChartContainer(containerId, barchartId) {
-
-}
-
-function setupMirrorChartsContainer(containerId, mirrorchartsId) {
-
-}
-
 
 function addChannelOptions(selectId) {
   var select = document.getElementById(selectId);
   var opts = ``;
   EEG.channelTags.forEach((row,i) => {
-    opts += `<option value=`+row.ch+`>`+row.ch+`</option>`
+    opts += `<option value='`+row.ch+`'>`+row.ch+`</option>`
   });
   select.innerHTML = opts;
+}
+
+function setupuPlotContainer(containerId, plotId, obj) {
+  var HTMLtoAppend = genuPlotContainer(containerId, plotId);
+  appendFragment(HTMLtoAppend,obj.id);
+  obj.class = new uPlotMaker(plotId);
+  obj.mode = "uplot";
+}
+
+function setupSmoothieContainer(containerId, plotId, obj) {
+  var HTMLtoAppend = genSmoothieContainer(containerId, plotId);
+  appendFragment(HTMLtoAppend,obj.id);
+  addChannelOptions(plotId+"channel");
+  obj.class = new SmoothieChartMaker(8,plotId);
+  obj.mode = "smoothie";
+}
+
+function setupBrainMapContainer(containerId, brainmapId, obj) {
+  var HTMLtoAppend = genBrainMapContainer(containerId, brainmapId);
+  appendFragment(HTMLtoAppend,obj.Id);
+  obj.class = new brainMap2D(brainMapId,brainMapId+"points");
+  obj.mode = "brainmap";
+}
+
+function setupTimeChartContainer(containerId, timechartsId, obj) {
+  var HTMLtoAppend = genTimeChartContainer(containerId, timechartsId);
+  appendFragment(HTMLtoAppend,obj.id);
+  obj.class = new TimeChartMaker(timechartsId);
+  obj.mode = "timecharts";
+}
+
+function setupSpectrogramContainer(containerId, spectrogramId, obj) {
+  var HTMLtoAppend = genSpectrogramContainer(containerId, spectrogramId);
+  appendFragment(HTMLtoAppend,obj.id);
+  addChannelOptions(spectrogramId+"channel");
+  obj.class = new Spectrogram(spectrogramId, 700);
+  obj.mode = "spectrogram";
+}
+
+function setupBarChartContainer(containerId, barchartId, obj) {
+  var HTMLtoAppend = genBarChartContainer(containerId,barchartId);
+  appendFragment(HTMLtoAppend,obj.id);
+  addChannelOptions(barchartId+"channel");
+  obj.class = new eegBarChart(barchartId, 700);
+  obj.mode = "bars";
+}
+
+function setupMirrorChartsContainer(containerId, mirrorchartsId, obj) {
+  var HTMLtoAppend = genMirrorChartsContainer(containerId, mirrorchartsId);
+  appendFragment(HTMLtoAppend,obj.id);
+  addChannelOptions(mirrorchartsId+"channel1");
+  addChannelOptions(mirrorchartsId+"channel2");
+  obj.class = new mirrorBarChart(mirrorchartsId, 700);
+  obj.mode = "mirror";
+}
+
+
+//Updating for raw and fft data per visual container
+function updateVisualContainers(containerArr, type) { //types: coherence, raw
+  containerArr.forEach((obj,i) => {
+    
+    if(obj.mode === "uplot") {
+      if(type === "coherence") {
+      
+      }
+      else if(type === "dft") {
+
+      }
+    }
+    else if(obj.mode === "smoothie") {
+      if(type === "coherence") {
+      
+      }
+      else if(type === "dft") {
+        
+      }
+    }
+    else if(obj.mode === "brainmap") {
+      if(type === "coherence") {
+      
+      }
+      else if(type === "dft") {
+        
+      }
+    }
+    else if(obj.mode === "timecharts") {
+      if(type === "raw") {
+
+      }
+    }
+    else if(obj.mode === "spectrogram") {
+      if(type === "coherence") {
+      
+      }
+      else if(type === "dft") {
+        
+      }
+    }
+    else if(obj.mode === "bars") {
+      if(type === "coherence") {
+      
+      }
+      else if(type === "dft") {
+        
+      }
+    }
+    else if(obj.mode === "mirror") {
+      if(type === "coherence") {
+      
+      }
+      else if(type === "dft") {
+        
+      }
+    }
+  })
 }
 
 
@@ -809,64 +897,6 @@ var setuPlot = (gmode) => {
   //else if(graphmode === "StackedRaw") { graphmode = "StackedFFT" }//Stacked Coherence
   
 }
-
-
-var setTimeCharts = () => {
-
-  channelTags.forEach((row,i) => { // Recycle or make new time charts
-    var chartname = 'timechart'+i;
-    var nsamples = Math.floor(EEG.sps*nSecAdcGraph);
-    var dat = EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter);
-    
-    if(timecharts[i] === undefined){
-      appendFragment("<div id='"+chartname+"'></div>","timechartStack");
-      var elem = document.getElementById(chartname);
-      timechartsdata.push(dat);
-      var timechart = new TimeChart(elem, {
-        series: [{ dat }],
-        lineWidth: 2,
-        xRange: { min: 0, max: 20 * 1000 },
-        realTime: true,
-        zoom: {
-            x: {
-                autoRange: true,
-                minDomainExtent: 50,
-            },
-            y: {
-                autoRange: true,
-                minDomainExtent: 1,
-            }
-        },
-      });
-
-      timecharts.push(timechart);
-    }
-    else {
-      timecharts[i].dispose();
-      timechartsdata[i] = dat;
-      var elem = document.getElementById(chartname);
-      var timechart = new TimeChart(elem, {
-        series: [{ dat }],
-        lineWidth: 2,
-        xRange: { min: 0, max: 20 * 1000 },
-        realTime: true,
-        zoom: {
-            x: {
-                autoRange: true,
-                minDomainExtent: 50,
-            },
-            y: {
-                autoRange: true,
-                minDomainExtent: 1,
-            }
-        },
-      });
-      timecharts[i] = timechart;
-    }
-  });
-
-}
-
 
 
 document.getElementById("connect").onclick = () => {EEG.setupSerialAsync();}
