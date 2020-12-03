@@ -11,7 +11,7 @@ import {TimeChart} from 'timechart';
 
 //Nice time series charts based on smoothiejs
 export class SmoothieChartMaker {
-	constructor(nSeries = 1, canvasId=null, gridStrokeStyle = 'rgb(125, 125, 125)', gridFillStyle = 'rgb(10, 10, 10)', labelFillStyle = 'rgb(255, 255, 255)') {
+	constructor(nSeries = 1, canvasId=null) {
 		if(typeof(SmoothieChart) === 'undefined'){
 			alert("smoothie.js not found!");
 			return false;
@@ -27,10 +27,6 @@ export class SmoothieChartMaker {
 		for(var n = 0; n < nSeries; n++) {
 			var newseries = new TimeSeries();
 			this.series.push(newseries);
-		}
-
-		if(canvasId !== null) {
-			this.init(gridStrokeStyle, gridFillStyle, labelFillStyle);
 		}
 
 	}
@@ -104,13 +100,13 @@ export class SmoothieChartMaker {
 
 
 export class uPlotMaker {
-	constructor(canvasId = null) {
+	constructor(plotId = null) {
 		if(uPlot === 'undefined') {
 			console.log("uPlot not detected!");
 			return false;
 		}
 
-		this.canvasId = canvasId;
+		this.plotId = plotId;
 		this.plot = null;
 		this.uPlotData = [];
 	}
@@ -163,8 +159,7 @@ export class uPlotMaker {
 		//console.log(uPlotData);
 
 		if(this.plot !== null){ this.plot.destroy(); }
-		
-		this.plot = new uPlot(uPlotOptions, uPlotData, document.getElementById(this.canvasId));
+		this.plot = new uPlot(uPlotOptions, uPlotData, document.getElementById(this.plotId));
 	}
 
 	//Pass this the channelTags object from your eeg32 instance.
@@ -187,7 +182,7 @@ export class uPlotMaker {
 	}
 
 	//Stacked uplot with dynamic y scaling per series. Define either series or channelTags (from the eeg32 instance)
-	makeStackeduPlot = (series=[{}], data=[], options = null, channelTags = null) => {
+	makeStackeduPlot = (series=[{}], data=[], options = null, channelTags = null, width = 1000, height = 800) => {
 		var newSeries = [{}];
 		var serieslen = 0;
 		if(series === newSeries) {
@@ -300,8 +295,8 @@ export class uPlotMaker {
 		if(options === null){
 		uPlotOptions = {
 		  title: "EEG Output",
-		  width: 1000,
-		  height: 800,
+		  width: width,
+		  height: height,
 		  series: newSeries,
 		  axes: [
 			{
@@ -318,7 +313,7 @@ export class uPlotMaker {
 		else { uPlotOptions = options; }
 
 		if(this.plot !== null) { this.plot.destroy(); }
-		this.plot = new uPlot(uPlotOptions, uPlotData, document.getElementById(this.canvasId));
+		this.plot = new uPlot(uPlotOptions, uPlotData, document.getElementById(this.plotId));
 		
 	}
 
@@ -523,7 +518,7 @@ export class brainMap2D {
 		channelTags.forEach((row,i) => {
 			let atlasCoord = atlas.map.find((o, j) => {
 			  if(o.tag === row.tag){
-				points.push({x:o.data.x*1.5+width*.5, y:height*.5-o.data.y*1.5, size:10, intensity:0.7});
+				points.push({x:o.data.x*this.scale+width*.5, y:height*.5-o.data.y*this.scale, size:10, intensity:0.7});
 				if(viewing === "scp"){
 					points[points.length - 1].size = Math.max(...o.data.slices.scp[o.data.slices.scp.length-1])}//o.data.means.scp[o.data.means.scp.length - 1];}
 				else if(viewing === "delta"){
@@ -668,8 +663,8 @@ export class mirrorBarChart {
 	constructor(divId = null, normalizeFactor = 1) {
 		this.div = document.getElementById(divId);
 		this.div.insertAdjacentHTML("afterbegin",`<canvas id="leftbars"></canvas><canvas id="rightbars"></canvas>`);
-		this.leftbars = new eegBarChart("leftbars",normalizeFactor);
-		this.rightbars = new eegBarChart("rightbars", normalizeFactor);
+		this.leftbars = new eegBarChart(divId+"leftbars",normalizeFactor);
+		this.rightbars = new eegBarChart(divId+"rightbars", normalizeFactor);
 	
 		this.leftbars.ctx.rotate(90 * (Math.PI / 180));
 		
@@ -703,6 +698,7 @@ export class mirrorBarChart {
 //Makes a color coded bar chart to apply frequency bins to for a classic visualization. Should upgrade this with smooth transitions in an animation loop
 export class eegBarChart {
 	constructor(canvasId = null, normalizeFactor = 1) {
+		this.canvasId = canvasId;
 		this.canvas = document.getElementById(canvasId);
 		this.ctx = this.canvas.getContext("2d");
 		this.anim = null;
@@ -800,6 +796,7 @@ export class eegBarChart {
 
 export class thetaGamma2Octave { //Not finished
 	constructor(canvasId = null, spectNormalizeFactor, scalingFactor) {
+		this.canvasId = canvasId;
 		this.spect = new Spectrogram(canvasId);
 		this.anim = null;
 		this.spect.normalizeFactor = spectNormalizeFactor;
@@ -869,6 +866,7 @@ export class thetaGamma2Octave { //Not finished
 
 export class Spectrogram {
 	constructor(canvasId, peakAmp = 1){
+		this.canvasId = canvasId;
 		this.canvas = document.getElementById(canvasId);
 		this.ctx = this.canvas.getContext("2d");
 

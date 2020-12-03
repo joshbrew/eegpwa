@@ -47,75 +47,38 @@
       <button id="setChannelView">Set Channel View</button>
       <input type="text" id="channelTags" placeholder="Format: 0:Fp1;2:Fz;6:P6:0,1,2;etc">
       <button id="setTags">Set Tags</button>
-      Graph Mode
-      <select id="graph">
-        <option value="ffts" selected="selected">FFT Data</option>
-        <option value="raw">ADC Data</option>
-        <option value="coherence">Coherence Data</option>
-      </select>
-      Visual1
-      <select id="vis1"> 
-        <option value="smooth" selected="selected">Scrolling Bandpowers</option>
-        <option value="timecharts">Timecharts</option>
-        <option value="spect">Spectrogram</option>
-        <option value="bars">Bar Charts</option>
-        <option value="brainmap">Brain Map</option>
-        <option value="none">None</option>
-      </select> 
       Visual2
       <select id="vis2"> 
-        <option value="smooth">Scrolling Bandpowers</option>
-        <option value="timecharts">Timecharts</option>
-        <option value="spect">Spectrogram</option>
-        <option value="bars">Bar Charts</option>
+        <option value="smoothie">Smooth plot</option>
+        <option value="timecharts">Time series</option>
+        <option value="spectrogram">Spectrogram</option>
         <option value="brainmap" selected="selected">Brain Map</option>
+        <option value="barchart">Bar Chart</option>
+        <option value="mirror">Mirrored Bar Chart</option>
         <option value="none">None</option>
       </select> 
       Visual3
       <select id="vis3"> 
-        <option value="smooth">Scrolling Bandpowers</option>
-        <option value="timecharts" selected="selected">Timecharts</option>
-        <option value="spect">Spectrogram</option>
-        <option value="bars">Bar Charts</option>
+        <option value="smoothie" selected="selected">Smooth plot</option>
+        <option value="timecharts">Time series</option>
+        <option value="spectrogram">Spectrogram</option>
         <option value="brainmap">Brain Map</option>
+        <option value="barchart">Bar Chart</option>
+        <option value="mirror">Mirrored Bar Chart</option>
+        <option value="none">None</option>
+      </select> 
+      Visual4
+      <select id="vis4"> 
+        <option value="smoothie">Smooth plot</option>
+        <option value="timecharts">Time series</option>
+        <option value="spectrogram" selected="selected">Spectrogram</option>
+        <option value="brainmap">Brain Map</option>
+        <option value="barchart">Bar Chart</option>
+        <option value="mirror">Mirrored Bar Chart</option>
         <option value="none">None</option>
       </select>
     </div>
-    <div id="visualcontainer0">
-      <h3 id="uplottitle">ADC FFTs w/ Bandpass</h3>
-      <div id="adc"></div>
-    </div>
-    <div id="visualcontainer1">
-      <div id="smoothiecontainer">
-        <h3>Band Amplitudes. Color codes: Purple - Delta, Orange - Theta, Green - Alpha, Blue - Beta, Red - Gamma</h3>
-        <canvas id="smoothie1" style="width: 75%; height: 200px"></canvas>
-        <h3>Alpha Amplitudes (8-12Hz)</h3>
-        <canvas id="smoothie2" style="width: 75%; height: 200px"></canvas>
-      </div>
-    </div>
-    <div id="visualcontainer2">
-      <div id="brainmapcontainer">
-        <table id="brainmaptable">
-          <tr><td><h3>Brain Map (see "atlas" in the console and set corresponding channel tags (see "channelTags")) | </h3></td>
-          <td><h4>Viewing:</h4></td>
-          <td><select id="bandview">
-            <option value="scp">SCP (0.1Hz-1Hz)</option>
-            <option value="delta">Delta (1Hz-4Hz)</option>
-            <option value="theta">Theta (4Hz-8Hz)</option>
-            <option value="alpha" selected="selected">Alpha (8Hz-12Hz)</option>
-            <option value="beta">Beta (12Hz-35Hz)</option>
-            <option value="lowgamma">Low Gamma (35Hz-48Hz)</option>
-            <option value="highgamma">High Gamma (48Hz+)</option>
-          </select></td></tr>
-        </table>
-        <canvas id="brainmap"></canvas>
-        <canvas id="brainmappoints"></canvas>
-      </div>
-    </div>
-    <div id="visualcontainer3">
-      <div id="timechartStack"></div>
-    </div>
-
+    <div id="visuals"></div>
 
 <script src="./index.ts"></script>
 
