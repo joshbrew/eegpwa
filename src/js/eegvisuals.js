@@ -112,6 +112,7 @@ export class uPlotMaker {
 
 		this.canvasId = canvasId;
 		this.plot = null;
+		this.uPlotData = [];
 	}
 
 	deInit() {
@@ -119,6 +120,10 @@ export class uPlotMaker {
 			this.plot.destroy();
 			this.plot = null;
 		}
+	}
+
+	init() {
+
 	}
 
 	makeuPlot(series=[{}], data=[], width=1000, height=400, options = null) {
@@ -736,14 +741,14 @@ export class eegBarChart {
 		var cheight = this.canvas.height;
 
 		var slicearr = [...this.slices.scp,...this.slices.delta,...this.slices.theta,...this.slices.alpha,...this.slices.beta,...this.slices.lowgamma];
-		var nbins = this.binData.length;
+		var nbins = slicearr.length;
 
 		var wscale = cwidth / this.relativeWidth;
 		var xoffset = (this.meterWidth+this.meterGap)*wscale;
 		
 		this.canvas.context.clearRect(0, 0, cwidth, cheight);
 		for (var i = 0; i < nbins; i++) {
-			var value = this.binData[i]*this.capYnormalizeFactor*cheight; // normalized y values
+			var value = slicearr[i]*this.capYnormalizeFactor*cheight; // normalized y values
 			if(value < 0){ value = 0;}
 			if (capYPositionArray.length < Math.round(nbins)) {
 				capYPositionArray.push(value);

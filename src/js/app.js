@@ -16,6 +16,25 @@ try { window.gpu = new gpuUtils(gfx); }
 catch (err) { alert("gpu.js utils error: ", err); }
 
 
+var session = {
+  nSec: 1,
+  freqStart: 0,
+  freqEnd: 100,
+  posFFTList: [],
+  coherenceResults: [],
+  bandPassWindow: [],
+  nSecAdcGraph: 10,
+  fdbackmode: "coherence",
+  newMsg: true,
+  vscale: EEG.vref*EEG.stepSize,
+  stepsPeruV: 0.000001 / vscale,
+  analyze: false,
+  analyzeloop: null,
+  rawfeed: false,
+  rawfeedloop: null,
+}
+
+
 var nSec = 1; //Number of seconds to sample FFTs
 var freqStart = 0; //Beginning of DFT frequencies
 var freqEnd = 100; //End of DFT frequencies (max = SPS * 0.5, half the nyquist sampling rate)
@@ -39,13 +58,8 @@ var anim = null;
 var vscale = EEG.vref*EEG.stepSize; //ADC to volts
 var stepsPeruV = 0.000001 / vscale; //steps per microvolt
 
-var timecharts = [];
-var timechartsdata = [];
-var lasttimeidx = 0;
-
-
 var analyzeloop = null;
-var datafeedloop = null;
+var feedloop = null;
 var analyze = false;
 var feed = false;
 
@@ -520,8 +534,13 @@ function genVisualContainer(containerId){
 function genuPlotContainer(containerId, plotId) {
   return `
   <div id='`+containerId+`'>
-      <h3 id='`+plotId+`title'>ADC FFTs w/ Bandpass</h3>
-      <div id='`+plotId+`'></div>
+    <select id='`+plotId+`mode'>
+      <option value="FFT" selected="selected">FFTs</option>
+      <option value="Coherence">Coherence</option>
+      <option value="TimeSeries">Raw</option>
+    </select>
+    <h3 id='`+plotId+`title'>FFTs</h3>
+    <div id='`+plotId+`'></div>
   </div>`
 }
 
@@ -576,11 +595,12 @@ function genTimeChartContainer(containerId,timechartsId) {
 function genSpectrogramContainer(containerId,spectrogramId) {
   return `
   <div id=`+containerId+`>
-    Channel
+    Mode
     <select id='`+spectrogramId+`mode'>
-      <option value="fft">FFT</option>
-      <option value="coherence" selected="selected">Coherence</option>
+      <option value="FFT" selected="selected">FFT</option>
+      <option value="Coherence">Coherence</option>
     </select>
+    Channel
     <select id='`+spectrogramId+`channel'>
       <option value="0" selected="selected">0</option>
     </select>
@@ -625,11 +645,12 @@ function setupVisualContainer(containerId, height, width, appendTo){
   var containerobj = {
     id: containerId,
     elem: null,
+    child: null,
     width: width,
     height: height,
     mode: "none",
     class: null
-  }
+  };
 
   var HTMLtoAppend = genVisualContainer(containerId);
   appendFragment(HTMLtoAppend, appendTo);
@@ -639,21 +660,47 @@ function setupVisualContainer(containerId, height, width, appendTo){
   return containerobj; //Make sure to store this
 }
 
+
 function addChannelOptions(selectId) {
   var select = document.getElementById(selectId);
+  select.innerHTML = "";
   var opts = ``;
   EEG.channelTags.forEach((row,i) => {
-    opts += `<option value='`+row.ch+`'>`+row.ch+`</option>`
+    if(i === 0) {
+      opts += `<option value='`+row.ch+`' selected='selected'>`+row.ch+`</option>`
+    }
+    else {
+      opts += `<option value='`+row.ch+`'>`+row.ch+`</option>`
+    }
   });
   select.innerHTML = opts;
 }
+
+
+function deleteChildContainer(obj) {
+  obj.class.deInit();
+  obj.elem.removeChild(obj.child);
+  obj.class = null;
+  obj.mode = "none";
+}
+
 
 function setupuPlotContainer(containerId, plotId, obj) {
   var HTMLtoAppend = genuPlotContainer(containerId, plotId);
   appendFragment(HTMLtoAppend,obj.id);
   obj.class = new uPlotMaker(plotId);
   obj.mode = "uplot";
+  obj.child = document.getElementById(containerId);
+
+  obj.class.uPlotData = [session.bandPassWindow];
+  EEG.channelTags.forEach(() => {
+    obj.class.uPlotData.push(bandPassWindow)
+  })
+
+  obj.class.makeuPlot(obj.class.makeSeriesFromChannelTags(EEG.channelTags),obj.class.uPlotData);
+
 }
+
 
 function setupSmoothieContainer(containerId, plotId, obj) {
   var HTMLtoAppend = genSmoothieContainer(containerId, plotId);
@@ -661,6 +708,7 @@ function setupSmoothieContainer(containerId, plotId, obj) {
   addChannelOptions(plotId+"channel");
   obj.class = new SmoothieChartMaker(8,plotId);
   obj.mode = "smoothie";
+  obj.child = document.getElementById(containerId);
 }
 
 function setupBrainMapContainer(containerId, brainmapId, obj) {
@@ -668,6 +716,15 @@ function setupBrainMapContainer(containerId, brainmapId, obj) {
   appendFragment(HTMLtoAppend,obj.Id);
   obj.class = new brainMap2D(brainMapId,brainMapId+"points");
   obj.mode = "brainmap";
+  obj.child = document.getElementById(containerId);
+  
+  obj.class.genHeatMap();
+  obj.class.points = [];
+  EEG.atlas.map.forEach((row,i) => {
+    obj.class.points.push({x:row.data.x*1.5+200, y:200-row.data.y*1.5, size:130, intensity:0.8});
+  });
+  obj.class.updateHeatMap();
+  obj.class.updatePointsFromAtlas(EEG.atlas,EEG.channelTags);
 }
 
 function setupTimeChartContainer(containerId, timechartsId, obj) {
@@ -675,6 +732,8 @@ function setupTimeChartContainer(containerId, timechartsId, obj) {
   appendFragment(HTMLtoAppend,obj.id);
   obj.class = new TimeChartMaker(timechartsId);
   obj.mode = "timecharts";
+  obj.child = document.getElementById(containerId);
+  obj.class.setEEGTimeCharts(EEG);
 }
 
 function setupSpectrogramContainer(containerId, spectrogramId, obj) {
@@ -683,6 +742,28 @@ function setupSpectrogramContainer(containerId, spectrogramId, obj) {
   addChannelOptions(spectrogramId+"channel");
   obj.class = new Spectrogram(spectrogramId, 700);
   obj.mode = "spectrogram";
+  obj.child = document.getElementById(containerId);
+  obj.class.init();
+
+  document.getElementById(spectrogramId+"mode").onchange = () => {
+    if(document.getElementById(spectrogramId+"mode").value === "FFT"){
+      addChannelOptions(spectrogramId+"channel");
+    }
+    else if(document.getElementById(spectrogramId+"mode").value === "Coherence"){
+      var select = document.getElementById(spectrogramId+"channel");
+      select.innerHTML = "";
+      var newhtml = ``;
+      EEG.coherenceMap.map.forEach((row,i) => {
+        if(i===0) {
+          newhtml += `<option value='`+row.ch+`' selected="selected">`+row.ch+`</option>`;
+        }
+        else{
+          newhtml += `<option value='`+row.ch+`'>`+row.ch+`</option>`;
+        }
+      });
+      select.innerHTML = html;
+    }
+  }
 }
 
 function setupBarChartContainer(containerId, barchartId, obj) {
@@ -691,6 +772,8 @@ function setupBarChartContainer(containerId, barchartId, obj) {
   addChannelOptions(barchartId+"channel");
   obj.class = new eegBarChart(barchartId, 700);
   obj.mode = "bars";
+  obj.child = document.getElementById(containerId);
+  obj.class.init();
 }
 
 function setupMirrorChartsContainer(containerId, mirrorchartsId, obj) {
@@ -700,65 +783,177 @@ function setupMirrorChartsContainer(containerId, mirrorchartsId, obj) {
   addChannelOptions(mirrorchartsId+"channel2");
   obj.class = new mirrorBarChart(mirrorchartsId, 700);
   obj.mode = "mirror";
+  obj.child = document.getElementById(containerId);
+  obj.class.init();
 }
 
 
-//Updating for raw and fft data per visual container
-function updateVisualContainers(containerArr, type) { //types: coherence, raw
-  containerArr.forEach((obj,i) => {
-    
-    if(obj.mode === "uplot") {
-      if(type === "coherence") {
-      
-      }
-      else if(type === "dft") {
 
+//Updating for raw and fft data per visual container
+function updateVisualContainers(containerArr) { //types: coherence, raw
+  containerArr.forEach((obj,i) => {
+    if(obj.mode === "uplot") {
+      var graphmode = document.getElementById(obj.class.canvasId+"mode").value;
+      if(graphmode === "FFT"){
+          //Animate plot(s)
+          obj.class.uPlotData = [
+              session.bandPassWindow
+          ];
+    
+          EEG.channelTags.forEach((row,i) => {
+              if(row.viewing === true) {
+                obj.class.uPlotData.push(session.posFFTList[i]);
+              }
+          });
+      }
+    
+      else if ((graphmode === "TimeSeries") || (graphmode === "Stacked")) {
+          var nsamples = Math.floor(EEG.sps*session.nSecAdcGraph);
+    
+          uPlotData = [
+              EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
+          ];
+    
+          EEG.channelTags.forEach((row,i) => {
+              if(row.viewing === true) {
+                obj.class.uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
+              }
+          });
+      }
+    
+      else if (graphmode === "Coherence") {
+        obj.class.uPlotData = [session.bandPassWindow,...session.coherenceResults];
+      }
+    
+      //console.log(uPlotData)
+      if(graphmode === "Stacked"){
+        obj.class.makeStackeduPlot(undefined,obj.class.uPlotData,undefined,EEG.channelTags);
+      }
+      else {
+        obj.class.plot.setData(obj.class.uPlotData);
       }
     }
+
     else if(obj.mode === "smoothie") {
-      if(type === "coherence") {
-      
+      var graphmode = document.getElementById(obj.class.canvasId+"mode");
+      if((graphmode === "alpha") || (graphmode === "bandpowers")) {
+        if(graphmode === "alpha"){ 
+          EEG.channelTags.forEach((row,i) => {
+            var coord = {};
+            coord = EEG.getAtlasCoordByTag(row.tag);
+            
+            if(i < obj.class.series.length - 1){
+              obj.class.series[i].append(Date.now(), Math.max(...coord.data.slices.alpha[coord.data.slices.alpha.length-1]));
+            }
+          });
+        }
+        else if(graphmode === "bandpowers") {
+          var ch = document.getElementById(obj.class.canvasId+"channel").value;
+          var tag = null;
+          EEG.channelTags.find((o,i) => {
+            if(o.ch === ch){
+              tag = o.tag;
+              return true;
+            }
+          });
+          if(tag !== null){
+            var coord = EEG.getAtlasCoordByTag(tag);
+            obj.class.bulkAppend([
+              Math.max(...coord.data.slices.delta[coord.data.slices.delta.length-1]),
+              Math.max(...coord.data.slices.theta[coord.data.slices.theta.length-1]),
+              Math.max(...coord.data.slices.alpha[coord.data.slices.alpha.length-1]),
+              Math.max(...coord.data.slices.beta[coord.data.slices.beta.length-1]),
+              Math.max(...coord.data.slices.lowgamma[coord.data.slices.lowgamma.length-1])
+            ]);
+          }
+        }
       }
-      else if(type === "dft") {
-        
+      else if (graphmode === "coherence") {
+        EEG.coherenceMap.map.forEach((row,i) => {
+          if(i < obj.class.series.length - 1){
+            obj.class.series[i].append(Date.now(), Math.max(...row.data.slices.alpha[row.data.slices.alpha.length-1]));
+          }
+        });
       }
     }
     else if(obj.mode === "brainmap") {
-      if(type === "coherence") {
-      
-      }
-      else if(type === "dft") {
-        
+      var viewing = document.getElementById("bandview").value;
+      obj.class.updateHeatmapFromAtlas(EEG.atlas,EEG.channelTags,viewing);
+
+      if(session.coherenceResults.length === EEG.coherenceMap.map.length){
+        obj.class.updateConnectomeFromAtlas(EEG.coherenceMap,EEG.atlas,EEG.channelTags,viewing);
       }
     }
     else if(obj.mode === "timecharts") {
-      if(type === "raw") {
-
-      }
+      obj.class.updateTimeCharts(EEG);
     }
     else if(obj.mode === "spectrogram") {
-      if(type === "coherence") {
-      
+      var graphmode = document.getElementById(obj.class.canvasId+"mode");
+      var ch = document.getElementById(obj.class.canvasId+"channel").value;
+      if(graphmode === "FFT"){
+        var tag = null;
+        EEG.channelTags.find((o,i) => {
+          if(o.ch === ch){
+            tag = o.tag;
+            return true;
+          }
+        });
+        if(tag !== null){
+          var coord = EEG.getAtlasCoordByTag(tag);
+          obj.spectrogram.latestData = coord.data.amplitudes[coord.data.amplitudes.length-1];
+        }
       }
-      else if(type === "dft") {
-        
+      else if(graphmode === "Coherence"){
+        var coord = null;
+        EEG.coherenceMap.map.find((o,i) => {
+          if(o.tag === ch){
+            coord = o.data;
+          }
+        });
+        obj.spectrogram.latestData = coord.data.amplitudes[coord.data.amplitudes.length - 1];
       }
     }
     else if(obj.mode === "bars") {
-      if(type === "coherence") {
+      var ch = document.getElementById(obj.class.canvasId+"channel").value;
+      var tag = null;
+      EEG.channelTags.find((o,i) => {
+        if(o.ch === ch){
+          tag = o.tag;
+          return true;
+        }
+      });
+      if(tag !== null){
+        var coord = EEG.getAtlasCoordByTag(tag);
+        obj.spectrogram.latestData = coord.data.amplitudes[coord.data.amplitudes.length-1];
+      }
       
-      }
-      else if(type === "dft") {
-        
-      }
     }
     else if(obj.mode === "mirror") {
-      if(type === "coherence") {
+      var ch1 = document.getElementById(obj.class.canvasId+"channel1").value;
+      var tag1 = null;
+      EEG.channelTags.find((o,i) => {
+        if(o.ch === ch1){
+          tag1 = o.tag;
+          return true;
+        }
+      });
       
-      }
-      else if(type === "dft") {
-        
-      }
+      var ch2 = document.getElementById(obj.class.canvasId+"channel2").value;
+      var tag2 = null;
+      EEG.channelTags.find((o,i) => {
+        if(o.ch === ch2){
+          tag2 = o.tag;
+          return true;
+        }
+      });
+      var coord1, coord2;
+      if(tag1 !== null){
+        coord1 = EEG.getAtlasCoordByTag(tag1);
+        if(tag2 !== null){
+          coord2 = EEG.getAtlasCoordByTag(tag2);
+          obj.class.updateCharts(coord1.data.slices[coord1.data.slices.length-1],coord2.data.slices[coord2.data.slices.length-1]);
+        }
+      }    
     }
   })
 }
