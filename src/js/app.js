@@ -463,7 +463,7 @@ function genBrainMapContainer(containerId, visualId, width, height){
   return ` 
   <div id='`+containerId+`' width='`+width+`px' height='`+height+`px'>  
     <table id='`+visualId+`table'>
-      <tr><td><h3>Brain Map (see "atlas" in the console and set corresponding channel tags (see "channelTags")) | </h3></td>
+      <tr><td><h3>Brain Map</h3></td>
       <td><h4>Viewing:</h4></td>
       <td><select id='`+visualId+`bandview'>
         <option value="scp">SCP (0.1Hz-1Hz)</option>
@@ -579,10 +579,10 @@ function addChannelOptions(selectId) {
   select.innerHTML = opts;
 }
 
-function setupuPlotContainer(containerId, plotId, obj) {
-  var HTMLtoAppend = genuPlotContainer(containerId, plotId, obj.width, obj.height);
+function setupuPlotContainer(containerId, visualId, obj) {
+  var HTMLtoAppend = genuPlotContainer(containerId, visualId, obj.width, obj.height);
   appendFragment(HTMLtoAppend,obj.id);
-  obj.class = new uPlotMaker(plotId);
+  obj.class = new uPlotMaker(visualId);
   obj.mode = "uplot";
   obj.child = document.getElementById(containerId).parentNode;
 
@@ -592,7 +592,7 @@ function setupuPlotContainer(containerId, plotId, obj) {
     obj.class.uPlotData.push(session.bandPassWindow);
   });
 
-  document.getElementById(plotId+"mode").onchange = () => {
+  document.getElementById(visualId+"mode").onchange = () => {
     setuPlot();
   }
 
@@ -600,28 +600,28 @@ function setupuPlotContainer(containerId, plotId, obj) {
 }
 
 
-function setupSmoothieContainer(containerId, plotId, obj) {
-  var HTMLtoAppend = genSmoothieContainer(containerId, plotId, obj.width, obj.height);
+function setupSmoothieContainer(containerId, visualId, obj) {
+  var HTMLtoAppend = genSmoothieContainer(containerId, visualId, obj.width, obj.height);
 
   appendFragment(HTMLtoAppend,obj.id);
-  addChannelOptions(plotId+"channel");
+  addChannelOptions(visualId+"channel");
 
-  obj.class = new SmoothieChartMaker(8,plotId);
+  obj.class = new SmoothieChartMaker(8,visualId);
   obj.mode = "smoothie";
   obj.child = document.getElementById(containerId).parentNode;
 
   obj.class.init();
 }
 
-function setupBrainMapContainer(containerId, brainmapId, obj) {
+function setupBrainMapContainer(containerId, visualId, obj) {
 
-  var HTMLtoAppend = genBrainMapContainer(containerId, brainmapId, obj.width, obj.height);
+  var HTMLtoAppend = genBrainMapContainer(containerId, visualId, obj.width, obj.height);
   appendFragment(HTMLtoAppend,obj.id);
-  obj.class = new brainMap2D(brainmapId,brainmapId+"points");
+  obj.class = new brainMap2D(visualId,visualId+"points");
   obj.mode = "brainmap";
   obj.child = document.getElementById(containerId).parentNode;
 
-  document.getElementById(brainmapId+"bandview").onchange = () => {
+  document.getElementById(visualId+"bandview").onchange = () => {
     setBrainMap(obj);
   };
   
@@ -634,32 +634,32 @@ function setupBrainMapContainer(containerId, brainmapId, obj) {
   obj.class.updatePointsFromAtlas(EEG.atlas,EEG.channelTags);
 }
 
-function setupTimeChartContainer(containerId, timechartsId, obj) {
-  var HTMLtoAppend = genTimeChartContainer(containerId, timechartsId, obj.width, obj.height);
+function setupTimeChartContainer(containerId, visualId, obj) {
+  var HTMLtoAppend = genTimeChartContainer(containerId, visualId, obj.width, obj.height);
   appendFragment(HTMLtoAppend,obj.id);
-  obj.class = new TimeChartMaker(timechartsId);
+  obj.class = new TimeChartMaker(visualId);
   obj.mode = "timecharts";
   obj.child = document.getElementById(containerId).parentNode;
 
   obj.class.setEEGTimeCharts(EEG,session.nSecAdcGraph);
 }
 
-function setupSpectrogramContainer(containerId, spectrogramId, obj) {
-  var HTMLtoAppend = genSpectrogramContainer(containerId, spectrogramId, obj.width, obj.height);
+function setupSpectrogramContainer(containerId, visualId, obj) {
+  var HTMLtoAppend = genSpectrogramContainer(containerId, visualId, obj.width, obj.height);
   appendFragment(HTMLtoAppend,obj.id);
-  addChannelOptions(spectrogramId+"channel");
-  obj.class = new Spectrogram(spectrogramId, 700);
+  addChannelOptions(visualId+"channel");
+  obj.class = new Spectrogram(visualId, 100);
   obj.mode = "spectrogram";
   obj.child = document.getElementById(containerId).parentNode;
 
   obj.class.init();
 
-  document.getElementById(spectrogramId+"mode").onchange = () => {
-    if(document.getElementById(spectrogramId+"mode").value === "FFT"){
-      addChannelOptions(spectrogramId+"channel");
+  document.getElementById(visualId+"mode").onchange = () => {
+    if(document.getElementById(visualId+"mode").value === "FFT"){
+      addChannelOptions(visualId+"channel");
     }
-    else if(document.getElementById(spectrogramId+"mode").value === "Coherence"){
-      var select = document.getElementById(spectrogramId+"channel");
+    else if(document.getElementById(visualId+"mode").value === "Coherence"){
+      var select = document.getElementById(visualId+"channel");
       select.innerHTML = "";
       var newhtml = ``;
       EEG.coherenceMap.map.forEach((row,i) => {
@@ -675,31 +675,31 @@ function setupSpectrogramContainer(containerId, spectrogramId, obj) {
   }
 }
 
-function setupBarChartContainer(containerId, barchartId, obj) {
-  var HTMLtoAppend = genBarChartContainer(containerId, barchartId, obj.width, obj.height);
+function setupBarChartContainer(containerId, visualId, obj) {
+  var HTMLtoAppend = genBarChartContainer(containerId, visualId, obj.width, obj.height);
   appendFragment(HTMLtoAppend,obj.id);
-  addChannelOptions(barchartId+"channel");
-  obj.class = new eegBarChart(barchartId, 700);
+  addChannelOptions(visualId+"channel");
+  obj.class = new eegBarChart(visualId, 700);
   obj.mode = "bars";
   obj.child = document.getElementById(containerId).parentNode;
 
   obj.class.init();
 }
 
-function setupMirrorChartsContainer(containerId, mirrorchartsId, obj) {
-  var HTMLtoAppend = genMirrorChartsContainer(containerId, mirrorchartsId, obj.width, obj.height);
+function setupMirrorChartsContainer(containerId, visualId, obj) {
+  var HTMLtoAppend = genMirrorChartsContainer(containerId, visualId, obj.width, obj.height);
   appendFragment(HTMLtoAppend,obj.id);
-  addChannelOptions(mirrorchartsId+"channel1");
-  addChannelOptions(mirrorchartsId+"channel2");
-  obj.class = new mirrorBarChart(mirrorchartsId, 700);
+  addChannelOptions(visualId+"channel1");
+  addChannelOptions(visualId+"channel2");
+  obj.class = new mirrorBarChart(visualId, 700);
   obj.mode = "mirror";
   obj.child = document.getElementById(containerId).parentNode;
 
-  var elem1 = document.getElementById(mirrorchartsId+"leftbars");
+  var elem1 = document.getElementById(visualId+"leftbars");
   elem1.style.width = obj.width*.5;
   elem1.style.height = obj.height;
 
-  var elem2 = document.getElementById(mirrorchartsId+"rightbars");
+  var elem2 = document.getElementById(visualId+"rightbars");
   elem2.style.width = obj.width*.5;
   elem2.style.height = obj.height;
 
@@ -1281,10 +1281,10 @@ function testGPU(){
 
 function testCoherence(){
   console.log("testCoherence()");
-  window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd],1);
-  window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd],1);
-  window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd],1);
-  window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd],1);
+  window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd,1/session.stepsPeruV],1);
+  window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd,1/session.stepsPeruV],1);
+  window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd,1/session.stepsPeruV],1);
+  window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd,1/session.stepsPeruV],1);
 
 }
 

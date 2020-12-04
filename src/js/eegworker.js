@@ -90,7 +90,7 @@ onmessage = (e) => {
           //var timeMod = (e.data.input[1]-1)*.3333333; //Scaling for longer time intervals
           //if(timeMod <= 1) { timeMod = 1; }
           dft.forEach((amp,j) => {           
-              newdft[j] = amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]*0.001041666666666; //I don't remember how I got to this scalar but it helps return the exact amount of amplitude resonance...
+              newdft[j] = amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]*2;
           });
           l++;
           if((l+k) === nChannels) {

@@ -662,7 +662,7 @@ export class brainMap2D {
 export class mirrorBarChart {
 	constructor(divId = null, normalizeFactor = 1) {
 		this.div = document.getElementById(divId);
-		this.div.insertAdjacentHTML("afterbegin",`<canvas id="`+divId+`leftbars"></canvas><canvas id="`+divId+`rightbars"></canvas>`);
+		this.div.insertAdjacentHTML("afterbegin",`<table><tr><td><canvas id="`+divId+`leftbars"></canvas></td><td><canvas id="`+divId+`rightbars"></canvas></td></tr></table>`);
 		this.leftbars = new eegBarChart(divId+"leftbars",normalizeFactor);
 		this.rightbars = new eegBarChart(divId+"rightbars", normalizeFactor);
 	
