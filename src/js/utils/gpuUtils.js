@@ -45,7 +45,7 @@ export class gpuUtils {
   }
 
   //Input array buffer and the number of seconds of data
-  gpuDFT(signalBuffer, nSeconds, texOut = false){
+  gpuDFT(signalBuffer, nSeconds, scalar=1, texOut = false){
 
     var nSamples = signalBuffer.length;
     var sampleRate = nSamples/nSeconds;
@@ -53,7 +53,7 @@ export class gpuUtils {
     this.dft.setOutput([signalBuffer.length]);
     this.dft.setLoopMaxIterations(nSamples);
 
-    var outputTex = this.dft(signalBuffer, nSamples);
+    var outputTex = this.dft(signalBuffer, nSamples, scalar);
     var output = null;
     if(texOut === false){
       var freqDist = this.makeFrequencyDistribution(nSamples, sampleRate);
@@ -70,7 +70,7 @@ export class gpuUtils {
   }
 
   //Input array of array buffers of the same length and the number of seconds recorded
-  MultiChannelDFT(signalBuffer, nSeconds, texOut = false) {
+  MultiChannelDFT(signalBuffer, nSeconds, scalar=1, texOut = false) {
     
     var signalBufferProcessed = [];
       
@@ -85,7 +85,7 @@ export class gpuUtils {
     this.listdft1D.setOutput([signalBufferProcessed.length]); //Set output to length of list of signals
     this.listdft1D.setLoopMaxIterations(nSamplesPerChannel); //Set loop size to the length of one signal (assuming all are uniform length)
         
-    var outputTex = this.listdft1D(signalBufferProcessed,nSamplesPerChannel);
+    var outputTex = this.listdft1D(signalBufferProcessed,nSamplesPerChannel, scalar);
     if(texOut === false){
       var orderedMagsList = [];
 
@@ -110,7 +110,7 @@ export class gpuUtils {
 
       
   //Input buffer of signals [[channel 0],[channel 1],...,[channel n]] with the same number of samples for each signal. Returns arrays of the positive DFT results in the given window.
-  MultiChannelDFT_Bandpass(signalBuffer,nSeconds,freqStart,freqEnd, texOut = false) {
+  MultiChannelDFT_Bandpass(signalBuffer,nSeconds,freqStart,freqEnd,scalar=1, texOut = false) {
 
     var signalBufferProcessed = [];
       
@@ -126,7 +126,7 @@ export class gpuUtils {
     this.listdft1D_windowed.setOutput([signalBufferProcessed.length]); //Set output to length of list of signals
     this.listdft1D_windowed.setLoopMaxIterations(nSamplesPerChannel); //Set loop size to the length of one signal (assuming all are uniform length)
         
-    var outputTex = this.listdft1D_windowed(signalBufferProcessed,sampleRate,freqStart,freqEnd_nyquist);
+    var outputTex = this.listdft1D_windowed(signalBufferProcessed,sampleRate,freqStart,freqEnd_nyquist, scalar);
     if(texOut === true) { return outputTex; }
     
     signalBufferProcessed = outputTex.toArray();

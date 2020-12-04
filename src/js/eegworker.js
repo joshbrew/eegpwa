@@ -29,21 +29,29 @@ onmessage = (e) => {
     case "sma": // Takes 1 1D array and an sma window size
       output = eegmath.sma(e.data.input[0],e.data.input[1]);
       break;
-    case "dft": // Takes 1 1D array and the number of seconds
-      output = gpu.gpuDFT(e.data.input[0],e.data.input[1]);
+    case "dft": // Takes 1 1D array and the number of seconds, and an optional scalar value
+      var scalar = 1;
+      if(e.data.input[2] !== undefined) scalar = e.data.input[2];
+      output = gpu.gpuDFT(e.data.input[0],e.data.input[1],scalar);
       break;
     case "multidft": //Takes 1 2D array with equal width rows, and the number of seconds of data being given
-      output = gpu.MultiChannelDFT(e.data.input[0],e.data.input[1]);
+      var scalar = 1;
+      if(e.data.input[2] !== undefined) scalar = e.data.input[2];
+      output = gpu.MultiChannelDFT(e.data.input[0],e.data.input[1],scalar);
       break;
     case "multidftbandpass": //Accepts 1 2D array of equal width, number of seconds of data, beginning frequency, ending frequency
-        output = gpu.MultiChannelDFT_Bandpass(e.data.input[0],e.data.input[1],e.data.input[2],e.data.input[3]);
-        break;
+      var scalar = 1;
+      if(e.data.input[4] !== undefined) scalar = e.data.input[4];
+      output = gpu.MultiChannelDFT_Bandpass(e.data.input[0],e.data.input[1],e.data.input[2],e.data.input[3],scalar);
+      break;
     case "coherence": // Input 2D array, number of seconds, beginning frequency, ending frequency. Outputs an array of products of each FFT with each associated correlogram to create a network map of all available channels, ordered by channel
       const correlograms = eegmath.correlograms(e.data.input[0]); 
       const buffer = [...e.data.input[0],...correlograms];
       var dfts;
-      
-      dfts = gpu.MultiChannelDFT_Bandpass(buffer, e.data.input[1], e.data.input[2], e.data.input[3]);
+
+      var scalar = 1;
+      if(e.data.input[4] !== undefined) scalar = e.data.input[4];
+      dfts = gpu.MultiChannelDFT_Bandpass(buffer, e.data.input[1], e.data.input[2], e.data.input[3], scalar);
       const cordfts = dfts[1].splice(e.data.input[0].length, buffer.length-e.data.input[0].length);
       //console.log(cordfts)
       
@@ -82,7 +90,7 @@ onmessage = (e) => {
           //var timeMod = (e.data.input[1]-1)*.3333333; //Scaling for longer time intervals
           //if(timeMod <= 1) { timeMod = 1; }
           dft.forEach((amp,j) => {           
-              newdft[j] = amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]*0.001041666666666;
+              newdft[j] = amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j]*0.001041666666666; //I don't remember how I got to this scalar but it helps return the exact amount of amplitude resonance...
           });
           l++;
           if((l+k) === nChannels) {
