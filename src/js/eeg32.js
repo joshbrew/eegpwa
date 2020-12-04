@@ -336,7 +336,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		return found;
 	}
 
-	//Returns an array of Array(3)s for each coordinate. Useful e.g. for graphics
+	//Return an array of Array(3)s for each coordinate. Useful e.g. for graphics
 	getAtlasCoordsList() {
 		var coords = [];
 		for(var i = 0; i< this.atlas.length; i++) {
@@ -530,7 +530,7 @@ export class eegmath {
 		//Get variance of rows and columns
 		//console.time("cov2d");
 		var mattransposed = this.transpose(mat);
-		console.log(mattransposed)
+		//console.log(mattransposed)
 		var matproducts = [];
 
 		var rowmeans = [];

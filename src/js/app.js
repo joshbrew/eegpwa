@@ -60,6 +60,17 @@ var vis4 = setupVisualContainer("visual4",500,300,"spectrogram","visuals");
 
 session.visuals = [vis1,vis2,vis3,vis4];
 
+document.getElementById("vis2").onclick = () => {
+  setMode(document.getElementById("vis2").value, vis2);
+}
+
+document.getElementById("vis3").onclick = () => {
+  setMode(document.getElementById("vis3").value, vis3);
+}
+
+document.getElementById("vis4").onclick = () => {
+  setMode(document.getElementById("vis4").value, vis4);
+}
 
 //appendId is the element Id you want to append this fragment to
 function appendFragment(HTMLtoAppend, parentId) {
@@ -198,7 +209,7 @@ function coherence(data, nSec, freqStart, freqEnd) {
       k++;
       cordfts.splice(k,0,...temp);
       l=0;
-      console.log(i);
+      //console.log(i);
     }
     l++;
   });
@@ -409,13 +420,13 @@ function setupVisualContainer(containerId, width, height, mode="none", appendToI
     class: null,
     resetmode: function() {
       this.class.deInit();
-      this.elem.removeChild(obj.child);
+      this.elem.removeChild(this.child);
       this.class = null;
       this.mode = "none";
     }
   };
 
-  var HTMLtoAppend = genVisualContainer(containerId);
+  var HTMLtoAppend = genVisualContainer(containerId, width, height);
   appendFragment(HTMLtoAppend, appendToId);
   containerobj.id = containerId;
   containerobj.elem = document.getElementById(containerId);
@@ -430,15 +441,15 @@ function setupVisualContainer(containerId, width, height, mode="none", appendToI
 
 //Container HTML and menus to be targeted by the appropriate class
 
-function genVisualContainer(containerId){
+function genVisualContainer(containerId, width, height){
   return `
-  <div id='`+containerId+`'></div>
+  <div id='`+containerId+`' width='`+width+`px' height='`+height+`px'></div>
   `; //Put menus in here for switching inner visuals?
 }
 
-function genuPlotContainer(containerId, plotId) {
+function genuPlotContainer(containerId, plotId, width, height) {
   return `
-  <div id='`+containerId+`'>
+  <div id='`+containerId+`' width='`+width+`' height='`+height+`'>
     <select id='`+plotId+`mode'>
       <option value="FFT" selected="selected">FFTs</option>
       <option value="Coherence">Coherence</option>
@@ -451,7 +462,7 @@ function genuPlotContainer(containerId, plotId) {
 
 function genSmoothieContainer(containerId, plotId, width, height) {
   return ` 
-  <div id='`+containerId+`'> 
+  <div id='`+containerId+`' width='`+width+`' height='`+height+`'> 
     Mode:
     <select id='`+plotId+`mode'>
       <option value="alpha" selected="selected">Alpha Bandpowers</option>
@@ -463,14 +474,14 @@ function genSmoothieContainer(containerId, plotId, width, height) {
       <option value="0">0</option>
     </select>
     <div id='`+plotId+`title'>Smoothiejs</div> 
-      <canvas id='`+plotId+`' style='width:`+width+`px; height:`+height+`px;'></canvas> 
+      <canvas id='`+plotId+`' width='`+width+`' height='`+height+`' style='width:`+width+`px; height:`+height+`px;'></canvas> 
   </div>
   `;
 }
 
-function genBrainMapContainer(containerId, brainmapId,width,height){
+function genBrainMapContainer(containerId, brainmapId, width, height){
   return ` 
-  <div id='`+containerId+`' style='width:`+width+`px; height:`+height+`px;'>  
+  <div id='`+containerId+`' width='`+width+`px' height='`+height+`px'>  
     <table id='`+brainmapId+`table'>
       <tr><td><h3>Brain Map (see "atlas" in the console and set corresponding channel tags (see "channelTags")) | </h3></td>
       <td><h4>Viewing:</h4></td>
@@ -484,8 +495,8 @@ function genBrainMapContainer(containerId, brainmapId,width,height){
         <option value="highgamma">High Gamma (48Hz+)</option>
       </select></td></tr>
     </table>
-    <canvas id='`+brainmapId+`' style='position:absolute; width:`+width+`px; height:`+height+`px;'></canvas>
-    <canvas id='`+brainmapId+`points' style='position:absolute;width:`+width+`px; height:`+height+`px;'></canvas>
+    <canvas id='`+brainmapId+`' width='`+width+`' height='`+height+`' style='position:absolute; width:`+width+`px; height:`+height+`px;'></canvas>
+    <canvas id='`+brainmapId+`points' width='`+width+`' height='`+height+`' style='position:absolute;width:`+width+`px; height:`+height+`px;'></canvas>
   </div>
   `;
 }
@@ -510,7 +521,7 @@ function genSpectrogramContainer(containerId, spectrogramId, width, height) {
     <select id='`+spectrogramId+`channel'>
       <option value="0" selected="selected">0</option>
     </select>
-    <canvas id='`+spectrogramId+`' style='width:`+width+`px; height:`+height+`px;'></canvas>
+    <canvas id='`+spectrogramId+`' width='`+width+`' height='`+height+`' style='width:`+width+`px; height:`+height+`px;'></canvas>
   </div>
   `;
 }
@@ -522,7 +533,7 @@ function genBarChartContainer(containerId, barchartId, width, height) {
     <select id='`+barchartId+`channel'>
       <option value="0" selected="selected">0</option>
     </select>
-    <canvas id='`+barchartId+`' style='width:`+width+`px; height:`+height+`px;'></canvas>
+    <canvas id='`+barchartId+`' width='`+width+`' height='`+height+`' style='width:`+width+`px; height:`+height+`px;'></canvas>
   </div>
   `;
 }
@@ -568,6 +579,8 @@ function setMode(mode,obj) {
     setupBarChartContainer(containerId, visualId, obj);
   } else if (mode === "mirror") {
     setupMirrorChartsContainer(containerId, visualId, obj);
+  } else if (mode === "none") {
+    obj.resetmode();
   }
 }
 
@@ -591,7 +604,7 @@ function setupuPlotContainer(containerId, plotId, obj) {
   appendFragment(HTMLtoAppend,obj.id);
   obj.class = new uPlotMaker(plotId);
   obj.mode = "uplot";
-  obj.child = document.getElementById(containerId);
+  obj.child = document.getElementById(containerId).parentNode;
 
   obj.class.uPlotData = [session.bandPassWindow];
 
@@ -615,7 +628,7 @@ function setupSmoothieContainer(containerId, plotId, obj) {
 
   obj.class = new SmoothieChartMaker(8,plotId);
   obj.mode = "smoothie";
-  obj.child = document.getElementById(containerId);
+  obj.child = document.getElementById(containerId).parentNode;
 
   obj.class.init();
 }
@@ -626,7 +639,7 @@ function setupBrainMapContainer(containerId, brainmapId, obj) {
   appendFragment(HTMLtoAppend,obj.id);
   obj.class = new brainMap2D(brainmapId,brainmapId+"points");
   obj.mode = "brainmap";
-  obj.child = document.getElementById(containerId);
+  obj.child = document.getElementById(containerId).parentNode;
 
   document.getElementById(brainmapId+"bandview").onchange = () => {
     setBrainMap(obj);
@@ -646,7 +659,7 @@ function setupTimeChartContainer(containerId, timechartsId, obj) {
   appendFragment(HTMLtoAppend,obj.id);
   obj.class = new TimeChartMaker(timechartsId);
   obj.mode = "timecharts";
-  obj.child = document.getElementById(containerId);
+  obj.child = document.getElementById(containerId).parentNode;
 
   obj.class.setEEGTimeCharts(EEG);
 }
@@ -657,7 +670,7 @@ function setupSpectrogramContainer(containerId, spectrogramId, obj) {
   addChannelOptions(spectrogramId+"channel");
   obj.class = new Spectrogram(spectrogramId, 700);
   obj.mode = "spectrogram";
-  obj.child = document.getElementById(containerId);
+  obj.child = document.getElementById(containerId).parentNode;
 
   obj.class.init();
 
@@ -688,7 +701,7 @@ function setupBarChartContainer(containerId, barchartId, obj) {
   addChannelOptions(barchartId+"channel");
   obj.class = new eegBarChart(barchartId, 700);
   obj.mode = "bars";
-  obj.child = document.getElementById(containerId);
+  obj.child = document.getElementById(containerId).parentNode;
 
   obj.class.init();
 }
@@ -700,7 +713,7 @@ function setupMirrorChartsContainer(containerId, mirrorchartsId, obj) {
   addChannelOptions(mirrorchartsId+"channel2");
   obj.class = new mirrorBarChart(mirrorchartsId, 700);
   obj.mode = "mirror";
-  obj.child = document.getElementById(containerId);
+  obj.child = document.getElementById(containerId).parentNode;
 
   var elem1 = document.getElementById(mirrorchartsId+"leftbars");
   elem1.style.width = obj.width*.5;
@@ -718,7 +731,7 @@ function setupMirrorChartsContainer(containerId, mirrorchartsId, obj) {
 //Updating for raw and fft data per visual container
 function updateVisualContainers() { //types: coherence, raw
   
-  console.log(session)
+  //console.log(session)
   
   session.visuals.forEach((obj,i) => {
 
@@ -758,7 +771,7 @@ function updateVisualContainers() { //types: coherence, raw
     
       //console.log(uPlotData)
       if(graphmode === "Stacked"){
-        obj.class.makeStackeduPlot(undefined,obj.class.uPlotData,undefined,EEG.channelTags);
+        obj.class.makeStackeduPlot(undefined,obj.class.uPlotData,undefined,EEG.channelTags,obj.width,obj.height);
       }
       else {
         obj.class.plot.setData(obj.class.uPlotData);
@@ -768,8 +781,8 @@ function updateVisualContainers() { //types: coherence, raw
 
 
 
-    else if(obj.mode === "smoothie") {
-      var graphmode = document.getElementById(obj.class.canvasId+"mode");
+    if(obj.mode === "smoothie") {
+      var graphmode = document.getElementById(obj.class.canvasId+"mode").value;
       if((graphmode === "alpha") || (graphmode === "bandpowers")) {
         if(graphmode === "alpha"){ 
           EEG.channelTags.forEach((row,i) => {
@@ -813,7 +826,7 @@ function updateVisualContainers() { //types: coherence, raw
 
 
 
-    else if(obj.mode === "brainmap") {
+    if(obj.mode === "brainmap") {
       var viewing = document.getElementById(obj.class.heatmapCanvasId+"bandview").value;
       obj.class.updateHeatmapFromAtlas(EEG.atlas,EEG.channelTags,viewing);
 
@@ -824,15 +837,15 @@ function updateVisualContainers() { //types: coherence, raw
 
 
 
-    else if(obj.mode === "timecharts") {
+    if(obj.mode === "timecharts") {
       obj.class.updateTimeCharts(EEG);
     }
 
 
 
-    else if(obj.mode === "spectrogram") {
-      var graphmode = document.getElementById(obj.class.canvasId+"mode");
-      var ch = document.getElementById(obj.class.canvasId+"channel").value;
+    if(obj.mode === "spectrogram") {
+      var graphmode = document.getElementById(obj.class.canvasId+"mode").value;
+      var ch = parseInt(document.getElementById(obj.class.canvasId+"channel").value);
       if(graphmode === "FFT"){
         var tag = null;
         EEG.channelTags.find((o,i) => {
@@ -844,26 +857,25 @@ function updateVisualContainers() { //types: coherence, raw
         if(tag !== null){
           var coord = EEG.getAtlasCoordByTag(tag);
           obj.class.latestData = coord.data.amplitudes[coord.data.amplitudes.length-1];
+          obj.class.draw();
         }
       }
-
-
-
       else if(graphmode === "Coherence"){
         var coord = null;
         EEG.coherenceMap.map.find((o,i) => {
           if(o.tag === ch){
-            coord = o.data;
+            coord = o;
           }
         });
         obj.class.latestData = coord.data.amplitudes[coord.data.amplitudes.length - 1];
+        obj.class.draw()
       }
     }
 
 
 
-    else if(obj.mode === "bars") {
-      var ch = document.getElementById(obj.class.canvasId+"channel").value;
+    if(obj.mode === "bars") {
+      var ch = parseInt(document.getElementById(obj.class.canvasId+"channel").value);
       var tag = null;
       EEG.channelTags.find((o,i) => {
         if(o.ch === ch){
@@ -880,8 +892,8 @@ function updateVisualContainers() { //types: coherence, raw
 
 
 
-    else if(obj.mode === "mirror") {
-      var ch1 = document.getElementById(obj.class.canvasId+"channel1").value;
+    if(obj.mode === "mirror") {
+      var ch1 = parseInt(document.getElementById(obj.class.canvasId+"channel").value);
       var tag1 = null;
       EEG.channelTags.find((o,i) => {
         if(o.ch === ch1){
@@ -890,7 +902,7 @@ function updateVisualContainers() { //types: coherence, raw
         }
       });
       
-      var ch2 = document.getElementById(obj.class.canvasId+"channel2").value;
+      var ch2 = parseInt(document.getElementById(obj.class.canvasId+"channel").value);
       var tag2 = null;
       EEG.channelTags.find((o,i) => {
         if(o.ch === ch2){
@@ -913,14 +925,16 @@ function updateVisualContainers() { //types: coherence, raw
 
 //-------------- BUTTON SETUP -----------
 
-var setuPlot = () => {
-  var obj = null;
-  var uplot = session.visuals.find((o,i) => {
-    if(o.mode === "uplot"){
-      obj = o;
-      return true;
-    }
-  });
+var setuPlot = (objin=null) => {
+  var obj = objin;
+  if(obj === null) {
+    var uplot = session.visuals.find((o,i) => {
+      if(o.mode === "uplot"){
+        obj = o;
+        return true;
+      }
+    });
+  }
   if(obj === null) { return false; }
 
   var gmode = document.getElementById(obj.class.plotId+"mode").value;
@@ -948,7 +962,7 @@ var setuPlot = () => {
       });
     }
     
-    obj.class.makeuPlot(obj.class.makeSeriesFromChannelTags(EEG.channelTags), obj.class.uPlotData);
+    obj.class.makeuPlot(obj.class.makeSeriesFromChannelTags(EEG.channelTags), obj.class.uPlotData, obj.width, obj.height);
     obj.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001).toFixed(2) + "s");
     
   }
@@ -978,7 +992,7 @@ var setuPlot = () => {
           });
         }
 
-        obj.class.makeuPlot(obj.class.makeSeriesFromChannelTags(EEG.channelTags), obj.class.uPlotData);
+        obj.class.makeuPlot(obj.class.makeSeriesFromChannelTags(EEG.channelTags), obj.class.uPlotData, obj.width, obj.height);
   }
   else if (gmode === "Stacked") {
 
@@ -1005,7 +1019,7 @@ var setuPlot = () => {
     document.getElementById(obj.class.plotId+"title").innerHTML = "ADC signals Stacked";
     
     //console.log(uPlotData)
-    obj.class.makeStackeduPlot(undefined, obj.class.uPlotData, undefined, EEG.channelTags);
+    obj.class.makeStackeduPlot(undefined, obj.class.uPlotData, undefined, EEG.channelTags,obj.width, obj.height);
     
   }
   else if (gmode === "Coherence") {
@@ -1050,14 +1064,14 @@ var setuPlot = () => {
     //console.log(newSeries.length);
     //console.log(uPlotData.length);
   
-    obj.class.makeuPlot(newSeries, obj.class.uPlotData);
+    obj.class.makeuPlot(newSeries, obj.class.uPlotData, obj.width, obj.height);
     document.getElementById(obj.class.plotId+"title").innerHTML = "Coherence from tagged signals";
   }
   //else if(graphmode === "StackedRaw") { graphmode = "StackedFFT" }//Stacked Coherence
 }
 
-var setBrainMap = (obj=null) => {
-  var obj = obj;
+var setBrainMap = (objin=null) => {
+  var obj = objin;
   if(obj === null){
     var brainmap = session.visuals.find((o,i) => {
       if(o.mode === "brainmap") {
@@ -1068,8 +1082,11 @@ var setBrainMap = (obj=null) => {
   } 
   if(obj === null) {return false;}
   else{
+    var viewing = document.getElementById(obj.class.heatmapCanvasId+"bandview").value;
     obj.class.updatePointsFromAtlas(EEG.atlas,EEG.channelTags);
+    obj.class.updateHeatmapFromAtlas(EEG.atlas,EEG.channelTags,viewing);
     obj.class.updateConnectomeFromAtlas(EEG.coherenceMap,EEG.atlas,EEG.channelTags);
+    
   }
 }
 
@@ -1114,25 +1131,6 @@ document.getElementById("bandPass").onclick = () => {
     EEG.coherenceMap.shared.bandFreqs = EEG.atlas.shared.bandFreqs;
   }
 }
-
-document.getElementById("graphmode").onclick = () => {
-  if(graphmode === "TimeSeries") {
-    //graphmode = "Stacked";
-    graphmode = "Coherence";
-  }
-  else if(graphmode === "Stacked"){
-    graphmode = "Coherence";
-  }
-  else if(graphmode === "Coherence"){
-    graphmode = "FFT";
-  }
-  else if(graphmode === "FFT") {
-    graphmode = "TimeSeries";
-  }
-
-  setuPlot(graphmode);
-}
-
 
 
 document.getElementById("setChannelView").onclick = () => {
