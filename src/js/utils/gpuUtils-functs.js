@@ -148,7 +148,7 @@ function iDFT(amplitudes, len, freq){ //inverse DFT to return time domain
     for(var i = 0; i<len; i++){
       var sharedi = shared*i; //this.thread.x is the target frequency
       real = real+amplitudes[i]*Math.cos(sharedi);
-      imag = amplitudes[i]*Math.sin(sharedi)-imag;  
+      imag = imag-amplitudes[i]*Math.sin(sharedi);  
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
     return [real*_len,imag*_len]; //mag(real,imag)
@@ -162,7 +162,7 @@ function iDFTlist(amplitudes,len,freq,n){ //inverse DFT to return time domain
     for (var i = 0; i<len; i++) {
       var sharedi = shared*i; //this.thread.x is the target frequency
       real = real+amplitudes[i+(len-1)*n]*Math.cos(sharedi);
-      imag = amplitudes[i+(len-1)*n]*Math.sin(sharedi)-imag;  
+      imag = imag-amplitudes[i+(len-1)*n]*Math.sin(sharedi);  
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
     return [real*_len,imag*_len]; //mag(real,imag)
@@ -189,7 +189,7 @@ function iFFT(amplitudes, len, freq, sr){ //inverse FFT to return time domain
       if(j > len) { j = len; }
       var sharedi = shared*j; //this.thread.x is the target frequency
       real = real+amplitudes[j]*Math.cos(sharedi);
-      imag = amplitudes[j]*Math.sin(sharedi)-imag;  
+      imag = imag-amplitudes[j]*Math.sin(sharedi);  
       N += 1;
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
