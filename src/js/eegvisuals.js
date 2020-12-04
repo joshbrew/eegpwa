@@ -355,7 +355,7 @@ export class uPlotMaker {
 
 
 export class TimeChartMaker {
-	constructor(divId){
+	constructor(divId, maxpoints=20000){
 		if(TimeChart === "undefined") {
 			alert("timechart not found!");
 			return;
@@ -366,7 +366,7 @@ export class TimeChartMaker {
 		this.timechartsdata = [];
 		this.lasttimeIdx = 0;
 
-		this.maxpoints = 20000;
+		this.maxpoints = maxpoints;
 	}
 
 	deInit() {
@@ -379,14 +379,14 @@ export class TimeChartMaker {
 
 	}
 
-	setEEGTimeCharts(EEG, nSecAdcGraph=10) { //Creates timecharts from the EEG class data
+	setEEGTimeCharts = (EEG, nSecAdcGraph=10) => { //Creates timecharts from the EEG class data
+		console.log("run");
 		EEG.channelTags.forEach((row,i) => { // Recycle or make new time charts
 		  var chartname = 'timechart'+i;
 		  var nsamples = Math.floor(EEG.sps*nSecAdcGraph);
 		  var dat = EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter);
-		  
 		  if(this.timecharts[i] === undefined){
-			document.getElementById("<div id='"+chartname+"'></div>",this.divId);
+			document.getElementById(this.divId).insertAdjacentHTML('beforeend',`<div id='`+chartname+`'></div>`);
 			var elem = document.getElementById(chartname);
 			this.timechartsdata.push(dat);
 			var timechart = new TimeChart(elem, {
@@ -433,7 +433,7 @@ export class TimeChartMaker {
 		});
 	}
 
-	updateTimeCharts(EEG){
+	updateTimeCharts = (EEG) => {
 		if(this.timechartsdata[0].length > this.maxpoints) { //rebuild timecharts if the data array is too big to prevent slowdowns
 		  this.setEEGTimeCharts(EEG);
 		}

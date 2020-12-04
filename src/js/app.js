@@ -551,7 +551,7 @@ function setMode(mode,obj) {
     setupSmoothieContainer(containerId, visualId, obj);
   } else if (mode === "brainmap") {
     setupBrainMapContainer(containerId, visualId, obj);
-  } else if (mode === "timechart") {
+  } else if (mode === "timecharts") {
     setupTimeChartContainer(containerId, visualId, obj);
   } else if (mode === "spectrogram") {
     setupSpectrogramContainer(containerId, visualId, obj);
