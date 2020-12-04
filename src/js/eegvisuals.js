@@ -379,7 +379,7 @@ export class TimeChartMaker {
 
 	}
 
-	setEEGTimeCharts(EEG) { //Creates timecharts from the EEG class data
+	setEEGTimeCharts(EEG, nSecAdcGraph=10) { //Creates timecharts from the EEG class data
 		EEG.channelTags.forEach((row,i) => { // Recycle or make new time charts
 		  var chartname = 'timechart'+i;
 		  var nsamples = Math.floor(EEG.sps*nSecAdcGraph);

@@ -641,7 +641,7 @@ function setupTimeChartContainer(containerId, timechartsId, obj) {
   obj.mode = "timecharts";
   obj.child = document.getElementById(containerId).parentNode;
 
-  obj.class.setEEGTimeCharts(EEG);
+  obj.class.setEEGTimeCharts(EEG,session.nSecAdcGraph);
 }
 
 function setupSpectrogramContainer(containerId, spectrogramId, obj) {
