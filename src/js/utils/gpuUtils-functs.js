@@ -80,6 +80,21 @@ function xcor(arr1, arr1mean, arr1Est, arr2buf, arr2mean, arr2Est, len, delay) {
     return correlation/(arr1Est*arr2Est);
 }
 
+function DFT(signal, len, freq){ //Extract a particular frequency
+    var real = 0;
+    var imag = 0;
+    var _len = 1/len;
+    var shared = 6.28318530718*freq*_len;
+
+    for(var i = 0; i<len; i++){
+      var sharedi = shared*i; //this.thread.x is the target frequency
+      real = real+signal[i]*Math.cos(sharedi);
+      imag = imag-signal[i]*Math.sin(sharedi);
+    }
+    //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
+    return [real*_len,imag*_len]; //mag(real,imag)
+}
+
 function DFTlist(signals, len, freq, n) { //Extract a particular frequency
     var real = 0;
     var imag = 0;
@@ -94,18 +109,33 @@ function DFTlist(signals, len, freq, n) { //Extract a particular frequency
     return [real*_len,imag*_len]; //mag(real,imag)
 }
 
-function DFT(signal, len, freq){ //Extract a particular frequency
+//FFT, simply implements a nyquist frequency based index skip for frequencies <= sampleRate*.25
+function FFT(signal, len, freq, sr){ //Extract a particular frequency
     var real = 0;
     var imag = 0;
     var _len = 1/len;
     var shared = 6.28318530718*freq*_len;
-    for(var i = 0; i<len; i++){
-      var sharedi = shared*i; //this.thread.x is the target frequency
-      real = real+signal[i]*Math.cos(sharedi);
-      imag = imag-signal[i]*Math.sin(sharedi);
+
+    var skip = 1;
+    var N = 0;
+    var factor = sr*.25;
+    if(freq <= factor){
+        while(freq <= factor){
+            factor=factor*.5;
+            skip+=1;
+        }
+    }
+
+    for(var i = 0; i<len; i+=skip){
+      var j = i;
+      if(j > len) { j = len; }
+      var sharedi = shared*j; //this.thread.x is the target frequency
+      real = real+signal[j]*Math.cos(sharedi);
+      imag = imag-signal[j]*Math.sin(sharedi);
+      N += 1;
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
-    return [real*_len,imag*_len]; //mag(real,imag)
+    return [real/N,imag/N]; //mag(real,imag)
 }
 
 //Conjugated real and imaginary parts for iDFT (need to test still)
@@ -114,10 +144,11 @@ function iDFT(amplitudes, len, freq){ //inverse DFT to return time domain
     var imag = 0;
     var _len = 1/len;
     var shared = 6.28318530718*freq*_len;
+
     for(var i = 0; i<len; i++){
       var sharedi = shared*i; //this.thread.x is the target frequency
-      real = real+amplitudes[i+(len-1)*n]*Math.cos(sharedi);
-      imag = amplitudes[i+(len-1)*n]*Math.sin(sharedi)-imag;  
+      real = real+amplitudes[i]*Math.cos(sharedi);
+      imag = amplitudes[i]*Math.sin(sharedi)-imag;  
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
     return [real*_len,imag*_len]; //mag(real,imag)
@@ -134,7 +165,35 @@ function iDFTlist(amplitudes,len,freq,n){ //inverse DFT to return time domain
       imag = amplitudes[i+(len-1)*n]*Math.sin(sharedi)-imag;  
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
-    return [imag*_len,real*_len]; //mag(real,imag)
+    return [real*_len,imag*_len]; //mag(real,imag)
+}
+
+function iFFT(amplitudes, len, freq, sr){ //inverse FFT to return time domain
+    var real = 0;
+    var imag = 0;
+    var _len = 1/len;
+    var shared = 6.28318530718*freq*_len;
+
+    var skip = 1;
+    var N = 0;
+    var factor = sr*.25;
+    if(freq <= factor){
+        while(freq <= factor){
+            factor=factor*.5;
+            skip+=1;
+        }
+    }
+
+    for(var i = 0; i<len; i+=skip){
+      var j = i;
+      if(j > len) { j = len; }
+      var sharedi = shared*j; //this.thread.x is the target frequency
+      real = real+amplitudes[j]*Math.cos(sharedi);
+      imag = amplitudes[j]*Math.sin(sharedi)-imag;  
+      N += 1;
+    }
+    //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
+    return [real/N,imag/N]; //mag(real,imag)
 }
 
 
@@ -163,6 +222,16 @@ function dftKern(signal, len, scalar) {
 
 function idftKern(amplitudes, len, scalar) {
     var result = iDFT(amplitudes, len, this.thread.x);
+    return mag(result[0], result[1])*scalar;
+}
+
+function fftKern(signal, len, scalar, sampleRate) {
+    var result = FFT(signal,len, this.thread.x, sampleRate);
+    return mag(result[0], result[1])*scalar;
+}
+
+function ifftKern(amplitudes, len, scalar, sampleRate) {
+    var result = iFFT(amplitudes, len, this.thread.x, sampleRate);
     return mag(result[0], result[1])*scalar;
 }
 
@@ -215,12 +284,12 @@ function bulkArrayMulKern(arrays, len, n, mod) {
 export const createGpuKernels = {
     correlogramsKern, dftKern, idftKern,
     listdft2DKern, listdft1DKern, listdft1D_windowedKern,
-    bulkArrayMulKern,
+    bulkArrayMulKern, fftKern, ifftKern,
 }
 
 export const addGpuFunctions = [
     add, sub, mul, div, cadd, csub,
     cmul, cexp, mag, conj, lof, mean,
-    mse, rms, xcor, DFTlist, DFT,
-    iDFT, iDFTlist
+    mse, rms, xcor, DFT, DFTlist,
+    iDFT, iDFTlist, FFT, iFFT
 ];

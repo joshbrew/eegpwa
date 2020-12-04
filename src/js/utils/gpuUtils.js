@@ -38,6 +38,8 @@ export class gpuUtils {
     this.correlograms = makeKrnl(this.gpu, krnl.correlogramsKern);
     this.dft = makeKrnl(this.gpu, krnl.dftKern);
     this.idft = makeKrnl(this.gpu, krnl.idftKern);
+    this.fft = makeKrnl(this.gpu, krnl.fftKern);
+    this.ifft = makeKrnl(this.gpu, krnl.ifftKern);
     this.listdft2D = makeKrnl(this.gpu, krnl.listdft2DKern);
     this.listdft1D = makeKrnl(this.gpu, krnl.listdft1DKern);
     this.listdft1D_windowed = makeKrnl(this.gpu, krnl.listdft1D_windowedKern);
