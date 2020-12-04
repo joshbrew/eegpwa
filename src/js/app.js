@@ -60,15 +60,15 @@ var vis4 = setupVisualContainer("visual4",500,300,"spectrogram","visuals");
 
 session.visuals = [vis1,vis2,vis3,vis4];
 
-document.getElementById("vis2").onclick = () => {
+document.getElementById("vis2").onchange = () => {
   setMode(document.getElementById("vis2").value, vis2);
 }
 
-document.getElementById("vis3").onclick = () => {
+document.getElementById("vis3").onchange = () => {
   setMode(document.getElementById("vis3").value, vis3);
 }
 
-document.getElementById("vis4").onclick = () => {
+document.getElementById("vis4").onchange = () => {
   setMode(document.getElementById("vis4").value, vis4);
 }
 
@@ -592,7 +592,7 @@ function setupuPlotContainer(containerId, plotId, obj) {
     obj.class.uPlotData.push(session.bandPassWindow);
   });
 
-  document.getElementById(plotId+"mode").onclick = () => {
+  document.getElementById(plotId+"mode").onchange = () => {
     setuPlot();
   }
 
