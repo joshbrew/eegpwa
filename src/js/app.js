@@ -399,10 +399,12 @@ function setupVisualContainer(containerId, width, height, mode="none", appendToI
     mode: "none",
     class: null,
     resetmode: function() {
-      this.class.deInit();
-      this.elem.removeChild(this.child);
-      this.class = null;
-      this.mode = "none";
+      if(this.class !== null){
+        this.class.deInit();
+        this.elem.removeChild(this.child);
+        this.class = null;
+        this.mode = "none";
+      }
     }
   };
 
@@ -531,7 +533,10 @@ function genMirrorChartsContainer(containerId, visualId, width, height) {
       <option value="0" selected="selected">0</option>
       <option value="1">1</option>
     </select>
-    <div id='`+visualId+`'></div>
+    <div id='`+visualId+`'>
+      <canvas id='`+visualId+`leftbars' width='`+width*.5+`' height='`+height+`' style='width:`+width*.5+`px; height:`+height+`px;'></canvas>
+      <canvas id='`+visualId+`rightbars' width='`+width*.5+`' height='`+height+`' style='width:`+width*.5+`px; height:`+height+`px;'></canvas>
+    </div>
   </div>
   `;
 }
@@ -610,7 +615,7 @@ function setupSmoothieContainer(containerId, visualId, obj) {
   obj.mode = "smoothie";
   obj.child = document.getElementById(containerId).parentNode;
 
-  obj.class.init();
+  obj.class.init('rgba(0,100,100,0.5)');
 }
 
 function setupBrainMapContainer(containerId, visualId, obj) {
@@ -679,7 +684,7 @@ function setupBarChartContainer(containerId, visualId, obj) {
   var HTMLtoAppend = genBarChartContainer(containerId, visualId, obj.width, obj.height);
   appendFragment(HTMLtoAppend,obj.id);
   addChannelOptions(visualId+"channel");
-  obj.class = new eegBarChart(visualId, 700);
+  obj.class = new eegBarChart(visualId, 100);
   obj.mode = "bars";
   obj.child = document.getElementById(containerId).parentNode;
 
@@ -691,17 +696,9 @@ function setupMirrorChartsContainer(containerId, visualId, obj) {
   appendFragment(HTMLtoAppend,obj.id);
   addChannelOptions(visualId+"channel1");
   addChannelOptions(visualId+"channel2");
-  obj.class = new mirrorBarChart(visualId, 700);
+  obj.class = new mirrorBarChart(visualId, visualId+"leftbars", visualId+"rightbars", 100);
   obj.mode = "mirror";
   obj.child = document.getElementById(containerId).parentNode;
-
-  var elem1 = document.getElementById(visualId+"leftbars");
-  elem1.style.width = obj.width*.5;
-  elem1.style.height = obj.height;
-
-  var elem2 = document.getElementById(visualId+"rightbars");
-  elem2.style.width = obj.width*.5;
-  elem2.style.height = obj.height;
 
   obj.class.init();
 }
