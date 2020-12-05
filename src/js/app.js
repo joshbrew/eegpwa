@@ -1072,7 +1072,7 @@ var setBrainMap = (objin=null) => {
     var viewing = document.getElementById(obj.class.heatmapCanvasId+"bandview").value;
     obj.class.updatePointsFromAtlas(EEG.atlas,EEG.channelTags);
     obj.class.updateHeatmapFromAtlas(EEG.atlas,EEG.channelTags,viewing);
-    obj.class.updateConnectomeFromAtlas(EEG.coherenceMap,EEG.atlas,EEG.channelTags);
+    obj.class.updateConnectomeFromAtlas(EEG.coherenceMap,EEG.atlas,EEG.channelTags,viewing);
     
   }
 }
