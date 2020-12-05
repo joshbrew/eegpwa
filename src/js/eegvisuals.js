@@ -508,13 +508,13 @@ export class brainMap2D {
 		this.heatmap.display();
 	}
 
-	updateHeatmapFromAtlas(atlas, channelTags, viewing) {
+	updateHeatmapFromAtlas(atlas, channelTags, viewing, normalize=1) {
 		var points = [];
 		
 		var width = this.pointsCanvas.width;
 		var height = this.pointsCanvas.height;
 
-		var sizeMul = 0.1;
+		var sizeMul = normalize;
 		channelTags.forEach((row,i) => {
 			let atlasCoord = atlas.map.find((o, j) => {
 			  if(o.tag === row.tag){
@@ -595,7 +595,7 @@ export class brainMap2D {
 		}
 
 		var strokeStyle = "";
-		var alphaMul = 0.001;
+		var alphaMul = 0.01;
 		//Set alpha based on intensity (needs testing)
 		if(viewing === "scp") {	
 			strokeStyle = "rgba(0,0,0,";}

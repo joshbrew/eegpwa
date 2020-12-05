@@ -1251,9 +1251,9 @@ document.getElementById("setTags").onclick = () => {
 //-------------------------------------------
 
 
-var sine  = eegmath.genSineWave(40,500,1,512);
+var sine  = eegmath.genSineWave(12,500,1,512);
 var sine1 = eegmath.genSineWave(30,3000,1,512);
-var sine2 = eegmath.genSineWave(40,1000,1,512);
+var sine2 = eegmath.genSineWave(12,1000,1,512);
 var sine3 = eegmath.genSineWave(20,500,1,512);
 var sine4 = eegmath.genSineWave(12,2500,1,512);
 var sine5 = eegmath.genSineWave(5,1000,1,512);
