@@ -525,10 +525,12 @@ export class brainMap2D {
 				  points[points.length - 1].size = Math.max(...o.data.slices.delta[o.data.slices.delta.length-1])}//o.data.means.delta[o.data.means.delta.length - 1];}
 				else if(viewing === "theta"){
 				  points[points.length - 1].size = Math.max(...o.data.slices.theta[o.data.slices.theta.length-1])}//o.data.means.theta[o.data.means.theta.length - 1];}
-				else if(viewing === "alpha"){
-				  points[points.length - 1].size = Math.max(...o.data.slices.alpha[o.data.slices.alpha.length-1])}//o.data.means.alpha[o.data.means.alpha.length - 1];}
+				else if(viewing === "alpha1"){
+				  points[points.length - 1].size = Math.max(...o.data.slices.alpha1[o.data.slices.alpha1.length-1])}//o.data.means.alpha[o.data.means.alpha.length - 1];}
+				else if(viewing === "alpha2"){
+					points[points.length - 1].size = Math.max(...o.data.slices.alpha2[o.data.slices.alpha2.length-1])}//o.data.means.alpha[o.data.means.alpha.length - 1];}
 				else if(viewing === "beta"){
-				  points[points.length - 1].size = Math.max(...o.data.slices.beta[o.data.slices.beta.length-1])}//o.data.means.beta[o.data.means.beta.length - 1];}
+				points[points.length - 1].size = Math.max(...o.data.slices.beta[o.data.slices.beta.length-1])}//o.data.means.beta[o.data.means.beta.length - 1];}
 				else if(viewing === "lowgamma"){
 				  points[points.length - 1].size = Math.max(...o.data.slices.lowgamma[o.data.slices.lowgamma.length-1])}//o.data.means.gamma[o.data.means.gamma.length - 1];}
 				else if(viewing === "highgamma"){
@@ -584,7 +586,7 @@ export class brainMap2D {
 		});
 	}
 
-	updateConnectomeFromAtlas(coherenceMap, atlas, channelTags, viewing, clear=true) {
+	updateConnectomeFromAtlas(coherenceMap, atlas, channelTags, viewing, clear=true, alphaScalar=0.01) { //
 		var halfwidth = this.pointsCanvas.width*.5;
 		var halfheight = this.pointsCanvas.height*.5;
 		var ctx = this.pointsCtx;
@@ -595,7 +597,6 @@ export class brainMap2D {
 		}
 
 		var strokeStyle = "";
-		var alphaMul = 0.01;
 		//Set alpha based on intensity (needs testing)
 		if(viewing === "scp") {	
 			strokeStyle = "rgba(0,0,0,";}
@@ -603,8 +604,10 @@ export class brainMap2D {
 			strokeStyle = "rgba(255,0,0,";}
 		else if(viewing === "theta") {
 			strokeStyle = "rgba(0,255,200,";}
-		else if(viewing === "alpha") {
+		else if(viewing === "alpha1") {
 			strokeStyle = "rgba(0,100,255,";}
+		else if(viewing === "alpha2") {
+			strokeStyle = "rgba(0,200,255,";}
 		else if(viewing === "beta") {
 			strokeStyle = "rgba(255,0,255,";}
 		else if(viewing === "lowgamma") {
@@ -614,19 +617,21 @@ export class brainMap2D {
 			//console.log(strokeStyle);
 		coherenceMap.map.forEach((row,i) => {
 			if(viewing === "scp") {	 //TODO:: figure out a good transparency (or could do line thickness) upper bound based on actual results
-				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.scp[row.data.slices.scp.length-1])*alphaMul + ")";}//(row.data.means.scp[row.data.means.scp.length-1]*alphaMul) + ")";}
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.scp[row.data.slices.scp.length-1])*alphaScalar + ")";}//(row.data.means.scp[row.data.means.scp.length-1]*alphaMul) + ")";}
 			else if(viewing === "delta") {
-				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.delta[row.data.slices.delta.length-1])*alphaMul + ")";}//(row.data.means.delta[row.data.means.delta.length-1]*alphaMul) + ")";}
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.delta[row.data.slices.delta.length-1])*alphaScalar + ")";}//(row.data.means.delta[row.data.means.delta.length-1]*alphaMul) + ")";}
 			else if(viewing === "theta") {
-				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.theta[row.data.slices.theta.length-1])*alphaMul + ")";}//(row.data.means.theta[row.data.means.theta.length-1]*alphaMul) + ")";}
-			else if(viewing === "alpha") {
-				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.alpha[row.data.slices.alpha.length-1])*alphaMul + ")";}//(row.data.means.alpha[row.data.means.alpha.length-1]*alphaMul) + ")";}
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.theta[row.data.slices.theta.length-1])*alphaScalar + ")";}//(row.data.means.theta[row.data.means.theta.length-1]*alphaMul) + ")";}
+			else if(viewing === "alpha1") {
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.alpha1[row.data.slices.alpha1.length-1])*alphaScalar + ")";}//(row.data.means.alpha[row.data.means.alpha.length-1]*alphaMul) + ")";}
+			else if(viewing === "alpha2") {
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.alpha2[row.data.slices.alpha2.length-1])*alphaScalar + ")";}//(row.data.means.alpha[row.data.means.alpha.length-1]*alphaMul) + ")";}
 			else if(viewing === "beta") {
-				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.beta[row.data.slices.beta.length-1])*alphaMul + ")";}//(row.data.means.beta[row.data.means.beta.length-1]*alphaMul) + ")";}
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.beta[row.data.slices.beta.length-1])*alphaScalar + ")";}//(row.data.means.beta[row.data.means.beta.length-1]*alphaMul) + ")";}
 			else if(viewing === "lowgamma") {
-				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.lowgamma[row.data.slices.lowgamma.length-1])*alphaMul + ")";}//(row.data.means.gamma[row.data.means.gamma.length-1]*alphaMul) + ")";}
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.lowgamma[row.data.slices.lowgamma.length-1])*alphaScalar + ")";}//(row.data.means.gamma[row.data.means.gamma.length-1]*alphaMul) + ")";}
 			else if(viewing === "highgamma") {
-				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.highgamma[row.data.slices.highgamma.length-1])*alphaMul + ")";}//(row.data.means.gamma[row.data.means.gamma.length-1]*alphaMul) + ")";}
+				ctx.strokeStyle = strokeStyle + Math.max(...row.data.slices.highgamma[row.data.slices.highgamma.length-1])*alphaScalar + ")";}//(row.data.means.gamma[row.data.means.gamma.length-1]*alphaMul) + ")";}
 			//console.log(ctx.strokeStyle)
 			//console.log(ctx.strokeStyle);
 			ctx.beginPath();
@@ -765,11 +770,13 @@ export class eegBarChart {
 				this.ctx.fillstyle = "violet";
 			} else if(i < this.slices.scp.length+this.slices.delta.length+this.slices.theta.length){
 				this.ctx.fillstyle = "blue";
-			} else if(i < this.slices.scp.length+this.slices.delta.length+this.slices.theta.length+this.slices.alpha.length){
+			} else if(i < this.slices.scp.length+this.slices.delta.length+this.slices.theta.length+this.slices.alpha1.length){
 				this.ctx.fillstyle = "green";
-			} else if(i < this.slices.scp.length+this.slices.delta.length+this.slices.theta.length+this.slices.alpha.length+this.slices.beta.length){
+			} else if(i < this.slices.scp.length+this.slices.delta.length+this.slices.theta.length+this.slices.alpha1.length+this.slices.alpha2.length){
+				this.ctx.fillstyle = "chartreuse";
+			} else if(i < this.slices.scp.length+this.slices.delta.length+this.slices.theta.length+this.slices.alpha1.length+this.slices.alpha2.length+this.slices.beta.length){
 				this.ctx.fillstyle = "gold";
-			} else if(i < this.slices.scp.length+this.slices.delta.length+this.slices.theta.length+this.slices.alpha.length+this.slices.beta.length+this.slices.lowgamma.length){
+			} else if(i < this.slices.scp.length+this.slices.delta.length+this.slices.theta.length+this.slices.alpha1.length+this.slices.alpha2.length+this.slices.beta.length+this.slices.lowgamma.length){
 				this.ctx.fillstyle = "red";
 			}
 

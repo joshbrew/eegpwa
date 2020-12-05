@@ -20,6 +20,7 @@ var session = {
   nSec: 1,
   freqStart: 0,
   freqEnd: 100,
+  lastPostTime: 0,
   posFFTList: [],
   coherenceResults: [],
   bandPassWindow: [],
@@ -100,12 +101,13 @@ function removeParent(elementId) {
 
 
 //generalize this for the eeg32 class
+//TODO De-spaghettify
 var channelBands = (channel,tag) => {
   //console.log(posFFTList[channel])
   //console.time("slicing bands");
   let atlasCoord = EEG.atlas.map.find((o, i) => {
     if(o.tag === tag){
-      EEG.atlas.map[i].data.times.push(performance.now());
+      EEG.atlas.map[i].data.times.push(session.lastPostTime);
       EEG.atlas.map[i].data.amplitudes.push(session.posFFTList[channel]);
       if(EEG.atlas.shared.bandFreqs.scp[1].length > 0){
         var scp = session.posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.scp[1][0], EEG.atlas.shared.bandFreqs.scp[1][EEG.atlas.shared.bandFreqs.scp[1].length-1]+1);
@@ -122,10 +124,15 @@ var channelBands = (channel,tag) => {
         EEG.atlas.map[i].data.slices.theta.push(theta);
         EEG.atlas.map[i].data.means.theta.push(eegmath.mean(theta));
       }
-      if(EEG.atlas.shared.bandFreqs.alpha[1].length > 0){
-        var alpha = session.posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.alpha[1][0], EEG.atlas.shared.bandFreqs.alpha[1][EEG.atlas.shared.bandFreqs.alpha[1].length-1]+1);
-        EEG.atlas.map[i].data.slices.alpha.push(alpha);
-        EEG.atlas.map[i].data.means.alpha.push(eegmath.mean(alpha));
+      if(EEG.atlas.shared.bandFreqs.alpha1[1].length > 0){
+        var alpha1 = session.posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.alpha1[1][0], EEG.atlas.shared.bandFreqs.alpha1[1][EEG.atlas.shared.bandFreqs.alpha1[1].length-1]+1);
+        EEG.atlas.map[i].data.slices.alpha1.push(alpha1);
+        EEG.atlas.map[i].data.means.alpha1.push(eegmath.mean(alpha1));
+      }
+      if(EEG.atlas.shared.bandFreqs.alpha2[1].length > 0){
+        var alpha2 = session.posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.alpha2[1][0], EEG.atlas.shared.bandFreqs.alpha2[1][EEG.atlas.shared.bandFreqs.alpha2[1].length-1]+1);
+        EEG.atlas.map[i].data.slices.alpha2.push(alpha2);
+        EEG.atlas.map[i].data.means.alpha2.push(eegmath.mean(alpha2));
       }
       if(EEG.atlas.shared.bandFreqs.beta[1].length > 0){
         var beta  = session.posFFTList[channel].slice( EEG.atlas.shared.bandFreqs.beta[1][0],  EEG.atlas.shared.bandFreqs.beta[1][EEG.atlas.shared.bandFreqs.beta[1].length-1]+1);
@@ -151,7 +158,8 @@ var channelBands = (channel,tag) => {
 var mapCoherenceData = () => {
   session.coherenceResults.forEach((row,i) => {
     EEG.coherenceMap.map[i].data.amplitudes.push(row);
-  
+    EEG.coherenceMap.map[i].data.times.push(session.lastPostTime);
+
   if(EEG.coherenceMap.shared.bandFreqs.scp[1].length > 0){
     var scp = row.slice( EEG.coherenceMap.shared.bandFreqs.scp[1][0], EEG.coherenceMap.shared.bandFreqs.scp[1][EEG.coherenceMap.shared.bandFreqs.scp[1].length-1]+1);
     EEG.coherenceMap.map[i].data.slices.scp.push(scp);
@@ -167,10 +175,15 @@ var mapCoherenceData = () => {
     EEG.coherenceMap.map[i].data.slices.theta.push(theta);
     EEG.coherenceMap.map[i].data.means.theta.push(eegmath.mean(theta));
   }
-  if(EEG.coherenceMap.shared.bandFreqs.alpha[1].length > 0){
-    var alpha = row.slice( EEG.coherenceMap.shared.bandFreqs.alpha[1][0], EEG.coherenceMap.shared.bandFreqs.alpha[1][EEG.coherenceMap.shared.bandFreqs.alpha[1].length-1]+1);
-    EEG.coherenceMap.map[i].data.slices.alpha.push(alpha);
-    EEG.coherenceMap.map[i].data.means.alpha.push(eegmath.mean(alpha));
+  if(EEG.coherenceMap.shared.bandFreqs.alpha1[1].length > 0){
+    var alpha1 = row.slice( EEG.coherenceMap.shared.bandFreqs.alpha1[1][0], EEG.coherenceMap.shared.bandFreqs.alpha1[1][EEG.coherenceMap.shared.bandFreqs.alpha1[1].length-1]+1);
+    EEG.coherenceMap.map[i].data.slices.alpha1.push(alpha1);
+    EEG.coherenceMap.map[i].data.means.alpha1.push(eegmath.mean(alpha1));
+  }
+  if(EEG.coherenceMap.shared.bandFreqs.alpha2[1].length > 0){
+    var alpha2 = row.slice( EEG.coherenceMap.shared.bandFreqs.alpha2[1][0], EEG.coherenceMap.shared.bandFreqs.alpha2[1][EEG.coherenceMap.shared.bandFreqs.alpha2[1].length-1]+1);
+    EEG.coherenceMap.map[i].data.slices.alpha2.push(alpha2);
+    EEG.coherenceMap.map[i].data.means.alpha2.push(eegmath.mean(alpha2));
   }
   if(EEG.coherenceMap.shared.bandFreqs.beta[1].length > 0){
     var beta  = row.slice( EEG.coherenceMap.shared.bandFreqs.beta[1][0],  EEG.coherenceMap.shared.bandFreqs.beta[1][EEG.coherenceMap.shared.bandFreqs.beta[1].length-1]+1);
@@ -283,7 +296,7 @@ var analysisLoop = () => {
               buffer.push(dat);
           }
       }
-
+      session.lastPostTime = performance.now();
       if(window.workers !== undefined){
 
         session.newMsg = false;
@@ -429,6 +442,20 @@ function genVisualContainer(containerId, width, height){
   `; //Put menus in here for switching inner visuals?
 }
 
+function genBandviewSelect(visualId){
+  return `
+  <select id='`+visualId+`bandview'>
+    <option value="scp">SCP (0.1Hz-1Hz)</option>
+    <option value="delta">Delta (1Hz-4Hz)</option>
+    <option value="theta">Theta (4Hz-8Hz)</option>
+    <option value="alpha1" selected="selected">Alpha1 (8Hz-10Hz)</option>
+    <option value="alpha2">Alpha2 (10Hz-12Hz)</option>
+    <option value="beta">Beta (12Hz-35Hz)</option>
+    <option value="lowgamma">Low Gamma (35Hz-48Hz)</option>
+    <option value="highgamma">High Gamma (48Hz+)</option>
+  </select>`;
+}
+
 function genuPlotContainer(containerId, visualId, width, height) {
   return `
   <div id='`+containerId+`' width='`+width+`' height='`+height+`'>
@@ -436,8 +463,10 @@ function genuPlotContainer(containerId, visualId, width, height) {
     <select id='`+visualId+`mode'>
       <option value="FFT" selected="selected">FFTs</option>
       <option value="Coherence">Coherence</option>
+      <option value="CoherenceTimeSeries">Coherence Time Series</option>
       <option value="TimeSeries">Raw</option>
     </select>
+    `+genBandviewSelect(visualId)+`
     <div id='`+visualId+`'></div>
   </div>
   `;
@@ -448,8 +477,8 @@ function genSmoothieContainer(containerId, visualId, width, height) {
   <div id='`+containerId+`' width='`+width+`' height='`+height+`'> 
     Mode:
     <select id='`+visualId+`mode'>
-      <option value="alpha" selected="selected">Alpha Bandpowers</option>
-      <option value="coherence">Alpha Coherence</option>
+      <option value="alpha" selected="selected">Alpha1 Bandpowers</option>
+      <option value="coherence">Alpha1 Coherence</option>
       <option value="bandpowers">1Ch All Bandpowers</option>
     </select>
     Channels:
@@ -467,15 +496,7 @@ function genBrainMapContainer(containerId, visualId, width, height){
     <table id='`+visualId+`table' style='position:absolute; z-index:3; transform:translateY(-200px);'>
       <tr><td><h3>Brain Map</h3></td>
       <td><h4>Viewing:</h4></td>
-      <td><select id='`+visualId+`bandview'>
-        <option value="scp">SCP (0.1Hz-1Hz)</option>
-        <option value="delta">Delta (1Hz-4Hz)</option>
-        <option value="theta">Theta (4Hz-8Hz)</option>
-        <option value="alpha" selected="selected">Alpha (8Hz-12Hz)</option>
-        <option value="beta">Beta (12Hz-35Hz)</option>
-        <option value="lowgamma">Low Gamma (35Hz-48Hz)</option>
-        <option value="highgamma">High Gamma (48Hz+)</option>
-      </select></td></tr>
+      <td>`+genBandviewSelect(visualId)+`</td></tr>
     </table>
     <canvas id='`+visualId+`' width='`+width+`' height='`+height+`' style='position:absolute; width:`+width+`px; height:`+height+`px; z-index:1; transform:translateY(-200px);'></canvas>
     <canvas id='`+visualId+`points' width='`+width+`' height='`+height+`' style='position:absolute;width:`+width+`px; height:`+height+`px; z-index:2; transform:translateY(-200px);'></canvas>
@@ -584,6 +605,21 @@ function addChannelOptions(selectId) {
   select.innerHTML = opts;
 }
 
+function addCoherenceOptions(selectId) {
+  var select = document.getElementById(selectId);
+  select.innerHTML = "";
+  var newhtml = ``;
+  EEG.coherenceMap.map.forEach((row,i) => {
+    if(i===0) {
+      newhtml += `<option value='`+row.tag+`' selected="selected">`+row.tag+`</option>`;
+    }
+    else{
+      newhtml += `<option value='`+row.tag+`'>`+row.tag+`</option>`;
+    }
+  });
+  select.innerHTML = newhtml;
+}
+
 function setupuPlotContainer(containerId, visualId, obj) {
   var HTMLtoAppend = genuPlotContainer(containerId, visualId, obj.width, obj.height);
   appendFragment(HTMLtoAppend,obj.id);
@@ -599,6 +635,12 @@ function setupuPlotContainer(containerId, visualId, obj) {
 
   document.getElementById(visualId+"mode").onchange = () => {
     setuPlot();
+  }
+
+  document.getElementById(visualId+"bandview").onchange = () => {
+    if(document.getElementById(visualId+"mode").value === "CoherenceTimeSeries"){
+      setuPlot();
+    } 
   }
 
   obj.class.makeuPlot(obj.class.makeSeriesFromChannelTags(EEG.channelTags),obj.class.uPlotData,obj.width,obj.height);
@@ -664,18 +706,7 @@ function setupSpectrogramContainer(containerId, visualId, obj) {
       addChannelOptions(visualId+"channel");
     }
     else if(document.getElementById(visualId+"mode").value === "Coherence"){
-      var select = document.getElementById(visualId+"channel");
-      select.innerHTML = "";
-      var newhtml = ``;
-      EEG.coherenceMap.map.forEach((row,i) => {
-        if(i===0) {
-          newhtml += `<option value='`+row.tag+`' selected="selected">`+row.tag+`</option>`;
-        }
-        else{
-          newhtml += `<option value='`+row.tag+`'>`+row.tag+`</option>`;
-        }
-      });
-      select.innerHTML = newhtml;
+      addCoherenceOptions(visualId+"channel");
     }
   }
 }
@@ -736,7 +767,13 @@ function updateVisualContainers(type) { //types: coherence, raw
       else if (graphmode === "Coherence") {
         obj.class.uPlotData = [session.bandPassWindow,...session.coherenceResults];
       }
-    
+      else if (graphmode === "CoherenceTimeSeries") {
+        var band = document.getElementById(obj.class.plotId+"bandview").value
+        obj.class.uPlotData = [EEG.coherenceMap.map[0].data.times];
+        EEG.coherenceMap.map.forEach((row,i) => {
+          obj.class.uPlotData.push(row.data.means[band]);
+        });
+      }
       obj.class.plot.setData(obj.class.uPlotData);
       
     }
@@ -753,7 +790,7 @@ function updateVisualContainers(type) { //types: coherence, raw
             coord = EEG.getAtlasCoordByTag(row.tag);
             
             if(i < obj.class.series.length - 1){
-              obj.class.series[i].append(Date.now(), Math.max(...coord.data.slices.alpha[coord.data.slices.alpha.length-1]));
+              obj.class.series[i].append(Date.now(), Math.max(...coord.data.slices.alpha1[coord.data.slices.alpha1.length-1]));
             }
           });
         }
@@ -771,7 +808,8 @@ function updateVisualContainers(type) { //types: coherence, raw
             obj.class.bulkAppend([
               Math.max(...coord.data.slices.delta[coord.data.slices.delta.length-1]),
               Math.max(...coord.data.slices.theta[coord.data.slices.theta.length-1]),
-              Math.max(...coord.data.slices.alpha[coord.data.slices.alpha.length-1]),
+              Math.max(...coord.data.slices.alpha1[coord.data.slices.alpha1.length-1]),
+              Math.max(...coord.data.slices.alpha2[coord.data.slices.alpha2.length-1]),
               Math.max(...coord.data.slices.beta[coord.data.slices.beta.length-1]),
               Math.max(...coord.data.slices.lowgamma[coord.data.slices.lowgamma.length-1])
             ]);
@@ -781,7 +819,7 @@ function updateVisualContainers(type) { //types: coherence, raw
       else if (graphmode === "coherence") {
         EEG.coherenceMap.map.forEach((row,i) => {
           if(i < obj.class.series.length - 1){
-            obj.class.series[i].append(Date.now(), Math.max(...row.data.slices.alpha[row.data.slices.alpha.length-1]));
+            obj.class.series[i].append(Date.now(), Math.max(...row.data.slices.alpha1[row.data.slices.alpha1.length-1]));
           }
         });
       }
@@ -1008,6 +1046,7 @@ var setuPlot = (objin=null) => {
     
     //console.log(uPlotData)
     obj.class.makeStackeduPlot(undefined, obj.class.uPlotData, undefined, EEG.channelTags,obj.width, obj.height);
+    obj.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001).toFixed(2) + "s");
     
   }
   else if (gmode === "Coherence") {
@@ -1055,8 +1094,26 @@ var setuPlot = (objin=null) => {
     obj.class.makeuPlot(newSeries, obj.class.uPlotData, obj.width, obj.height);
     document.getElementById(obj.class.plotId+"title").innerHTML = "Coherence from tagged signals";
   }
+  else if (gmode === "CoherenceTimeSeries") {
+    var band = document.getElementById(obj.class.plotId+"bandview").value;
+    obj.class.uPlotData = [EEG.coherenceMap.map[0].data.times];
+    var newSeries = [{}];
+    EEG.coherenceMap.map.forEach((row,i) => {
+      newSeries.push({
+        label:row.tag,
+        value: (u, v) => v == null ? "-" : v.toFixed(1),
+        stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
+      });
+      obj.class.uPlotData.push(row.data.means[band]);
+    });
+    console.log(obj.class.uPlotData)
+    obj.class.makeuPlot(newSeries, obj.class.uPlotData, obj.width, obj.height);
+    document.getElementById(obj.class.plotId+"title").innerHTML = "Mean Coherence over time";
+    obj.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001).toFixed(2) + "s");
+  }
   //else if(graphmode === "StackedRaw") { graphmode = "StackedFFT" }//Stacked Coherence
 }
+
 
 var setBrainMap = (objin=null) => {
   var obj = objin;
@@ -1278,11 +1335,18 @@ function testGPU(){
 
 function testCoherence(){
   console.log("testCoherence()");
+  
+  session.lastPostTime = performance.now();
   window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd,1/session.stepsPeruV],1);
-  window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd,1/session.stepsPeruV],1);
-  window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd,1/session.stepsPeruV],1);
-  window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd,1/session.stepsPeruV],1);
-
+    setTimeout(()=>{session.lastPostTime = performance.now();
+      window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd,1/session.stepsPeruV],1);
+      setTimeout(()=>{session.lastPostTime = performance.now()+1;
+        window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd,1/session.stepsPeruV],1);
+        setTimeout(()=>{session.lastPostTime = performance.now()+1;
+          window.postToWorker("coherence", [[sine[1],sine2[1]],1,session.freqStart,session.freqEnd,1/session.stepsPeruV],1);
+      },30);  
+    },30);
+  },30);
 }
 
 

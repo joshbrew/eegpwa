@@ -33,7 +33,7 @@ Visuals:
 - Tune the Brain Map with real data
 - Fix stacked charts (would be best to simply assign it to a different canvas).
 - new uplot legend: more compact
-- Add simple moving average (actually do a normalized product-whatever that is supposed to be) with other filtering and long term coherence data to uplot.
+- Add simple moving average (actually do a normalized product-whatever that is supposed to be) and other filtering methods
 
 Performance:
 - I could definitely optimize most of the math but if it ain't broke don't fix it.. yet.. 

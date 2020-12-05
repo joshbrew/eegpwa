@@ -306,7 +306,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	//---------------------end copy/pasted solution------------------------
 
 	//EEG Atlas generator
-	newAtlasData(x,y,z, times=[], amplitudes=[], slices= {scp: [], delta: [], theta: [], alpha: [], beta: [], lowgamma: [], highgamma: []}, means={scp: [], delta: [], theta: [], alpha: [], beta: [], lowgamma:[], highgamma: []}){
+	newAtlasData(x,y,z, times=[], amplitudes=[], slices= {scp: [], delta: [], theta: [], alpha1: [], alpha2: [], beta: [], lowgamma: [], highgamma: []}, means={scp: [], delta: [], theta: [], alpha1: [], alpha2: [], beta: [], lowgamma:[], highgamma: []}){
 		return {x: x, y:y, z:z, times:times, amplitudes:amplitudes, slices:slices, means:means};
 	}
 
@@ -356,8 +356,8 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			dat.push({tag:row.tag, data:{
 				time: row.data.times[lastIndex],
 				amplitude: row.data.amplitudes[lastIndex], 
-				slice:{delta:row.data.slices.delta[lastIndex], theta:row.data.slices.theta[lastIndex], alpha:row.data.slices.alpha[lastIndex], beta:row.data.slices.beta[lastIndex], gamma:row.data.slices.gamma[lastIndex]}, 
-				mean:{delta:row.data.means.delta[lastIndex], theta:row.data.means.theta[lastIndex], alpha: row.data.means.alpha[lastIndex], beta: row.data.means.beta[lastIndex], gamma: row.data.means.gamma[lastIndex]}}});
+				slice:{delta:row.data.slices.delta[lastIndex], theta:row.data.slices.theta[lastIndex], alpha1:row.data.slices.alpha1[lastIndex], alpha2:row.data.slices.alpha2[lastIndex], beta:row.data.slices.beta[lastIndex], gamma:row.data.slices.gamma[lastIndex]}, 
+				mean:{delta:row.data.means.delta[lastIndex], theta:row.data.means.theta[lastIndex], alpha1: row.data.means.alpha1[lastIndex], alpha2: row.data.means.alpha2[lastIndex], beta: row.data.means.beta[lastIndex], gamma: row.data.means.gamma[lastIndex]}}});
 		});
 		return dat;
 	}
@@ -376,7 +376,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	makeAtlas10_20(){
 		// 19 channel coordinate space spaghetti primitive. 
 		// Based on MNI atlas. 
-		var freqBins = {scp: [], delta: [], theta: [], alpha: [], beta: [], lowgamma: [], highgamma: []};
+		var freqBins = {scp: [], delta: [], theta: [], alpha1: [], alpha2: [], beta: [], lowgamma: [], highgamma: []};
 
 		return {shared: {sps: this.sps, bandPassWindow:[], bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], lowgamma:[[],[]], highgamma:[[],[]]} //x axis values and indices for named EEG frequency bands
 		}, map:[
@@ -407,14 +407,14 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	}
 
 	genCoherenceMap(channelTags) {
-		var coherenceMap = {shared:{bandPassWindow:[],bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha:[[],[]], beta:[[],[]], lowgamma:[[],[]], highgamma:[[],[]]}},map:[]};
+		var coherenceMap = {shared:{bandPassWindow:[],bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha1:[[],[]], alpha2:[[],[]], beta:[[],[]], lowgamma:[[],[]], highgamma:[[],[]]}},map:[]};
 		var l = 1, k = 0;
-		var freqBins = {scp: [], delta: [], theta: [], alpha: [], beta: [], lowgamma: [], highgamma: []}
+		var freqBins = {scp: [], delta: [], theta: [], alpha1: [], alpha2: [], beta: [], lowgamma: [], highgamma: []}
 
 		for( var i = 0; i < (channelTags.length*(channelTags.length + 1)/2)-channelTags.length; i++){
 			var coord0 = this.getAtlasCoordByTag(channelTags[k].tag);
 			var coord1 = this.getAtlasCoordByTag(channelTags[k+l].tag);
-			coherenceMap.map.push({tag:channelTags[k].tag+":"+channelTags[l+k].tag, data:{x0:coord0.data.x,y0:coord0.data.y,z0:coord0.data.z,x1:coord1.data.x,y1:coord1.data.y,z1:coord1.data.z, amplitudes:[], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}});
+			coherenceMap.map.push({tag:channelTags[k].tag+":"+channelTags[l+k].tag, data:{x0:coord0.data.x,y0:coord0.data.y,z0:coord0.data.z,x1:coord1.data.x,y1:coord1.data.y,z1:coord1.data.z, times:[], amplitudes:[], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}});
 			l++;
 			if(l+k === channelTags.length){
 				k++;
@@ -438,7 +438,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	}
 
 	getBandFreqs(bandPassWindow) {//Returns an object with the frequencies and indices associated with the bandpass window (for processing the FFT results)
-		var scpFreqs = [[],[]], deltaFreqs = [[],[]], thetaFreqs = [[],[]], alphaFreqs = [[],[]], betaFreqs = [[],[]], lowgammaFreqs = [[],[]], highgammaFreqs = [[],[]]; //x axis values and indices for named EEG frequency bands
+		var scpFreqs = [[],[]], deltaFreqs = [[],[]], thetaFreqs = [[],[]], alpha1Freqs = [[],[]], alpha2Freqs = [[],[]], betaFreqs = [[],[]], lowgammaFreqs = [[],[]], highgammaFreqs = [[],[]]; //x axis values and indices for named EEG frequency bands
 		bandPassWindow.forEach((item,idx) => {
 			if((item >= 0.1) && (item <= 1)){
 				scpFreqs[0].push(item); scpFreqs[1].push(idx);
@@ -449,8 +449,11 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			else if((item > 4) && (item <= 8)) {
 				thetaFreqs[0].push(item); thetaFreqs[1].push(idx);
 			}
-			else if((item > 8) && (item <= 12)){
-				alphaFreqs[0].push(item); alphaFreqs[1].push(idx);
+			else if((item > 8) && (item <= 10)){
+				alpha1Freqs[0].push(item); alpha1Freqs[1].push(idx);
+			}
+			else if((item > 10) && (item <= 12)){
+				alpha2Freqs[0].push(item); alpha2Freqs[1].push(idx);
 			}
 			else if((item > 12) && (item <= 35)){
 				betaFreqs[0].push(item); betaFreqs[1].push(idx);
@@ -462,7 +465,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 				highgammaFreqs[0].push(item); highgammaFreqs[1].push(idx);
 			}
 		});
-		return {scp: scpFreqs, delta: deltaFreqs, theta: thetaFreqs, alpha: alphaFreqs, beta: betaFreqs, lowgamma: lowgammaFreqs, highgamma: highgammaFreqs}
+		return {scp: scpFreqs, delta: deltaFreqs, theta: thetaFreqs, alpha1: alpha1Freqs, alpha2: alpha2Freqs, beta: betaFreqs, lowgamma: lowgammaFreqs, highgamma: highgammaFreqs}
 	}
 
 }
