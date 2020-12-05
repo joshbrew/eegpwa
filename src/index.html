@@ -13,22 +13,6 @@
 
 
   <style>
-   #brainmap {
-      position: absolute;
-      right: 10px;
-      top: 1100px;
-      width: 400px;
-      height: 400px;
-    }
-    #brainmappoints {
-      position: absolute;
-      right: 10px;
-      z-index: 2;
-      top: 1100px;
-      width: 400px;
-      height: 400px;
-    }
-
   </style>
 
 </head>
@@ -77,7 +61,12 @@
         <option value="none">None</option>
       </select>
     </div>
-    <div id="visuals"></div>
+    <div id="visuals">
+      <table>
+        <tr><td id="block1"></td><td id="block2"></td></tr>  
+        <tr><td id="block3"></td><td id="block4"></td></tr> 
+      </table>
+    </div>
 
 <script src="./index.ts"></script>
 

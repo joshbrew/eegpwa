@@ -53,10 +53,10 @@ EEG.coherenceMap.shared.bandFreqs = EEG.atlas.shared.bandFreqs;
 
 
 
-var vis1 = setupVisualContainer("visual1",700,300,"uplot","visuals");
-var vis2 = setupVisualContainer("visual2",400,400,"brainmap","visuals");
-var vis3 = setupVisualContainer("visual3",500,300,"smoothie","visuals");
-var vis4 = setupVisualContainer("visual4",500,300,"spectrogram","visuals");
+var vis1 = setupVisualContainer("visual1",700,300,"uplot","block1");
+var vis2 = setupVisualContainer("visual2",400,400,"brainmap","block2");
+var vis3 = setupVisualContainer("visual3",500,300,"smoothie","block3");
+var vis4 = setupVisualContainer("visual4",500,300,"spectrogram","block4");
 
 session.visuals = [vis1,vis2,vis3,vis4];
 
@@ -445,6 +445,8 @@ function genuPlotContainer(containerId, visualId, width, height) {
 function genSmoothieContainer(containerId, visualId, width, height) {
   return ` 
   <div id='`+containerId+`' width='`+width+`' height='`+height+`'> 
+  
+    <h3 id='`+visualId+`title'>Smooth plot</h3> 
     Mode:
     <select id='`+visualId+`mode'>
       <option value="alpha" selected="selected">Alpha Bandpowers</option>
@@ -455,16 +457,15 @@ function genSmoothieContainer(containerId, visualId, width, height) {
     <select id='`+visualId+`channel'>
       <option value="0">0</option>
     </select>
-    <div id='`+visualId+`title'>Smoothiejs</div> 
-      <canvas id='`+visualId+`' width='`+width+`' height='`+height+`' style='width:`+width+`px; height:`+height+`px;'></canvas> 
+    <canvas id='`+visualId+`' width='`+width+`' height='`+height+`' style='width:`+width+`px; height:`+height+`px;'></canvas> 
   </div>
   `;
 }
 
 function genBrainMapContainer(containerId, visualId, width, height){
   return ` 
-  <div id='`+containerId+`' width='`+width+`px' height='`+height+`px'>  
-    <table id='`+visualId+`table'>
+  <div id='`+containerId+`' width='`+width+`' height='`+height+`'>  
+    <table id='`+visualId+`table' style='position:absolute; z-index:3; transform:translateY(-200px);'>
       <tr><td><h3>Brain Map</h3></td>
       <td><h4>Viewing:</h4></td>
       <td><select id='`+visualId+`bandview'>
@@ -477,8 +478,8 @@ function genBrainMapContainer(containerId, visualId, width, height){
         <option value="highgamma">High Gamma (48Hz+)</option>
       </select></td></tr>
     </table>
-    <canvas id='`+visualId+`' width='`+width+`' height='`+height+`' style='position:absolute; width:`+width+`px; height:`+height+`px;'></canvas>
-    <canvas id='`+visualId+`points' width='`+width+`' height='`+height+`' style='position:absolute;width:`+width+`px; height:`+height+`px;'></canvas>
+    <canvas id='`+visualId+`' width='`+width+`' height='`+height+`' style='position:absolute; width:`+width+`px; height:`+height+`px; z-index:1; transform:translateY(-200px);'></canvas>
+    <canvas id='`+visualId+`points' width='`+width+`' height='`+height+`' style='position:absolute;width:`+width+`px; height:`+height+`px; z-index:2; transform:translateY(-200px);'></canvas>
   </div>
   `;
 }
