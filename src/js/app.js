@@ -445,8 +445,6 @@ function genuPlotContainer(containerId, visualId, width, height) {
 function genSmoothieContainer(containerId, visualId, width, height) {
   return ` 
   <div id='`+containerId+`' width='`+width+`' height='`+height+`'> 
-  
-    <h3 id='`+visualId+`title'>Smooth plot</h3> 
     Mode:
     <select id='`+visualId+`mode'>
       <option value="alpha" selected="selected">Alpha Bandpowers</option>
