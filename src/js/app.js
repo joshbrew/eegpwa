@@ -432,14 +432,15 @@ function genVisualContainer(containerId, width, height){
 function genuPlotContainer(containerId, visualId, width, height) {
   return `
   <div id='`+containerId+`' width='`+width+`' height='`+height+`'>
+    <h3 id='`+visualId+`title'>FFTs</h3>  
     <select id='`+visualId+`mode'>
       <option value="FFT" selected="selected">FFTs</option>
       <option value="Coherence">Coherence</option>
       <option value="TimeSeries">Raw</option>
     </select>
-    <h3 id='`+visualId+`title'>FFTs</h3>
     <div id='`+visualId+`'></div>
-  </div>`
+  </div>
+  `;
 }
 
 function genSmoothieContainer(containerId, visualId, width, height) {
