@@ -55,8 +55,8 @@ EEG.coherenceMap.shared.bandFreqs = EEG.atlas.shared.bandFreqs;
 
 var vis1 = setupVisualContainer("visual1",700,300,"uplot","block1");
 var vis2 = setupVisualContainer("visual2",400,400,"brainmap","block2");
-var vis3 = setupVisualContainer("visual3",500,300,"smoothie","block3");
-var vis4 = setupVisualContainer("visual4",500,300,"spectrogram","block4");
+var vis3 = setupVisualContainer("visual3",700,200,"smoothie","block3");
+var vis4 = setupVisualContainer("visual4",500,200,"spectrogram","block4");
 
 session.visuals = [vis1,vis2,vis3,vis4];
 
