@@ -40,8 +40,8 @@ session.bandPassWindow = gpu.bandPassWindow(session.freqStart,session.freqEnd,EE
 
 
 EEG.channelTags = [
-  {ch: 5, tag: "T3", viewing: true},
-  {ch: 25, tag: "T4", viewing: true}
+  {ch: 4, tag: "T3", viewing: true},
+  {ch: 24, tag: "T4", viewing: true}
 ];
 
 EEG.atlas = EEG.makeAtlas10_20();

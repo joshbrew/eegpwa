@@ -96,14 +96,20 @@ Also in eegvisuals.js, for now you will find many visual classes and some other 
 
 The idea is to make it so the lightweight analysis and visual tools are both there as needed, I'm still fleshing this concept out but think of a cross between a python scientific package and a web game engine library. My HEG software is essentially this and I want to expand both to then be combined for a WebBCI framework. This will make use of all the best of the web.
  
-* `var smoothie = new SmoothieChartMaker()` - make a [Smoothiejs](http://smoothiecharts.org/) instance for smooth time series visualization
-* `var uplotter = new uPlotMaker()` - make a [uPlot](https://github.com/leeoniya/uPlot) instance, allows for overlaid or stacked (vertical) time series or FFT (or whatever really) visualization.
-* `var brainmap = new brainMap2D()` - make a brain heat map using the atlas from your eeg32 instance, tags each point with their atlas name (e.g. Fp1, Cz) and which ADC channels are assigned. Uses [webgl-heatmap](https://github.com/pyalot/webgl-heatmap) for visualization 
+* `var smoothie = new SmoothieChartMaker(nSeries, canvasId)` - make a [Smoothiejs](http://smoothiecharts.org/) instance for smooth time series visualization
+* `var uplotter = new uPlotMaker(divId)- make a [uPlot](https://github.com/leeoniya/uPlot) instance, allows for overlaid or stacked (vertical) time series or FFT (or whatever really) visualization.
+* `var brainmap = new brainMap2D(heatmapCanvasId, pointsCanvasId)` - make a brain heat map using the atlas from your eeg32 instance, tags each point with their atlas name (e.g. Fp1, Cz) and which ADC channels are assigned. Uses [webgl-heatmap](https://github.com/pyalot/webgl-heatmap) for visualization 
+* `var timecharter = new TimeChartMaker(divId, maxpoints)` - class for constructing performant time series charts for raw feeds of each tagged ADC channel.
+* `var mirrorchart = new mirrorBarChart(divId, leftcanvasId, rightcanvasId, normalizeFactor)` - lets you construct two mirrored bar charts for showing opposing FFT bin data. Draws a bar for each bin.
+* `var barchart = new eegBarChart(canvasId, normalizeFactor)` - constructs a color coded bar chart for viewing EEG FFT results in a nice bar chart form. Expects a multiplier to normalize the data (1/peak expected amplitude (e.g. 100 for 100uV))
+* `var spectrogram = new Spectrogram(canvasId, peakAmp)` - constructs a spectrogram with a color gradient to visualize FFT or coherence intensity. Auto interpolates data to the height resolution of the spectrogram for convenience.  Expects a multiplier to normalize the data (1/peak expected amplitude (e.g. 100 for 100uV)). 
+
+
+* read the source to see the functions in each, they are built around the eeg32.js data structures
 
 Incoming:
-* colored bar charts - a common eeg visual you see to highlight band powers
 * theta-gamma 2 octave - Dmitry's test to show working memory coherence patterns with audio and heatmap visualization using my soundjs toy and uplot
-* alpha coherence visualization - for alpha training e.g. with meditation
+* more alpha coherence visualization - for alpha training e.g. with meditation
 
 
 On the right you can see single threaded performance statistics (<20ms average for 128x FFTs on worker threads)

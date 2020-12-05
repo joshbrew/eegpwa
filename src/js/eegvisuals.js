@@ -100,13 +100,13 @@ export class SmoothieChartMaker {
 
 
 export class uPlotMaker {
-	constructor(plotId = null) {
+	constructor(divId = null) {
 		if(uPlot === 'undefined') {
 			console.log("uPlot not detected!");
 			return false;
 		}
 
-		this.plotId = plotId;
+		this.plotId = divId;
 		this.plot = null;
 		this.uPlotData = [];
 	}
