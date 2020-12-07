@@ -159,6 +159,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		}
 	}
 
+	//Unfinished
 	async subscribeSafe(port) { //Using promises instead of async/await to cure hangs when the serial update does not meet tick requirements
 		var readable = new Promise((resolve,reject) => {
 			while(this.port.readable){
@@ -203,7 +204,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.port = null; 
 	}
 
-	async setupSerialAsync(baudrate=921600) { //You can specify baudrate just in case
+	async setupSerialAsync(baudrate=115200) { //You can specify baudrate just in case
 
 		const filters = [
 			{ usbVendorId: 0x10c4, usbProductId: 0x0043 } //CP2102 filter (e.g. for UART via ESP32)
@@ -213,7 +214,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.port = await navigator.serial.requestPort();
 		navigator.serial.addEventListener("disconnect",(e) => {
 			this.closePort(this.port);
-		})
+		});
 		this.onPortSelected(this.port,baudrate);
 
 		//navigator.serial.addEventListener("onReceive", (e) => {console.log(e)});//this.onReceive(e));

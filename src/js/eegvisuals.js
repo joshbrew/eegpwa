@@ -1,7 +1,7 @@
 import uPlot from 'uplot';
 import { SmoothieChart, TimeSeries } from "smoothie";
 import './utils/webgl-heatmap'
-import {TimeChart} from 'timechart';
+import TimeChart from 'timechart';
 
 //---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
@@ -389,6 +389,7 @@ export class TimeChartMaker {
 			document.getElementById(this.divId).insertAdjacentHTML('beforeend',`<div id='`+chartname+`'></div>`);
 			var elem = document.getElementById(chartname);
 			this.timechartsdata.push(dat);
+			//debugger;
 			var timechart = new TimeChart(elem, {
 			  series: [{ dat }],
 			  lineWidth: 2,

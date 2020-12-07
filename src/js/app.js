@@ -286,7 +286,7 @@ function processFFTs() {
 
 //Should do a lot of this with a worker to keep the UI smooth and prevent hangups
 var analysisLoop = () => {
-  if((session.analyze === true) && (newMsg === true)) {
+  if((session.analyze === true) && (session.newMsg === true)) {
     //console.log("analyzing")
       var buffer = [];
       for(var i = 0; i < EEG.channelTags.length; i++){
