@@ -16,7 +16,7 @@ try { window.gpu = new gpuUtils(gfx); }
 catch (err) { alert("gpu.js utils error: ", err); }
 
 
-var session = {
+window.session = {
   nSec: 1,
   freqStart: 0,
   freqEnd: 100,
@@ -29,6 +29,7 @@ var session = {
   newMsg: true,
   vscale: EEG.vref*EEG.stepSize,
   stepsPeruV: 0.000001 / (EEG.vref*EEG.stepSize),
+  scalar: 1/(0.000001 / (EEG.vref*EEG.stepSize)),
   anim: null,
   analyze: false,
   analyzeloop: null,
@@ -301,10 +302,10 @@ var analysisLoop = () => {
 
         session.newMsg = false;
         if(session.fdbackmode === "coherence") {
-          window.postToWorker("coherence",[buffer,session.nSec,session.freqStart,session.freqEnd]);
+          window.postToWorker("coherence",[buffer,session.nSec,session.freqStart,session.freqEnd,session.scalar]);
         }
         else {
-          window.postToWorker("multidftbandpass",[buffer,nSec,freqStart,freqEnd]);
+          window.postToWorker("multidftbandpass",[buffer,nSec,freqStart,freqEnd,session.scalar]);
         }
         
       }
@@ -313,7 +314,7 @@ var analysisLoop = () => {
 
         if(session.fdbackmode === "coherence") {
           console.time("GPU DFT + coherence");
-          var results = coherence(buffer, session.nSec, session.freqStart, session.freqEnd, 1/session.stepsPeruV);
+          var results = coherence(buffer, session.nSec, session.freqStart, session.freqEnd, session.scalar);
           console.timeEnd("GPU DFT + coherence");
           console.log("FFTs processed: ", buffer.length+results[2].length);
           session.bandPassWindow = results[0];
@@ -322,14 +323,10 @@ var analysisLoop = () => {
         }
         else {
           console.time("GPU DFT");
-          session.posFFTList = gpu.MultiChannelDFT_Bandpass(buffer, session.nSec, session.freqStart, session.freqEnd, 1/session.stepsPeruV)[1]; // Mass FFT
+          session.posFFTList = gpu.MultiChannelDFT_Bandpass(buffer, session.nSec, session.freqStart, session.freqEnd, session.scalar)[1]; // Mass FFT
           console.timeEnd("GPU DFT");
           console.log("FFTs processed: ", buffer.length);
 
-          session.posFFTList.forEach((row,i) => {
-            row.map( x => x * session.stepsPeruV);
-          });
-  
         }
         
         processFFTs();
@@ -350,12 +347,12 @@ var analysisLoop = () => {
 
 //Separate animation cycle for raw data feeds (smoother)
 var updateRawFeed = () => {
-  setTimeout(() => {
-    if(session.feed === true) {
-      session.rawfeedloop = requestAnimationFrame(() => {updateVisualContainers("RAW");});
-    }
-    updateRawFeed();
-  }, 15);
+  if(session.rawfeed === true) {
+    session.rawfeedloop = requestAnimationFrame(() => {updateVisualContainers("RAW");});
+    setTimeout(() => {  
+      updateRawFeed();
+    }, 30);
+  }
 }
 
 
@@ -635,11 +632,14 @@ function setupuPlotContainer(containerId, visualId, obj) {
 
   document.getElementById(visualId+"mode").onchange = () => {
     setuPlot();
+    
+    console.log(obj.class.uPlotData);
   }
 
   document.getElementById(visualId+"bandview").onchange = () => {
     if(document.getElementById(visualId+"mode").value === "CoherenceTimeSeries"){
       setuPlot();
+      console.log(obj.class.uPlotData);
     } 
   }
 
@@ -695,7 +695,7 @@ function setupSpectrogramContainer(containerId, visualId, obj) {
   var HTMLtoAppend = genSpectrogramContainer(containerId, visualId, obj.width, obj.height);
   appendFragment(HTMLtoAppend,obj.id);
   addChannelOptions(visualId+"channel");
-  obj.class = new Spectrogram(visualId, 100);
+  obj.class = new Spectrogram(visualId, 1000);
   obj.mode = "spectrogram";
   obj.child = document.getElementById(containerId).parentNode;
 
@@ -917,18 +917,23 @@ function updateVisualContainers(type) { //types: coherence, raw
   else if(type === "RAW") {
 
     if(obj.mode === "uplot") {
+      var graphmode = document.getElementById(obj.class.plotId+"mode").value;
+      var nsamples = Math.floor(EEG.sps*session.nSecAdcGraph);
+      if(nsamples > EEG.data.ms.length) {nsamples = EEG.data.ms.length-1}
+
       if ((graphmode === "TimeSeries") || (graphmode === "Stacked")) {
         var nsamples = Math.floor(EEG.sps*session.nSecAdcGraph);
   
         obj.class.uPlotData = [
             EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
-        ];
+          ];
   
         EEG.channelTags.forEach((row,i) => {
             if(row.viewing === true) {
               obj.class.uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
             }
         });
+        
       }
 
       //console.log(uPlotData)
@@ -970,6 +975,7 @@ var setuPlot = (objin=null) => {
     
     if(EEG.data["A0"].length > 1) {
       var nsamples = Math.floor(EEG.sps*session.nSecAdcGraph);
+      if(nsamples > EEG.data.ms.length) {nsamples = EEG.data.ms.length-1}
 
       obj.class.uPlotData = [
           EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
@@ -989,7 +995,7 @@ var setuPlot = (objin=null) => {
     }
     
     obj.class.makeuPlot(obj.class.makeSeriesFromChannelTags(EEG.channelTags), obj.class.uPlotData, obj.width, obj.height);
-    obj.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001).toFixed(2) + "s");
+    obj.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +((v-EEG.data.ms[0])*0.001).toFixed(2) + "s");
     
   }
   else if (gmode === "FFT"){
@@ -1024,6 +1030,7 @@ var setuPlot = (objin=null) => {
 
     if(EEG.data["A0"].length > 1){
     var nsamples = Math.floor(EEG.sps*session.nSecAdcGraph);
+    if(nsamples > EEG.data.ms.length) {nsamples = EEG.data.ms.length-1}
 
       obj.class.uPlotData = [
           EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
@@ -1090,7 +1097,6 @@ var setuPlot = (objin=null) => {
     }
     //console.log(newSeries.length);
     //console.log(uPlotData.length);
-  
     obj.class.makeuPlot(newSeries, obj.class.uPlotData, obj.width, obj.height);
     document.getElementById(obj.class.plotId+"title").innerHTML = "Coherence from tagged signals";
   }
@@ -1136,18 +1142,24 @@ var setBrainMap = (objin=null) => {
 }
 
 
+EEG.onConnectedCallback = () => {
+  console.log("port connected!");
+  session.rawfeed = true;
+  updateRawFeed();
+}
+
 document.getElementById("connect").onclick = () => {EEG.setupSerialAsync();}
 
 document.getElementById("analyze").onclick = () => {
 if(EEG.port !== null){
   if((session.analyzeloop === null) || (session.analyze === false)) {
     session.analyze = true;
-    setTimeout(()=>{session.analyzeloop = requestAnimationFrame(analysisLoop)},200);
+    setTimeout(()=>{session.analyzeloop = requestAnimationFrame(analysisLoop);},200);
   } 
   else{alert("connect the EEG first!")}}
 }
 
-document.getElementById("stop").onclick = () => { cancelAnimationFrame(session.analyzeloop); session.analyze = false; }
+document.getElementById("stop").onclick = () => { cancelAnimationFrame(session.analyzeloop); session.analyze = false; cancelAnimationFrame(session.rawfeedloop); session.rawfeedloop = false; }
 
 document.getElementById("record").onclick = () => { alert("dummy"); }
 
