@@ -3,6 +3,8 @@
 //---------GPU Utility Funcs---------- (gpu.addFunction())
 //------------------------------------
 
+import { Input } from "gpu.js";
+
 
 function add(a, b) { return a + b; }
 function sub(a, b) { return a - b; }
@@ -217,6 +219,38 @@ function iFFT(amplitudes, len, freq, sr){ //inverse FFT to return time domain
 }
 
 
+function conv2D(src, width, height, kernel, kernelRadius) {
+    const kSize = 2 * kernelRadius + 1;
+    let r = 0, g = 0, b = 0;
+
+    let i = -kernelRadius;
+    let imgOffset = 0, kernelOffset = 0;
+    while (i <= kernelRadius) {
+    if (this.thread.x + i < 0 || this.thread.x + i >= width) {
+        i++;
+        continue;
+    }
+
+    let j = -kernelRadius;
+    while (j <= kernelRadius) {
+        if (this.thread.y + j < 0 || this.thread.y + j >= height) {
+        j++;
+        continue;
+        }
+
+        kernelOffset = (j + kernelRadius) * kSize + i + kernelRadius;
+        const weights = kernel[kernelOffset];
+        const pixel = src[this.thread.y + i][this.thread.x + j];
+        r += pixel.r * weights;
+        g += pixel.g * weights;
+        b += pixel.b * weights;
+        j++;
+    }
+    i++;
+    }
+    this.color(r, g, b);
+}
+
 
 
 
@@ -297,6 +331,38 @@ function listdft1DKern(signals,len, scalar) {
     return mag(result[0],result[1])*scalar;
 }
 
+function dft_windowedKern(signal, sampleRate, freqStart, freqEnd, scalar) {
+    var result = [0,0];
+    var freq = ( (this.thread.x/sampleRate) * ( freqEnd - freqStart ) ) + freqStart;
+    result = DFT(signals,sampleRate,freq);
+
+    return mag(result[0],result[1])*scalar;
+}
+
+function fft_windowedKern(signal, sampleRate, freqStart, freqEnd, scalar) {
+    var result = [0,0];
+    var freq = ( (this.thread.x/sampleRate) * ( freqEnd - freqStart ) ) + freqStart;
+    result = FFT(signals,sampleRate,freq);
+
+    return mag(result[0],result[1])*scalar;
+}
+
+function idft_windowedKern(amplitudes, sampleRate, freqStart, freqEnd, scalar) {
+    var result = [0,0];
+    var freq = ( (this.thread.x/sampleRate) * ( freqEnd - freqStart ) ) + freqStart;
+    result = iDFT(amplitudes,sampleRate,freq);
+
+    return mag(result[0],result[1])*scalar;
+}
+
+function ifft_windowedKern(amplitudes, sampleRate, freqStart, freqEnd, scalar) {
+    var result = [0,0];
+    var freq = ( (this.thread.x/sampleRate) * ( freqEnd - freqStart ) ) + freqStart;
+    result = iFFT(amplitudes,sampleRate,freq);
+
+    return mag(result[0],result[1])*scalar;
+}
+
 function listdft1D_windowedKern(signals, sampleRate, freqStart, freqEnd, scalar) { //Will make a higher resolution DFT for a smaller frequency window.
     var result = [0, 0];
     if (this.thread.x <= sampleRate) {
@@ -322,15 +388,40 @@ function bulkArrayMulKern(arrays, len, n, mod) {
     return products*mod;
 }
 
+function multiConv2DKern(img, width, height, kernels, kernelLengths, nKernels, graphical) {
+    for(var i = 0; i < nKernels; i++){
+        var kernelLength = kernelLengths[i];            
+        var kernelRadius = (Math.sqrt(kernelLength) - 1) / 2;
+        conv2D(img, width, height, kernels[i], kernelRadius);
+    }
+    if(graphical === 0){ return this.color; }
+}
+
+
+//-----------------------------------
+//------------Combine Kernels-------- gpu.combineKernels(f1,f2,function(a,b,c) { f1(f2(a,b),c); });
+//-----------------------------------
+
+
+function signalBandpass(signal, sampleRate, freqStart, freqEnd, scalar) { //Returns the signal wave with the bandpass filter applied
+    var dft = dft_windowedKern(signal, sampleRate, freqStart, freqEnd, scalar);
+    var idft = idft_windowedKern(dft, sampleRate, freqStart, freqEnd, scalar); 
+}
+
+
+
+//Exports
+
 export const createGpuKernels = {
-    correlogramsKern, correlogramsPCKern, dftKern, idftKern,
-    listdft2DKern, listdft1DKern, listdft1D_windowedKern,
-    bulkArrayMulKern, fftKern, ifftKern,
+    correlogramsKern, correlogramsPCKern, dftKern, idftKern, fftKern, ifftKern,
+    dft_windowedKern, idft_windowedKern, fft_windowedKern, ifft_windowedKern, 
+    listdft2DKern, listdft1DKern, listdft1D_windowedKern, bulkArrayMulKern, 
+    fftKern, ifftKern, multiConv2DKern
 }
 
 export const addGpuFunctions = [
     add, sub, mul, div, cadd, csub,
     cmul, cexp, mag, conj, lof, mean, est,
-    mse, rms, xcor, DFT, DFTlist,
-    iDFT, iDFTlist, FFT, iFFT
+    mse, rms, xcor, softmax, DFT, DFTlist,
+    iDFT, iDFTlist, FFT, iFFT, conv2D
 ];

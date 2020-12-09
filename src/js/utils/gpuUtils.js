@@ -30,6 +30,58 @@ export class gpuUtils {
     this.SQRT1_2 = 0.7071067811865476
 
     this.addFunctions();
+
+    this.imgkernels = {
+      edgeDetection: [
+        -1, -1, -1,
+        -1,  8, -1,
+        -1, -1, -1
+      ], boxBlur: [
+        1/9, 1/9, 1/9,
+        1/9, 1/9, 1/9,
+        1/9, 1/9, 1/9
+      ], sobelLeft: [
+        1,  0, -1,
+        2,  0, -2,
+        1,  0, -1
+      ], sobelRight: [
+        -1, 0, 1,
+        -2, 0, 2,
+        -1, 0, 1
+      ], sobelTop: [
+        1,  2,  1,
+        0,  0,  0,
+        -1, -2, -1  
+      ], sobelBottom: [
+        -1, 2, 1,
+        0, 0, 0,
+        1, 2, 1
+      ], identity: [
+        0, 0, 0, 
+        0, 1, 0, 
+        0, 0, 0
+      ], gaussian3x3: [
+        1,  2,  1, 
+        2,  4,  2, 
+        1,  2,  1
+      ], guassian7x7: [
+        0, 0,  0,   5,   0,   0,  0,
+        0, 5,  18,  32,  18,  5,  0,
+        0, 18, 64,  100, 64,  18, 0,
+        5, 32, 100, 100, 100, 32, 5,
+        0, 18, 64,  100, 64,  18, 0,
+        0, 5,  18,  32,  18,  5,  0,
+        0, 0,  0,   5,   0,   0,  0,
+      ], emboss: [
+        -2, -1,  0, 
+        -1,  1,  1, 
+        0,  1,  2
+      ], sharpen: [
+        0, -1,  0,
+        -1,  5, -1,
+        0, -1,  0
+      ]
+    };
   }
 
   addFunctions() { //Use kernel map instead? or this.kernel.addfunction? Test performance!
@@ -45,6 +97,7 @@ export class gpuUtils {
     this.listdft1D = makeKrnl(this.gpu, krnl.listdft1DKern);
     this.listdft1D_windowed = makeKrnl(this.gpu, krnl.listdft1D_windowedKern);
     this.bulkArrayMul = makeKrnl(this.gpu, krnl.bulkArrayMulKern);
+    this.multiConv2D = makeKrnl(this.gpu, krnl.multiConv2D);
   }
 
   gpuXCors(arrays, precompute=false, texOut = false) { //gpu implementation for bulk cross/auto correlations, outputs [[0:0],[0:1],...,[1:1],...[n:n]]
@@ -258,67 +311,7 @@ export class gpuUtils {
 
 
 
-var kernels = ({
-  edgeDetection: [
-    -1, -1, -1,
-    -1,  8, -1,
-    -1, -1, -1
-  ],
-  boxBlur: [
-    1/9, 1/9, 1/9,
-    1/9, 1/9, 1/9,
-    1/9, 1/9, 1/9
-  ],
-  sobelLeft: [
-    1,  0, -1,
-    2,  0, -2,
-    1,  0, -1
-  ],
-  sobelRight: [
-    -1, 0, 1,
-    -2, 0, 2,
-    -1, 0, 1
-  ],
-  sobelTop: [
-    1,  2,  1,
-    0,  0,  0,
-    -1, -2, -1  
-  ],
-  sobelBottom: [
-    -1, 2, 1,
-    0, 0, 0,
-    1, 2, 1
-  ],
-  identity: [
-    0, 0, 0, 
-    0, 1, 0, 
-    0, 0, 0
-  ],
-  gaussian3x3: [
-    1,  2,  1, 
-    2,  4,  2, 
-    1,  2,  1
-  ],
-  guassian7x7: [
-    0, 0,  0,   5,   0,   0,  0,
-    0, 5,  18,  32,  18,  5,  0,
-    0, 18, 64,  100, 64,  18, 0,
-    5, 32, 100, 100, 100, 32, 5,
-    0, 18, 64,  100, 64,  18, 0,
-    0, 5,  18,  32,  18,  5,  0,
-    0, 0,  0,   5,   0,   0,  0,
-  ],
-  emboss: [
-    -2, -1,  0, 
-    -1,  1,  1, 
-    0,  1,  2
-  ],
-  sharpen: [
-    0, -1,  0,
-    -1,  5, -1,
-    0, -1,  0
-  ]
-});
+
 
 
 function includeGPUJS() {
@@ -472,118 +465,6 @@ function testGPUthreading2D(){
     var result = kernel();
     console.timeEnd('2D threading');
     console.info(result);
-}
-
-function testVideoConv(video=null, kernel){
-    const canvas = document.getElementById('v');
-    var gpu = new GPU({
-        canvas: canvas,
-        mode: 'gpu'
-    });
-
-    if(video == null){
-        var htmlToAppend = `<video src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Jellyfish_in_Vr%C3%A5ngo.webm" id="vid" controls width="337" height="599" crossorigin="anonymous" loop autoplay muted></video>`;
-        var div = document.createElement("div");
-        div.innerHTML = htmlToAppend;
-        document.body.appendChild(div);
-        video = document.getElementById("vid");
-        console.log(video.width,video.height);
-    }
-    var kernelRadius = (Math.sqrt(kernel.length) - 1) / 2;
-
-    var convolution = gpu.createKernel(function (src, width, height, kernel, kernelRadius) {
-        const kSize = 2 * kernelRadius + 1;
-        let r = 0, g = 0, b = 0;
-    
-        let i = -kernelRadius;
-        let imgOffset = 0, kernelOffset = 0;
-        while (i <= kernelRadius) {
-        if (this.thread.x + i < 0 || this.thread.x + i >= width) {
-            i++;
-            continue;
-        }
-    
-        let j = -kernelRadius;
-        while (j <= kernelRadius) {
-            if (this.thread.y + j < 0 || this.thread.y + j >= height) {
-            j++;
-            continue;
-            }
-    
-            kernelOffset = (j + kernelRadius) * kSize + i + kernelRadius;
-            const weights = kernel[kernelOffset];
-            const pixel = src[this.thread.y + i][this.thread.x + j];
-            r += pixel.r * weights;
-            g += pixel.g * weights;
-            b += pixel.b * weights;
-            j++;
-        }
-        i++;
-        }
-        this.color(r, g, b);
-    })
-        .setOutput([video.width, video.height])
-        .setGraphical(true);
-
-    video.addEventListener('loadeddata',()=>{
-        var result = null;
-        var render = () => {
-            result = convolution(video, video.width, video.height, kernel, kernelRadius);
-            requestAnimationFrame(render);
-        }
-        console.time('vid conv2D');
-        render();
-        console.timeEnd('vid conv2D');
-        console.info(result);
-    },false);
-    
-
-    return convolution.canvas;
-
-}
-//Next apply multiple kernels in same operation (untested)
-function multiConv2D(img=null, kernels=[]){
-    const multiConv2D = gpu.createKernelMap({
-        conv2D: function (src, width, height, kernel, kernelRadius) {
-            const kSize = 2 * kernelRadius + 1;
-            let r = 0, g = 0, b = 0;
-        
-            let i = -kernelRadius;
-            let imgOffset = 0, kernelOffset = 0;
-            while (i <= kernelRadius) {
-            if (this.thread.x + i < 0 || this.thread.x + i >= width) {
-                i++;
-                continue;
-            }
-        
-            let j = -kernelRadius;
-            while (j <= kernelRadius) {
-                if (this.thread.y + j < 0 || this.thread.y + j >= height) {
-                j++;
-                continue;
-                }
-        
-                kernelOffset = (j + kernelRadius) * kSize + i + kernelRadius;
-                const weights = kernel[kernelOffset];
-                const pixel = src[this.thread.y + i][this.thread.x + j];
-                r += pixel.r * weights;
-                g += pixel.g * weights;
-                b += pixel.b * weights;
-                j++;
-            }
-            i++;
-            }
-            this.color(r, g, b);
-        }, function(img, width, height, kernels, kernelLengths, nKernels) {
-            for(var i = 0; i < nKernels; i++){
-                var kernelLength = kernelLengths[i];            
-                var kernelRadius = (Math.sqrt(kernelLength) - 1) / 2;
-                conv2D(img, width, height, kernels[i], kernelRadius);
-            }
-        }
-    },{output:[img.width,img.height],graphical:true});
-    
-    //finally render the result. requestAnimationFrame for video or canvas
 }
 
 function testGPUpipeline() {
