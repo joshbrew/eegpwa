@@ -1,5 +1,5 @@
 import { GPU } from 'gpu.js'
-import { addGpuFunctions, createGpuKernels as krnl } from './gpuUtils-functs';
+import { addGpuFunctions, createGpuKernels as krnl, combineGpuKernels as kcombo } from './gpuUtils-functs';
 
 function makeKrnl(gpu, f, opts = {
   setDynamicOutput: true,
@@ -91,13 +91,19 @@ export class gpuUtils {
     this.correlogramsPC = makeKrnl(this.gpu, krnl.correlogramsKern);
     this.dft = makeKrnl(this.gpu, krnl.dftKern);
     this.idft = makeKrnl(this.gpu, krnl.idftKern);
+    this.dft_windowed = makeKrnl(this.gpu, krnl.dft_windowedKern);
+    this.idft_windoed = makeKrnl(this.gpu, krnl.idft_windowedKern);
     this.fft = makeKrnl(this.gpu, krnl.fftKern);
     this.ifft = makeKrnl(this.gpu, krnl.ifftKern);
+    this.fft_windowed = makeKrnl(this.gpu, krnl.fft_windowedKern);
+    this.ifft_windoed = makeKrnl(this.gpu, krnl.ifft_windowedKern);
     this.listdft2D = makeKrnl(this.gpu, krnl.listdft2DKern);
     this.listdft1D = makeKrnl(this.gpu, krnl.listdft1DKern);
     this.listdft1D_windowed = makeKrnl(this.gpu, krnl.listdft1D_windowedKern);
     this.bulkArrayMul = makeKrnl(this.gpu, krnl.bulkArrayMulKern);
-    this.multiConv2D = makeKrnl(this.gpu, krnl.multiConv2D);
+    this.multiConv2D = makeKrnl(this.gpu, krnl.multiConv2DKern);
+
+    this.bandpassSignal = this.gpu.combineKernels(this.dft_windowed,this.idft_windowed, kcombo.signalBandpass);
   }
 
   gpuXCors(arrays, precompute=false, texOut = false) { //gpu implementation for bulk cross/auto correlations, outputs [[0:0],[0:1],...,[1:1],...[n:n]]

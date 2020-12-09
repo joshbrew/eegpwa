@@ -425,3 +425,7 @@ export const addGpuFunctions = [
     mse, rms, xcor, softmax, DFT, DFTlist,
     iDFT, iDFTlist, FFT, iFFT, conv2D
 ];
+
+export const combineGpuKernels = {
+    signalBandpass
+}
