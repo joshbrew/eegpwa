@@ -52,6 +52,14 @@ function mean(arr, len) {
     return mean/len;
 }
 
+function est(arr, mean, len) {
+    var est = 0;
+    for (var i=0; i<len;i++){
+        est += (arr[i]-mean)*(arr[i]-mean);
+    }
+    return Math.sqrt(est);
+}
+
 function mse(arr, mean, len) { //mean squared error
     var est = 0;
     var vari = 0;
@@ -72,12 +80,23 @@ function rms(arr, mean, len) { //root mean square error
     return Math.sqrt(est/len);
 }
 
-function xcor(arr1, arr1mean, arr1Est, arr2buf, arr2mean, arr2Est, len, delay) { //performs a single pass of a cross correlation equation, see correlogramsKern
+function xcor(arr1, arr1mean, arr1Est, arr2, arr2mean, arr2Est, len, delay) { //performs a single pass of a cross correlation equation, see correlogramsKern
     var correlation = 0;
-    for (var i = 0; i < len; i++) {
-        correlation += (arr1[i]-arr1mean)*(arr2buf[i+delay]-arr2mean);
+    for (var i = 0; i < len; i++)  {
+        var j = i+delay;
+        var k = 0;
+        if(j < len) { k = arr2[j]; }
+        correlation += (arr1[i]-arr1mean)*(k-arr2mean);
     }
     return correlation/(arr1Est*arr2Est);
+}
+
+function softmax(array, len, i) { // Returns a single array value for a 1d softmax function.
+    var esum = 0;
+    for(var j = 0; j < len; j++){
+        esum+= Math.exp(array[j]);
+    }
+    return Math.exp(array[i])/esum;
 }
 
 function DFT(signal, len, freq){ //Extract a particular frequency
@@ -109,7 +128,8 @@ function DFTlist(signals, len, freq, n) { //Extract a particular frequency
     return [real*_len,imag*_len]; //mag(real,imag)
 }
 
-//FFT, simply implements a nyquist frequency based index skip for frequencies <= sampleRate*.25
+//FFT, simply implements a nyquist frequency based index skip for frequencies <= sampleRate*.25.
+//Other optimization: could do 4 at once and return a vec4, this is what you see in some other libs
 function FFT(signal, len, freq, sr){ //Extract a particular frequency
     var real = 0;
     var imag = 0;
@@ -148,7 +168,7 @@ function iDFT(amplitudes, len, freq){ //inverse DFT to return time domain
     for(var i = 0; i<len; i++){
       var sharedi = shared*i; //this.thread.x is the target frequency
       real = real+amplitudes[i]*Math.cos(sharedi);
-      imag = imag-amplitudes[i]*Math.sin(sharedi);  
+      imag = amplitudes[i]*Math.sin(sharedi)-imag;  
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
     return [real*_len,imag*_len]; //mag(real,imag)
@@ -162,7 +182,7 @@ function iDFTlist(amplitudes,len,freq,n){ //inverse DFT to return time domain
     for (var i = 0; i<len; i++) {
       var sharedi = shared*i; //this.thread.x is the target frequency
       real = real+amplitudes[i+(len-1)*n]*Math.cos(sharedi);
-      imag = imag-amplitudes[i+(len-1)*n]*Math.sin(sharedi);  
+      imag = amplitudes[i+(len-1)*n]*Math.sin(sharedi)-imag;  
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
     return [real*_len,imag*_len]; //mag(real,imag)
@@ -189,7 +209,7 @@ function iFFT(amplitudes, len, freq, sr){ //inverse FFT to return time domain
       if(j > len) { j = len; }
       var sharedi = shared*j; //this.thread.x is the target frequency
       real = real+amplitudes[j]*Math.cos(sharedi);
-      imag = imag-amplitudes[j]*Math.sin(sharedi);  
+      imag = amplitudes[j]*Math.sin(sharedi)-imag;  
       N += 1;
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
@@ -205,14 +225,35 @@ function iFFT(amplitudes, len, freq, sr){ //inverse FFT to return time domain
 //------------------------------------
 
 
-function correlogramsKern(arrays, means, estimators, n, len) {
+function correlogramsKern(arrays, len) { //Computes cross correlations of each pair of arrays given to the function. so xcor[0,1],xcor[2,3],etc
 
-    var result;
-    var j = Math.floor(this.thread.x / len);
-    
+    var k = Math.floor(this.thread.x/len)*2;
+    var delay = this.thread.x - Math.floor(this.thread.x/len)*len;
+    var arr1mean = mean(arrays[k],len);
+    var arr2mean = mean(arrays[k+1],len);
+    var arr1Est = est(arrays[k],arr1mean,len);
+    var arr2Est = est(arrays[k+1],arr2mean,len);
 
-    return this.thread.x;
+    var y_x = xcor(arrays[k],arr1mean,arr1Est,arrays[k+1],arr2mean,arr2Est,len,delay);
+
+    return y_x;
 }
+
+//Computes cross correlations of each pair of arrays given to the function. so xcor[0,1],xcor[2,3],etc
+//Takes precomputed averages and estimators for each array for efficiency
+function correlogramsPCKern(arrays, len, means, estimators) { 
+    var k = Math.floor(this.thread.x/len)*2;
+    var delay = this.thread.x - Math.floor(this.thread.x/len)*len;
+    var arr1mean = means[k];
+    var arr2mean = means[k+1];
+    var arr1Est = estimators[k];
+    var arr2Est = estimators[k+1];
+
+    var y_x = xcor(arrays[k],arr1mean,arr1Est,arrays[k+1],arr2mean,arr2Est,len,delay);
+
+    return y_x;
+}
+
 
 //Return frequency domain based on DFT
 function dftKern(signal, len, scalar) {

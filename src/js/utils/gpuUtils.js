@@ -36,6 +36,7 @@ export class gpuUtils {
     addGpuFunctions.forEach(f => this.gpu.addFunction(f));
 
     this.correlograms = makeKrnl(this.gpu, krnl.correlogramsKern);
+    this.correlogramsPC = makeKrnl(this.gpu, krnl.correlogramsKern);
     this.dft = makeKrnl(this.gpu, krnl.dftKern);
     this.idft = makeKrnl(this.gpu, krnl.idftKern);
     this.fft = makeKrnl(this.gpu, krnl.fftKern);
@@ -45,6 +46,59 @@ export class gpuUtils {
     this.listdft1D_windowed = makeKrnl(this.gpu, krnl.listdft1D_windowedKern);
     this.bulkArrayMul = makeKrnl(this.gpu, krnl.bulkArrayMulKern);
   }
+
+  gpuXCors(arrays, precompute=false, texOut = false) { //gpu implementation for bulk cross/auto correlations, outputs [[0:0],[0:1],...,[1:1],...[n:n]]
+ 
+    var outputTex;
+   
+    if(precompute === true) {
+      var means = [];
+      var ests = [];
+      arrays.forEach((arr,i) => {
+        means.push(arr.reduce((prev,curr)=> curr += prev)/arr.length);
+        ests.push(Math.sqrt(means[i].reduce((sum,item) => sum += Math.pow(item-mean1,2))));
+      });
+
+      var meansbuf = [];
+      var estsbuf = [];
+      var buffer = [];
+      for(var i = 0; i < arrays.length; i++) {
+        for(var j = i; j < arrays.length; j++){
+          buffer.push(...arrays[i],...arrays[j]);
+          meansbuf.push(means[i],means[j]);
+          estsbuf.push(ests[i],ests[j]);
+        }
+      }
+      this.correlogramsPC.setOutput([buffer.length]);
+      this.correlogramsPC.setLoopMaxIterations(arrays[0].length*2);
+      outputTex = this.correlogramsPC(buffer, arrays[0].length, meansbuf, estsbuf)
+    }
+    else{
+      var buffer = [];
+      for(var i = 0; i < arrays.length; i++) {
+        for(var j = i; j < arrays.length; j++){
+          buffer.push(...arrays[i],...arrays[j]);
+        }
+      }
+
+      this.correlograms.setOutput([buffer.length]);
+      this.correlograms.setLoopMaxIterations(arrays[0].length*2);
+
+      outputTex = this.correlograms(buffer, arrays[0].length);
+    }
+
+    if(texOut === true) { return outputTex; }
+    var outputbuf = outputTex.toArray();
+    outputTex.delete();
+    var outputarrs = [];
+
+    for(var i = 0; i < arrays.length; i++){
+      outputarrs.push(outputbuf.splice(0, arrays[0].length));
+    }
+
+    return outputarrs;
+
+  } 
 
   //Input array buffer and the number of seconds of data
   gpuDFT(signalBuffer, nSeconds, scalar=1, texOut = false){
