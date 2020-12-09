@@ -323,14 +323,14 @@ function bulkArrayMulKern(arrays, len, n, mod) {
 }
 
 export const createGpuKernels = {
-    correlogramsKern, dftKern, idftKern,
+    correlogramsKern, correlogramsPCKern, dftKern, idftKern,
     listdft2DKern, listdft1DKern, listdft1D_windowedKern,
     bulkArrayMulKern, fftKern, ifftKern,
 }
 
 export const addGpuFunctions = [
     add, sub, mul, div, cadd, csub,
-    cmul, cexp, mag, conj, lof, mean,
+    cmul, cexp, mag, conj, lof, mean, est,
     mse, rms, xcor, DFT, DFTlist,
     iDFT, iDFTlist, FFT, iFFT
 ];
