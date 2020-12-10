@@ -388,13 +388,13 @@ function bulkArrayMulKern(arrays, len, n, mod) {
     return products*mod;
 }
 
-function multiConv2DKern(img, width, height, kernels, kernelLengths, nKernels, graphical) {
+function multiImgConv2DKern(img, width, height, kernels, kernelLengths, nKernels, graphical) {
     for(var i = 0; i < nKernels; i++){
         var kernelLength = kernelLengths[i];            
         var kernelRadius = (Math.sqrt(kernelLength) - 1) / 2;
         conv2D(img, width, height, kernels[i], kernelRadius);
     }
-    if(graphical === 0){ return this.color; }
+    if(graphical === 0){ return [this.color.r,this.color.g,this.color.b]; }
 }
 
 
@@ -416,7 +416,7 @@ export const createGpuKernels = {
     correlogramsKern, correlogramsPCKern, dftKern, idftKern, fftKern, ifftKern,
     dft_windowedKern, idft_windowedKern, fft_windowedKern, ifft_windowedKern, 
     listdft2DKern, listdft1DKern, listdft1D_windowedKern, bulkArrayMulKern, 
-    fftKern, ifftKern, multiConv2DKern
+    fftKern, ifftKern, multiImgConv2DKern
 }
 
 export const addGpuFunctions = [

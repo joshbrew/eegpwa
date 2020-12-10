@@ -101,7 +101,7 @@ export class gpuUtils {
     this.listdft1D = makeKrnl(this.gpu, krnl.listdft1DKern);
     this.listdft1D_windowed = makeKrnl(this.gpu, krnl.listdft1D_windowedKern);
     this.bulkArrayMul = makeKrnl(this.gpu, krnl.bulkArrayMulKern);
-    this.multiConv2D = makeKrnl(this.gpu, krnl.multiConv2DKern);
+    this.multiConv2D = makeKrnl(this.gpu, krnl.multiImgConv2DKern);
 
     //this.bandpassSignal = this.gpu.combineKernels(this.dft_windowed,this.idft_windowed, kcombo.signalBandpass);
   }
