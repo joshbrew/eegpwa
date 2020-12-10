@@ -103,7 +103,7 @@ export class gpuUtils {
     this.bulkArrayMul = makeKrnl(this.gpu, krnl.bulkArrayMulKern);
     this.multiConv2D = makeKrnl(this.gpu, krnl.multiConv2DKern);
 
-    this.bandpassSignal = this.gpu.combineKernels(this.dft_windowed,this.idft_windowed, kcombo.signalBandpass);
+    //this.bandpassSignal = this.gpu.combineKernels(this.dft_windowed,this.idft_windowed, kcombo.signalBandpass);
   }
 
   gpuXCors(arrays, precompute=false, texOut = false) { //gpu implementation for bulk cross/auto correlations, outputs [[0:0],[0:1],...,[1:1],...[n:n]]
