@@ -28,7 +28,7 @@ export class Applet {
 
     //Initialize the applet. Keep the first line.
     init() {
-        this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML();}); //Changes to this.props will automatically update the html template
+        this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML()}); //Changes to this.props will automatically update the html template
     }
 
     //Destroy applet. Keep this one line

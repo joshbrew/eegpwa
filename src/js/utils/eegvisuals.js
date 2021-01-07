@@ -22,7 +22,6 @@ export class SmoothieChartMaker {
 		this.series = [];
 		this.seriesColors = [];
 		this.chart = null;
-		this.canvasId = canvasId;
 
 		for(var n = 0; n < nSeries; n++) {
 			var newseries = new TimeSeries();
@@ -41,7 +40,7 @@ export class SmoothieChartMaker {
 		this.makeSmoothieChart(this.canvas, gridStrokeStyle, gridFillStyle, labelFillStyle);
 	}
 
-	makeSmoothieChart( canvas = null, gridStrokeStyle = 'rgb(125, 125, 125)', gridFillStyle = 'rgb(10, 10, 10)', labelFillStyle = 'rgb(255, 255, 255)')
+	makeSmoothieChart( canvas = this.canvas, gridStrokeStyle = 'rgb(125, 125, 125)', gridFillStyle = 'rgb(10, 10, 10)', labelFillStyle = 'rgb(255, 255, 255)')
 	{
 		this.chart = new SmoothieChart({
 			responsive: true,
@@ -71,7 +70,7 @@ export class SmoothieChartMaker {
 		}
 	}
 
-	streamTo(canvas = null){
+	streamTo(canvas = this.canvas){
 		if(canvas !== null) {
 			this.chart.streamTo(canvas, 500);
 		}

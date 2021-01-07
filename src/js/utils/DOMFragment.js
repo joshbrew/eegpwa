@@ -26,7 +26,6 @@ export class DOMFragment {
 
         if(this.props!=={}){
             this.listener.addListener('props',this.renderSettings,'props',() => {
-                console.log("update")
                 this.updateNode();
                 this.renderSettings.onchange();
             });

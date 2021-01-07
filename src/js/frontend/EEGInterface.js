@@ -58,14 +58,7 @@ export const EEGInterfaceSetup = () => {
         var ffts = [...msg.output[1]];
         var coher = [...msg.output[2]];
 
-        State.setState(
-            {
-                FFTResult:ffts, 
-                coherenceResult:coher
-            }
-        );
-
-        EEG.channelTags.forEach((row, i) => {
+        ATLAS.channelTags.forEach((row, i) => {
             if(row.tag !== null && i < EEG.nChannels){
                 //console.log(tag);
                 ATLAS.mapFFTData(ffts, State.data.lastPostTime, i, row.tag);
@@ -73,7 +66,14 @@ export const EEGInterfaceSetup = () => {
         });
     
         ATLAS.mapCoherenceData(coher, State.data.lastPostTime);
-    
+
+        State.setState(
+            {
+                FFTResult:ffts, 
+                coherenceResult:coher
+            }
+        );
+
         if(State.data.analyze === true) {
             runEEGWorker();
         }
@@ -224,3 +224,34 @@ export function updateChannelTags (input) {
     //setBrainMap();
     //setuPlot();
 }
+
+
+export const addChannelOptions = (selectId) => {
+    var select = document.getElementById(selectId);
+    select.innerHTML = "";
+    var opts = ``;
+    ATLAS.channelTags.forEach((row,i) => {
+      if(i === 0) {
+        opts += `<option value='`+row.ch+`' selected='selected'>`+row.ch+`</option>`
+      }
+      else {
+        opts += `<option value='`+row.ch+`'>`+row.ch+`</option>`
+      }
+    });
+    select.innerHTML = opts;
+  }
+
+export const addCoherenceOptions = (selectId) => {
+    var select = document.getElementById(selectId);
+    select.innerHTML = "";
+    var newhtml = ``;
+    ATLAS.coherenceMap.map.forEach((row,i) => {
+      if(i===0) {
+        newhtml += `<option value='`+row.tag+`' selected="selected">`+row.tag+`</option>`;
+      }
+      else{
+        newhtml += `<option value='`+row.tag+`'>`+row.tag+`</option>`;
+      }
+    });
+    select.innerHTML = newhtml;
+  }

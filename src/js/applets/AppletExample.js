@@ -3,7 +3,7 @@ import {DOMFragment} from '../utils/DOMFragment'
 //import {Applet} from './Applet'
 
 export class AppletExample { //Filled in Applet class copy (without extending, which needs less javascript knowledge)
-    constructor(parentNode="applets") {
+    constructor(parentNode=document.getElementById("applets")) {
         this.parentNode = parentNode;
         this.AppletHTML = null;
 

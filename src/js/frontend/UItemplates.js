@@ -3,7 +3,7 @@ import menuxsvg from '../../assets/menuX.svg'
 
 export function menu_template(props={}) {
     return `
-    <table id="UI" style="width:100%; left:0px; top:0px; position:absolute; z-index:10;">
+    <table id="UI" style="width:100%; left:0px; top:0px; position:absolute; z-index:1;">
         <tr id="menu_header" style="height:80px; text-align:center;">
         </tr>
         <tr id="menu_dropdown" style="height:400px;">
@@ -46,7 +46,7 @@ export function menudropdown_template(props={}) {
 
 export function appletbox_template(props={}){
     return `
-    <div id="applets" style="z-index:20; position:absolute;top:90px;height:`+(window.innerHeight-90)+`;width:`+window.innerWidth+`" ></div>
+    <div id="applets" style="z-index:2; position:absolute;top:90px;height:`+(window.innerHeight-90)+`;width:`+window.innerWidth+`" ></div>
     `;
 }
 

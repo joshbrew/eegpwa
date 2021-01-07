@@ -4,6 +4,7 @@ import {StateManager} from '../utils/StateManager'
 export const State = new StateManager(
     {
         applets:[],
+        appletsSpawned:0,
         appletClasses:[],
         
         lastPostTime:0,
