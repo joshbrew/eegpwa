@@ -7,7 +7,7 @@ export class Applet {
         this.parentNode = parentNode;
         this.AppletHTML = null;
 
-        this.renderProps = {  //Add properties to set and auto-update the HTML
+        this.renderProps = {  //Add properties to set and auto-update the HTML. Try not to mess with these
             width: "100px",
             height: "100px",
             id: String(Math.floor(Math.random()*1000000))
@@ -28,7 +28,7 @@ export class Applet {
 
     //Initialize the applet. Keep the first line.
     init() {
-        this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML();}); //Changes to this.props will automatically update the html template
+        this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML();},undefined,"NEVER"); //Changes to this.props will automatically update the html template if interval not set to null or "NEVER". Use "FRAMERATE" for framerate level updating
     }
 
     //Destroy applet. Keep this one line

@@ -1,7 +1,7 @@
 import {ObjectListener} from './ObjectListener'
 
 export class DOMFragment {
-    constructor(templateStringGen=this.templateStringGen,parentNode={}, props={}, onRender=()=>{}, onchange=()=>{}) {
+    constructor(templateStringGen=this.templateStringGen, parentNode={}, props={}, onRender=()=>{}, onchange=()=>{},propUpdateInterval="FRAMERATE") {
         this.templateStringGen = templateStringGen(props);
         this.onRender = onRender;
         
@@ -20,15 +20,17 @@ export class DOMFragment {
 
         this.listener = new ObjectListener();
 
-        this.listener.addListener('templateChange',this.renderSettings,'templateStringGen',() => {
-            this.updateNode();
-        });
-
-        if(this.props!=={}){
-            this.listener.addListener('props',this.renderSettings,'props',() => {
+        if(this.props !== {} && (propUpdateInterval !== null || propUpdateInterval !== undefined || propUpdateInterval !== "NEVER")) {
+            this.listener.addListener('templateChange',this.renderSettings,'templateStringGen',() => {
                 this.updateNode();
-                this.renderSettings.onchange();
-            });
+            },propUpdateInterval);
+
+            if(this.props!=={}){
+                this.listener.addListener('props',this.renderSettings,'props',() => {
+                    this.updateNode();
+                    this.renderSettings.onchange();
+                },propUpdateInterval);
+            }
         }
 
         this.renderNode();

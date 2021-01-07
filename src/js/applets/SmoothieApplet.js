@@ -34,7 +34,7 @@ export class SmoothieApplet {
                 <option value="coherence">Alpha1 Coherence</option>
                 <option value="bandpowers">1Ch All Bandpowers</option>
                 </select>
-                Channels:
+                Channel:
                 <select id='`+props.id+`channel'>
                 <option value="0">0</option>
                 </select>
@@ -65,7 +65,7 @@ export class SmoothieApplet {
 
     //Initialize the applet. Keep the first line.
     init() {
-        this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML();}); //Changes to this.props will automatically update the html template
+        this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML();},undefined,"NEVER"); //Changes to this.props will automatically update the html template
         this.sub = State.subscribe('FFTResult', this.onUpdate);
 
         document.getElementById("stopbutton").addEventListener('click',this.stopEvent);

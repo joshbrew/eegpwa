@@ -37,7 +37,7 @@ export class AppletExample { //Filled in Applet class copy (without extending, w
     }
 
     init() {
-        this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML();}); //Changes to this.props will automatically update the html template
+        this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML();},undefined,"NEVER"); //Changes to this.props will automatically update the html template
     }
 
     deInit() {

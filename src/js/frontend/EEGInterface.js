@@ -255,3 +255,17 @@ export const addCoherenceOptions = (selectId) => {
     });
     select.innerHTML = newhtml;
   }
+
+export function genBandviewSelect(id){
+    return `
+    <select id='`+id+`'>
+      <option value="scp">SCP (0.1Hz-1Hz)</option>
+      <option value="delta">Delta (1Hz-4Hz)</option>
+      <option value="theta">Theta (4Hz-8Hz)</option>
+      <option value="alpha1" selected="selected">Alpha1 (8Hz-10Hz)</option>
+      <option value="alpha2">Alpha2 (10Hz-12Hz)</option>
+      <option value="beta">Beta (12Hz-35Hz)</option>
+      <option value="lowgamma">Low Gamma (35Hz-48Hz)</option>
+      <option value="highgamma">High Gamma (48Hz+)</option>
+    </select>`;
+  }
