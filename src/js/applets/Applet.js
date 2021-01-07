@@ -31,7 +31,7 @@ export class Applet {
         this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML()}); //Changes to this.props will automatically update the html template
     }
 
-    //Destroy applet
+    //Destroy applet. Keep this one line
     deInit() {
         this.AppletHTML.deleteNode();
     }
