@@ -9,6 +9,7 @@ import {
     menu_setup
 } from './frontend/UITemplates'
 import {
+  EEG, ATLAS,
   EEGInterfaceSetup, 
   updateBandPass, 
   updateChannelTags, 
@@ -58,7 +59,7 @@ function initEEGui() {
     State.data.appletbox = new DOMFragment(appletbox_template, document.body);
     menu_setup();
 
-    document.getElementById("connect").onclick = () => {
+    document.getElementById("connectbutton").onclick = () => {
         EEG.setupSerialAsync();
     }
 
