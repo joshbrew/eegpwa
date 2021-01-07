@@ -46,11 +46,11 @@ img:hover{
 }
 
 #menuxsvg:hover {
-  transform: rotate(-90deg);
+  transform: rotate(-180deg);
 }
 
 #menuxsvg:active {
-  transform: rotate(-1000deg);
+  transform: rotate(1000deg);
 }
 
 #menusvg:hover {

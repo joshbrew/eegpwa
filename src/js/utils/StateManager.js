@@ -76,7 +76,7 @@ export class StateManager {
     }
 
     setState(updateObj={}){ //Pass object with keys in. Undefined keys in state will be added automatically. State only notifies of change based on update interval
-        this.pushToState = updateObj;
+        Object.assign(this.pushToState,updateObj);
     }
 
     //Set main onchange response for the property-specific object listener. Don't touch the state

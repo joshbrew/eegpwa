@@ -8,19 +8,9 @@ export class UIManager {
         this.initUI();
         
         this.menuNode = document.getElementById(menuId);
+        this.maxApplets = 4;
 
-        State.data.appletClasses.forEach((classObj,i) => {
-            if(i < 4) {
-                State.data.applets.push(new classObj("applets"));
-                State.data.applets[i].init();
-            }
-        })
-
-        console.log(State.data.applets)
-
-        State.data.applets.forEach((applet,i) => {
-            applet.AppletHTML.node.style.position = "absolute";
-        });
+        this.initAddApplets();
 
         window.addEventListener('resize', ()=>{
             this.responsiveUIUpdate();
@@ -33,6 +23,41 @@ export class UIManager {
     initUI = () => {}
 
     deInitUI = () => {}
+
+    initAddApplets = () => {
+        if(State.data.applets.length < this.maxApplets) {
+            State.data.appletClasses.forEach((classObj,i) => {
+                if(State.data.applets.length < this.maxApplets) {
+                    State.data.applets.push(new classObj("applets"));
+                }
+            });
+        }
+
+        this.initApplets();
+
+    }
+
+    initApplets = () => {
+        State.data.applets.forEach((applet,i) => {
+            if(applet.AppletHTML === null) { State.data.applets[i].init(); }
+            applet.AppletHTML.node.style.position = "absolute";
+        });
+    }
+
+    addApplet = (appletClassIdx) => {
+        var classObj = State.data.appletClasses[appletClassIdx];
+        State.data.applets.push(new classObj("applets"));
+        State.data.applets[State.data.applets.length-1].init();
+    }
+
+    initApplet = (appletIdx) => {
+        State.data.applets[appletIdx].init();
+    }
+
+    deInitApplet = (appletIdx) => {
+        State.data.applets[appletIdx].deInit();
+        State.data.applets.splice(appletIdx,1);
+    }
 
     responsiveUIUpdate(nodes=State.data.applets, topoffset=0) {
         if(nodes.length === 1) { //1 full view

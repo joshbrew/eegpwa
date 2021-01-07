@@ -380,8 +380,7 @@ export class eegAtlas {
 	getAtlasCoordsList() {
 		var coords = [];
 		for(var i = 0; i< this.fftMap.length; i++) {
-		coords.push([this.fftMap.map[i].data.x,this.fftMap.map[i].data.y,this.fftMap.map[i].data.z]);
-
+			coords.push([this.fftMap.map[i].data.x,this.fftMap.map[i].data.y,this.fftMap.map[i].data.z]);
 		}
 		return coords;
 	}

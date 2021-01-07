@@ -128,7 +128,6 @@ function updateChannelTags (input) {
       var arr = val.split(";");
       //console.log(arr);
       //channelTags.forEach((row,j) => { channelTags[j].viewing = false; });
-      //console.log(arr);
       arr.forEach((item,i) => {
         var dict = item.split(":");
         var found = false;
@@ -207,15 +206,18 @@ function updateChannelTags (input) {
 }
 
 function runEEGWorker() {
-    var s = State.getState();
+    var s = State.data;
+    if(EEG.data.ms[EEG.data.ms.length-1] - s.lastPostTime < s.workerMaxSpeed) {
+      setTimeout(()=>{runEEGWorker()}, s.workerMaxSpeed - (EEG.data.ms[EEG.data.ms.length-1] - s.lastPostTime) );
+    }
     State.setState({lastPostTime: EEG.data.ms[EEG.data.ms.length-1]});
     if(s.fdBackMode === 'coherence') {
-        console.log("post to worker")
-        window.workers.postToWorker({foo:'coherence', input:[bufferEEGData(), s.nSec, s.freqStart, s.freqEnd, EEG.scalar]});
+        //console.log("post to worker")
+        window.postToWorker({foo:'coherence', input:[bufferEEGData(), s.nSec, s.freqStart, s.freqEnd, EEG.scalar]});
     }
 }
 
-window.receivedMsg = (msg) => { //Set worker message reponse
+window.receivedMsg = (msg) => { //Set worker message response
     console.log("received!");
     var ffts = [...msg.output[1]];
     var coher = [...msg.output[2]];
@@ -239,6 +241,7 @@ window.receivedMsg = (msg) => { //Set worker message reponse
     if(State.data.analyze === true) {
         runEEGWorker();
     }
+    
 }
 
 

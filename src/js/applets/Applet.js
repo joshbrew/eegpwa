@@ -16,25 +16,33 @@ export class Applet {
 
     //----------- default functions, keep and customize these --------
 
+    //Create HTML template string with dynamic properties set in this.renderProps. Updates to these props will cause updates to the template
     HTMLtemplate(props=this.renderProps) {
         return ``;
     }
 
+    //Setup javascript functions for the new HTML here
     setupHTML() {
 
     }
 
+    //Initialize the applet. Keep the first line.
     init() {
         this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML()}); //Changes to this.props will automatically update the html template
     }
 
+    //Destroy applet
     deInit() {
-
+        this.AppletHTML.deleteNode();
     }
 
+    //Callback for when the window resizes. This gets called by the UIManager class to help resize canvases etc.
     onResize() {
 
     }
 
-    //------------ additional functions here
+    //------------ add new functions below ---------------
+
+    //doSomething() {}
+
 }
