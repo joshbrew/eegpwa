@@ -56,10 +56,6 @@
 
 <script>
 
-
-//window.workers = new WorkerUtil(2,'./js/utils/eegworker.js',receivedMsg); // ???
-//console.log(window.workers);
-
 window.threads = 2; //Make multiple workers for big tasks
 window.threadrot = 0;
   //WebWorker only works when hosted (e.g. with node)
@@ -67,7 +63,7 @@ window.threadrot = 0;
   try {
     window.workers = [];
     for(var i = 0; i < window.threads; i++){
-      window.workers.push(new Worker('./js/utils/eegworker.js'));
+      window.workers.push(new Worker('./js/eegworker.js'));
       workers[i].onmessage = (e) => {
         var msg = e.data;
         //console.log(msg)
@@ -98,6 +94,7 @@ window.threadrot = 0;
      window.workers[workeridx].postMessage({foo:foo, input:input});
     }
   }
+
 </script>
 
 </body>

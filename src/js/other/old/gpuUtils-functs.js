@@ -397,23 +397,6 @@ function multiImgConv2DKern(img, width, height, kernels, kernelLengths, nKernels
     if(graphical === 0){ return [this.color.r,this.color.g,this.color.b]; }
 }
 
-function transpose2DKern(mat2) { //Transpose a 2D matrix, meant to be combined
-    return mat2[this.thread.y][this.thread.x];
-}
-
-
-//function deferredPass(vPos, vNorm, vAlbedo, vDepth, vSpec) {  } //project geometry, light geometry
-
-/*
-Scene drawing:
-(With depth testing enabled)
-1. Project object local spaces to world space based on geometry and world coordinates
-1.5 do some occlusion culling for which texture data to send to the gpu, requires last camera matrix
-2. Now send to lighting pass, with coloring properties defined by different texture maps. 
-3. Project result to camera space based on camera position and aperture.
-4. Draw result
-*/
-
 
 //-----------------------------------
 //------------Combine Kernels-------- gpu.combineKernels(f1,f2,function(a,b,c) { f1(f2(a,b),c); });

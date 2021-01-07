@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#000000" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link href="./styles/menu.css" rel="stylesheet">
+  
   <link href="./index.sass" rel="stylesheet">
 
 
@@ -18,6 +18,56 @@
 </head>
 <body>
  
+    <div id="menucontainer">
+      <button id="connect">Connect to EEG</button>
+      <button id="analyze">Analyze Data</button>
+      <button id="stop">Stop Analyzing</button>
+      <button id="record">Save CSV (does nothing)</button> 
+      <input type="text" id="freqStart" placeholder="lower bound" value="0">
+      <input type="text" id="freqEnd" placeholder="upper bound" value="100">
+      <button id="bandPass">Set BandPass</button>
+      <br><input type="text" id="channelView" placeholder="Format: 0,1,2,5,6,7,etc">
+      <button id="setChannelView">Set Channel View</button>
+      <input type="text" id="channelTags" placeholder="Format: 0:Fp1;2:Fz;6:P6:0,1,2;etc">
+      <button id="setTags">Set Tags</button>
+      Visual2
+      <select id="vis2"> 
+        <option value="smoothie">Smooth plot</option>
+        <option value="timecharts">Time series</option>
+        <option value="spectrogram">Spectrogram</option>
+        <option value="brainmap" selected="selected">Brain Map</option>
+        <option value="barchart">Bar Chart</option>
+        <option value="mirror">Mirrored Bar Chart</option>
+        <option value="none">None</option>
+      </select> 
+      Visual3
+      <select id="vis3"> 
+        <option value="smoothie" selected="selected">Smooth plot</option>
+        <option value="timecharts">Time series</option>
+        <option value="spectrogram">Spectrogram</option>
+        <option value="brainmap">Brain Map</option>
+        <option value="barchart">Bar Chart</option>
+        <option value="mirror">Mirrored Bar Chart</option>
+        <option value="none">None</option>
+      </select> 
+      Visual4
+      <select id="vis4"> 
+        <option value="smoothie">Smooth plot</option>
+        <option value="timecharts">Time series</option>
+        <option value="spectrogram" selected="selected">Spectrogram</option>
+        <option value="brainmap">Brain Map</option>
+        <option value="barchart">Bar Chart</option>
+        <option value="mirror">Mirrored Bar Chart</option>
+        <option value="none">None</option>
+      </select>
+    </div>
+    <div id="visuals">
+      <table>
+        <tr><td id="block1"></td><td id="block2"></td></tr>  
+        <tr><td id="block3"></td><td id="block4"></td></tr> 
+      </table>
+    </div>
+
 <script src="./index.ts"></script>
 
 <script>
@@ -56,10 +106,6 @@
 
 <script>
 
-
-//window.workers = new WorkerUtil(2,'./js/utils/eegworker.js',receivedMsg); // ???
-//console.log(window.workers);
-
 window.threads = 2; //Make multiple workers for big tasks
 window.threadrot = 0;
   //WebWorker only works when hosted (e.g. with node)
@@ -67,7 +113,7 @@ window.threadrot = 0;
   try {
     window.workers = [];
     for(var i = 0; i < window.threads; i++){
-      window.workers.push(new Worker('./js/utils/eegworker.js'));
+      window.workers.push(new Worker('./js/eegworker.js'));
       workers[i].onmessage = (e) => {
         var msg = e.data;
         //console.log(msg)
@@ -98,6 +144,7 @@ window.threadrot = 0;
      window.workers[workeridx].postMessage({foo:foo, input:input});
     }
   }
+
 </script>
 
 </body>
