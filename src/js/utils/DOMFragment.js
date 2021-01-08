@@ -79,7 +79,7 @@ export class DOMFragment {
             this.node = null;
         }
         else if(typeof node === "object"){
-            node.parentNode.removeChild(thisNode);
+            node.parentNode.removeChild(node);
             this.node = null;
         }
     }

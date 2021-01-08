@@ -36,13 +36,16 @@ export function menuheader_template(props={}) {
             <div style=transform:translate(0px,-6px);>■</div>
         </button>
     </td>
-    <td id="visuals" style="width:5%;">
-        <button id="visualsbutton" style="height:40px; width:40px; font-size:35px;">
-            <span>    
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" version="1.1" style="fill:black; shape-rendering:geometricPrecision;text-rendering:geometricPrecision;image-rendering:optimizeQuality;" viewBox="0 0 1128.88 1411.1000000000001" x="0px" y="0px" fill-rule="evenodd" clip-rule="evenodd"><defs><style type="text/css">
-                .fil0 {fill-rule:nonzero}
-            </style></defs><g><g><g><path class="fil0" d="M474.78 230.32l-177.76 0c-36.93,0 -66.83,29.89 -66.83,66.83l0 177.75c0,36.94 29.9,66.83 66.83,66.83l177.76 -0.01c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.75c0,-36.93 -29.89,-66.82 -66.83,-66.82z"/><path class="fil0" d="M474.78 587.16l-177.76 0c-36.93,0 -66.83,29.89 -66.83,66.83l0.02 177.74c0,36.94 29.89,66.83 66.83,66.83l177.74 0c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.76c0,-36.87 -29.89,-66.81 -66.83,-66.81z"/><path class="fil0" d="M831.84 587.16l-177.75 0c-36.94,0 -66.83,29.89 -66.83,66.83l0.01 177.74c0,36.94 29.89,66.83 66.83,66.83l177.74 0c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.76c0,-36.87 -29.89,-66.81 -66.83,-66.81z"/><path class="fil0" d="M831.84 230.32l-177.75 0c-36.94,0 -66.83,29.89 -66.83,66.83l0 177.75c0,36.94 29.89,66.83 66.83,66.83l177.75 -0.01c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.75c0,-36.93 -29.89,-66.82 -66.83,-66.82z"/></g></g></g><text x="0" y="1143.88" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">Created by Ilham Fitrotul Hayat</text><text x="0" y="1148.88" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">from the Noun Project</text></svg>
-            </span>&nbsp;
+    <td id="visuals" style="width:10%;">
+        <button id="visualsbutton" style="height:40px; width:40px; transform:translate(2px,13px); font-size:35px;">   
+                <svg id="squaresvg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" version="1.1" style="fill:black; transform:translate(-19px,-13px); height:50px; width:50px; shape-rendering:geometricPrecision;text-rendering:geometricPrecision;image-rendering:optimizeQuality;" viewBox="0 0 1128.88 1411.1000000000001" x="0px" y="0px" fill-rule="evenodd" clip-rule="evenodd"><defs><style type="text/css">
+                    .fil0 {fill-rule:nonzero}
+                    </style></defs><g><g><g>
+                    <path class="fil0" d="M474.78 230.32l-177.76 0c-36.93,0 -66.83,29.89 -66.83,66.83l0 177.75c0,36.94 29.9,66.83 66.83,66.83l177.76 -0.01c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.75c0,-36.93 -29.89,-66.82 -66.83,-66.82z"/>
+                    <path class="fil0" d="M474.78 587.16l-177.76 0c-36.93,0 -66.83,29.89 -66.83,66.83l0.02 177.74c0,36.94 29.89,66.83 66.83,66.83l177.74 0c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.76c0,-36.87 -29.89,-66.81 -66.83,-66.81z"/>
+                    <path class="fil0" d="M831.84 587.16l-177.75 0c-36.94,0 -66.83,29.89 -66.83,66.83l0.01 177.74c0,36.94 29.89,66.83 66.83,66.83l177.74 0c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.76c0,-36.87 -29.89,-66.81 -66.83,-66.81z"/>
+                    <path class="fil0" d="M831.84 230.32l-177.75 0c-36.94,0 -66.83,29.89 -66.83,66.83l0 177.75c0,36.94 29.89,66.83 66.83,66.83l177.75 -0.01c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.75c0,-36.93 -29.89,-66.82 -66.83,-66.82z"/>
+                </g></g></g><text x="0" y="1143.88" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">Created by Ilham Fitrotul Hayat</text><text x="0" y="1148.88" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">from the Noun Project</text></svg>
         </button>
     </td>
     <td id="menu" style="width:75%;"> 
@@ -57,7 +60,7 @@ export function menuheader_template(props={}) {
 
 export function menudropdown_template(props={}) {
     return `
-    <td style="width:100%; vertical-align:top; border:2px inset black;" colspan=5>
+    <td style="width:100%; vertical-align:center; border:2px inset black;" colspan=5>
         <table style="margin-left:auto; margin-right:auto; ">
             <tr><td>Set Bandpass</td><td><input type="text" style="width:95%;" id="freqStart" placeholder="0 (Hz)"></td><td>to</td><td><input type="text" style="width:100%;" id="freqEnd" placeholder="256 (Hz)"></td><td><button id="setBandpass">Set</button></td></tr>
             <tr><td>Set Channel View</td><td colspan=3><input type="text" style="width:100%;" id="View" placeholder=""></input></td><td><button id="setView">Set</button></td></tr>
@@ -68,14 +71,28 @@ export function menudropdown_template(props={}) {
 
 export function menudropdown2_template(props={}) {
     return `
-    <td style="width:100%; vertical-align:top; border:2px inset black;" colspan=5>
+    <td style="width:100%; vertical-align:center; border:2px inset black;" colspan=4>
+        <table style="margin-left:auto; margin-right:auto;">
+            <tr>
+                <td>Applet 1:<select id="applet1"></select></td>
+            </tr>
+            <tr>
+                <td>Applet 2:<select id="applet2"></select></td>
+            </tr>
+            <tr>
+                <td>Applet 3:<select id="applet3"></select></td>
+            </tr>
+            <tr>
+                <td>Applet 4:<select id="applet4"></select></td>
+            </tr>
+        </table>
     </td>
     `;
 }
 
 export function menudropdown3_template(props={}) {
     return `
-    <td style="width:100%; vertical-align:top; border:2px inset black;" colspan=5>
+    <td style="width:100%; vertical-align:top; border:2px inset black;" colspan=4>
     </td>
     `;
 }
@@ -90,7 +107,7 @@ export function appletbox_template(props={}){
 export function menu_setup() {
     document.getElementById("menuxsvg").style.display = "none";
     
-    document.getElementById("menusvg").onclick = () => {
+    document.getElementById("menusvg").addEventListener('click',() => {
 
       document.getElementById("menucheckbox").click();
 
@@ -102,9 +119,9 @@ export function menu_setup() {
         document.getElementById("menusvg").style.display = "none";  
       }, 300);
 
-     }
+     });
      
-     document.getElementById("menuxsvg").onclick = () => {
+     document.getElementById("menuxsvg").addEventListener('click', () => {
 
       document.getElementById("menucheckbox").click();
 
@@ -115,9 +132,9 @@ export function menu_setup() {
         document.getElementById("menusvg").style.opacity = 1;  
         document.getElementById("menuxsvg").style.display = "none"; 
       }, 300);
-     }
+     });
 
-     document.getElementById("menucheckbox").onchange = () => {
+     document.getElementById("menucheckbox").addEventListener('click',() => {
 
       if(document.getElementById("menucheckbox").checked === true){
         document.getElementById("menu_dropdown").style.opacity = 1;
@@ -129,19 +146,21 @@ export function menu_setup() {
         document.getElementById("menu_dropdown").style.opacity = 0;
         document.getElementById("menu_dropdown").style.transform = "translateY(-500px)";
         document.getElementById("menu_dropdown").style.transition ="transform 0.5s ease-in-out, opacity 0.1s ease";
-        document.getElementById("UI").style.zIndex = 10;
+        document.getElementById("UI").style.zIndex = -1;
       }
-     }
+     });
 
-     document.getElementById("visualsbutton").onclick = () => {
+     document.getElementById("visualsbutton").addEventListener('click',() => {
          if(document.getElementById("menu_dropdown2").style.transform === "translateY(-900px)"){
             document.getElementById("menu_dropdown2").style.opacity = 1;
             document.getElementById("menu_dropdown2").style.transform = "translateY(-400px)";
+            document.getElementById("UI").style.zIndex = 999;
          }
          else{
             document.getElementById("menu_dropdown2").style.opacity = 0;
             document.getElementById("menu_dropdown2").style.transform = "translateY(-900px)"
+            document.getElementById("UI").style.zIndex = -1;
          }
-     }
+     });
 
 }

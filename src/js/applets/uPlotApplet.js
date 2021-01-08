@@ -33,14 +33,25 @@ export class uPlotApplet {
         <div id='`+props.id+`'>    
             <div id='`+props.id+`canvas' style='position:absolute;z-index:3;'></div>
             <div id='`+props.id+`menu' style='position:absolute;z-index:4;'>
+              <table>
+              <tr>
+                <td>  
+                Graph:
                 <select id='`+props.id+`mode'>
-                <option value="FFT" selected="selected">FFTs</option>
-                <option value="Coherence">Coherence</option>
-                <option value="CoherenceTimeSeries">Coherence Time Series</option>
-                <option value="TimeSeries">Raw</option>
-                </select>
+                  <option value="FFT" selected="selected">FFTs</option>
+                  <option value="Coherence">Coherence</option>
+                  <option value="CoherenceTimeSeries">Coherence Time Series</option>
+                  <option value="TimeSeries">Raw</option>
+                  </select>
+                </td>
+                <td>
                 `+genBandviewSelect(props.id+'bandview')+`
-                <h3 id='`+props.id+`title'>FFTs</h3>
+                </td>
+                <td>
+                <div id='`+props.id+`title' style='font-weight:bold;'>Fast Fourier Transforms</div>
+                </td>
+              </tr>
+              </table>
             </div>
         </div>
         `;
@@ -48,6 +59,7 @@ export class uPlotApplet {
 
     //Setup javascript functions for the new HTML here
     setupHTML() {
+        document.getElementById(this.renderProps.id+"bandview").style.display="none"
         document.getElementById(this.renderProps.id+'mode').onchange = () => {
             this.setuPlot();
             if(document.getElementById(this.renderProps.id+'mode').value==="TimeSeries") {
@@ -63,6 +75,13 @@ export class uPlotApplet {
                     this.sub = State.subscribe('FFTResult',this.onUpdate);
                 }
             }
+            if (document.getElementById(this.renderProps.id+'mode').value === "CoherenceTimeSeries") {
+              document.getElementById(this.renderProps.id+"bandview").style.display="";
+            }
+            else {
+              document.getElementById(this.renderProps.id+"bandview").style.display="none";
+            }
+
         }
         document.getElementById(this.renderProps.id+'bandview').onchange = () => {
             if(document.getElementById(this.renderProps.id+'mode').value === "CoherenceTimeSeries"){
@@ -207,7 +226,7 @@ export class uPlotApplet {
         }
         else if (gmode === "FFT"){
       
-              document.getElementById(this.renderProps.id+"title").innerHTML = "FFTs";
+              document.getElementById(this.renderProps.id+"title").innerHTML = "Fast Fourier Transforms";
                 //Animate plot(s)
                
               this.class.uPlotData = [

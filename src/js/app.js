@@ -15,7 +15,7 @@ import {
   EEGInterfaceSetup, 
   updateBandPass, 
   updateChannelTags, 
-  updateChannelView
+  updateChannelView,
 } from './frontend/EEGInterface'
 
 //Import applets!
@@ -74,11 +74,11 @@ function initEEGui() {
     State.data.appletbox = new DOMFragment(appletbox_template, document.body);
     menu_setup();
 
-    document.getElementById("connectbutton").onclick = () => {
+    document.getElementById("connectbutton").addEventListener('click',() => {
         EEG.setupSerialAsync();
-    }
+    });
 
-    document.getElementById("runbutton").onclick = () => {
+    document.getElementById("runbutton").addEventListener('click',() => {
         if(State.data.connected === true) {
             State.setState({analyze: true, rawFeed: true});
             runEEGWorker();
@@ -86,30 +86,30 @@ function initEEGui() {
         else{
             EEG.setupSerialAsync();
         }
-    }
+    });
 
-    document.getElementById("stopbutton").onclick = () => {
+    document.getElementById("stopbutton").addEventListener('click',() => {
         State.setState({analyze: false, rawFeed: false});
-    }
+    });
 
-    document.getElementById("setBandpass").onclick = () => {
+    document.getElementById("setBandpass").addEventListener('click',() => {
       var freq0 = parseFloat(document.getElementById("freqStart").value);
       var freq1 = parseFloat(document.getElementById("freqEnd").value);
       if(typeof freq0 === 'number' && typeof freq1 === 'number'){
         State.data.freqStart = freq0; State.data.freqEnd = freq1;
         updateBandPass(freq0,freq1);
       }
-    }
+    });
 
-    document.getElementById("setView").onclick = () => {
+    document.getElementById("setView").addEventListener('click',() => {
         var settings = document.getElementById("View").value;
         updateChannelView(settings);
-    }
+    })
 
-    document.getElementById("setTags").onclick = () => {
+    document.getElementById("setTags").addEventListener('click',() => {
         var settings = document.getElementById("Tags").value;
         updateChannelTags(settings);
-    }
+    })
 
     State.subscribe('connected', () => {
         if(State.data.connected === true) {document.getElementById("usbico").style.fill = "orange";}
@@ -120,12 +120,6 @@ function initEEGui() {
 
 const UI = new UIManager(initEEGui, deInitEEGui);
 UI.responsiveUIUpdate();
-
-
-
-
-
-
 
 
 
