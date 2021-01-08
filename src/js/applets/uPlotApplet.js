@@ -81,7 +81,7 @@ export class uPlotApplet {
         this.class = new uPlotMaker(this.renderProps.id+'canvas');
         this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow]];
         ATLAS.channelTags.forEach(() => {
-            this.class.uPlotData.push(ATLAS.fftMap.shared.bandPassWindow)
+            this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow])
         });
         this.class.makeuPlot(
             this.class.makeSeriesFromChannelTags(ATLAS.channelTags),
@@ -89,7 +89,6 @@ export class uPlotApplet {
             this.plotWidth, 
             this.plotWidth
         );
-
         this.sub = State.subscribe('FFTResult',this.onUpdate);
     }
 
@@ -241,7 +240,6 @@ export class uPlotApplet {
                   this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
                 });
               }
-      
               this.class.makeuPlot(
                   this.class.makeSeriesFromChannelTags(ATLAS.channelTags), 
                   this.class.uPlotData, 

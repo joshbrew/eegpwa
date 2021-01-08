@@ -5,6 +5,8 @@ import {
     menu_template,
     menuheader_template,
     menudropdown_template,
+    menudropdown2_template,
+    menudropdown3_template,
     appletbox_template,
     menu_setup
 } from './frontend/UITemplates'
@@ -20,11 +22,21 @@ import {
 import {AppletExample} from './applets/AppletExample'
 import {SmoothieApplet} from './applets/SmoothieApplet'
 import {uPlotApplet} from './applets/uPlotApplet'
+import {SpectrogramApplet} from './applets/SpectrogramApplet'
+import {BrainMapApplet} from './applets/BrainMapApplet'
+import {BarChartApplet} from './applets/BarChartApplet'
+import {MirrorBarsApplet} from './applets/MirrorBarsApplet'
+import {TimeChartsApplet} from './applets/TimeChartsApplet'
 
 //Add applets here that you want accessible (Follow Applet.js format!!!)
 State.data.appletClasses.push(
   uPlotApplet,
-  SmoothieApplet
+  SmoothieApplet,
+  BrainMapApplet,
+  SpectrogramApplet,
+  BarChartApplet,
+  MirrorBarsApplet,
+  TimeChartsApplet
 );
 //TODO: find a better place for this
 
@@ -57,6 +69,8 @@ function initEEGui() {
     State.data.menunode = new DOMFragment(menu_template,document.body);
     State.data.menuheader = new DOMFragment(menuheader_template,"menu_header");
     State.data.menudropdown = new DOMFragment(menudropdown_template,"menu_dropdown");
+    State.data.menudropdown2 = new DOMFragment(menudropdown2_template,"menu_dropdown2");
+    State.data.menudropdown3 = new DOMFragment(menudropdown3_template,"menu_dropdown3");
     State.data.appletbox = new DOMFragment(appletbox_template, document.body);
     menu_setup();
 

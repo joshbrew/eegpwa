@@ -63,32 +63,28 @@ export class UIManager {
         State.data.appletsSpawned--;
     }
 
-    responsiveUIUpdate(nodes=State.data.applets, topoffset=0) {
+    responsiveUIUpdate(nodes=State.data.applets, topoffset=90) {
         
         if(nodes.length === 1) { //1 full view
             nodes[0].AppletHTML.node.style.width = window.innerWidth + "px";
             nodes[0].AppletHTML.node.style.height = window.innerHeight - topoffset + "px";
-            nodes[0].AppletHTML.node.style.top = topoffset+"px";
         }
         if(nodes.length === 2) { //2 stacked views
             nodes[0].AppletHTML.node.style.width = window.innerWidth + "px";
             nodes[0].AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
-            nodes[0].AppletHTML.node.style.top = topoffset+"px";
             nodes[1].AppletHTML.node.style.width = window.innerWidth + "px";
             nodes[1].AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
-            var transformy = window.innerHeight*.5+topoffset;
+            var transformy = window.innerHeight*.5- topoffset;
             nodes[1].AppletHTML.node.style.top = transformy+"px";
             
         }
         if(nodes.length === 3) {
             nodes[0].AppletHTML.node.style.width = window.innerWidth*.5 + "px";
             nodes[0].AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
-            nodes[0].AppletHTML.node.style.top = topoffset+"px";
             nodes[1].AppletHTML.node.style.width = window.innerWidth*.5 + "px";
             nodes[1].AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
-            nodes[1].AppletHTML.node.style.top = topoffset+"px";
             nodes[1].AppletHTML.node.style.left = window.innerWidth*.5;
-            var transformy = window.innerHeight*.5+topoffset;
+            var transformy = window.innerHeight*.5 - topoffset;
             nodes[2].AppletHTML.node.style.width = window.innerWidth + "px";
             nodes[2].AppletHTML.node.style.height = window.innerHeight*.5-topoffset + "px";
             nodes[2].AppletHTML.node.style.top = transformy+"px";
@@ -96,19 +92,17 @@ export class UIManager {
         if(nodes.length === 4) {
             nodes[0].AppletHTML.node.style.width = window.innerWidth*.5 + "px";
             nodes[0].AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
-            nodes[0].AppletHTML.node.style.top = topoffset+"px";
             nodes[1].AppletHTML.node.style.width = window.innerWidth*.5 + "px";
             nodes[1].AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
-            nodes[1].AppletHTML.node.style.top = topoffset+"px";
-            nodes[1].AppletHTML.node.style.left = window.innerWidth*.5;
-            var transformy = window.innerHeight*.5+topoffset;
+            nodes[1].AppletHTML.node.style.left = window.innerWidth*.5+"px";
+            var transformy = window.innerHeight*.5- topoffset;
             nodes[2].AppletHTML.node.style.width = window.innerWidth*.5 + "px";
             nodes[2].AppletHTML.node.style.height = window.innerHeight*.5-topoffset + "px";
             nodes[2].AppletHTML.node.style.top = transformy+"px";
             nodes[3].AppletHTML.node.style.width = window.innerWidth*.5 + "px";
             nodes[3].AppletHTML.node.style.height = window.innerHeight*.5-topoffset + "px";
             nodes[3].AppletHTML.node.style.top = transformy+"px";
-            nodes[3].AppletHTML.node.style.left = window.innerWidth*.5;
+            nodes[3].AppletHTML.node.style.left = window.innerWidth*.5+"px";
         }
         if(nodes.length === 5) {
         }

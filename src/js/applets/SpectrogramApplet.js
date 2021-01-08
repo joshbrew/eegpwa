@@ -26,8 +26,8 @@ export class SpectrogramApplet {
     HTMLtemplate(props=this.renderProps) {
         return `
         <div id='`+props.id+`'>
-            <canvas id='`+props.id+`' style='position:absolute; z-index:3;  width:`+props.width+`px; height:`+props.height+`px;'></canvas>
-            <div id='`+props.id+`menu' style='z-index:4;'>
+            <canvas id='`+props.id+`canvas' style='position:absolute; z-index:3;  width:`+props.width+`px; height:`+props.height+`px;'></canvas>
+            <div id='`+props.id+`menu' style='position:absolute; z-index:4; color: white;'>
                 Mode
                 <select id='`+props.id+`mode'>
                     <option value="FFT" selected="selected">FFT</option>
@@ -58,7 +58,7 @@ export class SpectrogramApplet {
     //Initialize the applet. Keep the first line.
     init() {
         this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML();},undefined,"NEVER"); //Changes to this.props will automatically update the html template
-        this.class = new Spectrogram(this.renderProps.id, 1000);
+        this.class = new Spectrogram(this.renderProps.id+'canvas', 1000);
         this.class.init();
 
         this.sub = State.subscribe('FFTResult', this.onUpdate);

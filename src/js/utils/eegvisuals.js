@@ -377,9 +377,9 @@ export class TimeChartMaker {
 
 	}
 
-	setEEGTimeCharts = (EEG, nSecAdcGraph=10) => { //Creates timecharts from the EEG class data
+	setEEGTimeCharts = (EEG, ATLAS, nSecAdcGraph=10) => { //Creates timecharts from the EEG class data
 		console.log("run");
-		EEG.channelTags.forEach((row,i) => { // Recycle or make new time charts
+		ATLAS.channelTags.forEach((row,i) => { // Recycle or make new time charts
 		  var chartname = 'timechart'+i;
 		  var nsamples = Math.floor(EEG.sps*nSecAdcGraph);
 		  var dat = EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter);
@@ -432,12 +432,12 @@ export class TimeChartMaker {
 		});
 	}
 
-	updateTimeCharts = (EEG) => {
+	updateTimeCharts = (EEG, ATLAS) => {
 		if(this.timechartsdata[0].length > this.maxpoints) { //rebuild timecharts if the data array is too big to prevent slowdowns
 		  this.setEEGTimeCharts(EEG);
 		}
 		var latestIdx = EEG.data["ms"].length-1;
-		EEG.channelTags.forEach((row,i) => {
+		ATLAS.channelTags.forEach((row,i) => {
 		  var latestdat = EEG.data["A"+row.ch].slice(this.lasttimeIdx,latestIdx);
 		  this.timechartsdata[i].push(latestdat);
 		  this.timecharts[i].update();
@@ -455,7 +455,7 @@ export class TimeChartMaker {
 
 
 //heatmap-js based brain mapping with active channel markers (incl assigned ADC input), based on the atlas system in eeg32
-export class brainMap2D {
+export class BrainMap2D {
 	constructor(heatmapCanvasId = null, pointsCanvasId = null) {
 		if(typeof(createWebGLHeatmap) === 'undefined'){
 			console.log("webgl-heatmap.js not found! Please include in your app correctly");
@@ -507,17 +507,17 @@ export class brainMap2D {
 		this.heatmap.display();
 	}
 
-	updateHeatmapFromAtlas(atlas, channelTags, viewing, normalize=1) {
+	updateHeatmapFromAtlas(fftMap, channelTags, viewing, normalize=1) {
 		var points = [];
 
-		var width = this.pointsCanvas.width;
-		var height = this.pointsCanvas.height;
+		var halfwidth = this.pointsCanvas.width*.5;
+		var halfheight = this.pointsCanvas.height*.5;
 
 		var sizeMul = normalize;
 		channelTags.forEach((row,i) => {
-			let atlasCoord = atlas.map.find((o, j) => {
+			let atlasCoord = fftMap.map.find((o, j) => {
 			  if(o.tag === row.tag){
-				points.push({x:o.data.x*this.scale+width*.5, y:height*.5-o.data.y*this.scale, size:10, intensity:0.7});
+				points.push({x:o.data.x*this.scale-halfwidth, y:halfheight-o.data.y*this.scale, size:10, intensity:0.7});
 				if(viewing === "scp"){
 					points[points.length - 1].size = Math.max(...o.data.slices.scp[o.data.slices.scp.length-1])}//o.data.means.scp[o.data.means.scp.length - 1];}
 				else if(viewing === "delta"){
@@ -538,8 +538,8 @@ export class brainMap2D {
 				points[points.length - 1].size *= sizeMul; //Need a better method
 
 				//simplecoherence *= points[points.length-1].size;
-				if(points[points.length - 1].size > 135){
-				  points[points.length - 1].size = 135;
+				if(points[points.length - 1].size > 90*this.class.scale){
+				  points[points.length - 1].size = 90*this.class.scale;
 				}
 			  }
 			});
@@ -553,7 +553,7 @@ export class brainMap2D {
 	}
 
 	//pass this the atlas and channelTags from your eeg32 instance
-	updatePointsFromAtlas(atlas,channelTags,clear=true) {
+	updatePointsFromAtlas(fftMap,channelTags,clear=true) {
 
 		var halfwidth = this.pointsCanvas.width*.5;
 		var halfheight = this.pointsCanvas.height*.5;
@@ -563,7 +563,7 @@ export class brainMap2D {
 			this.pointsCtx.clearRect(0, 0, this.pointsCanvas.width, this.pointsCanvas.height);
 		}
 
-		atlas.map.forEach((row,i) => {
+		fftMap.map.forEach((row,i) => {
 			this.pointsCtx.beginPath();
 			this.pointsCtx.fillStyle="rgba(0,0,255,1)";
 		  let tags = channelTags.find((o, i) => {
@@ -585,7 +585,7 @@ export class brainMap2D {
 		});
 	}
 
-	updateConnectomeFromAtlas(coherenceMap, atlas, channelTags, viewing, clear=true, alphaScalar=0.01) { //
+	updateConnectomeFromAtlas(coherenceMap, fftMap, channelTags, viewing, clear=true, alphaScalar=0.01) { //
 		var halfwidth = this.pointsCanvas.width*.5;
 		var halfheight = this.pointsCanvas.height*.5;
 		var ctx = this.pointsCtx;
@@ -640,7 +640,7 @@ export class brainMap2D {
 		});
 
 		//Now redraw points on top of connectome
-		this.updatePointsFromAtlas(atlas, channelTags, false);
+		this.updatePointsFromAtlas(fftMap, channelTags, false);
 	}
 
 	draw = () => {

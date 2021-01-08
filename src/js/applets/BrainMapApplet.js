@@ -26,12 +26,12 @@ export class BrainMapApplet {
     HTMLtemplate(props=this.renderProps) {
         return `
         <div id='`+props.id+`'>
-            <canvas id='`+props.id+`canvas' width='`+props.width+`' height='`+props.height+`' style='position:absolute; width:`+props.width+`px; height:`+props.height+`px; z-index:1; transform:translateY(-200px);'></canvas>
-            <canvas id='`+props.id+`points' width='`+props.width+`' height='`+props.height+`' style='position:absolute; width:`+props.width+`px; height:`+props.height+`px; z-index:2; transform:translateY(-200px);'></canvas>
-            <table id='`+props.id+`table' style='position:absolute; z-index:3; transform:translateY(-200px);'>
-            <tr><td><h3>Brain Map</h3></td>
-            <td><h4>Viewing:</h4></td>
-            <td>`+genBandviewSelect(props.id+'bandview')+`</td></tr>
+            <canvas id='`+props.id+`canvas' width='`+props.width+`' height='`+props.height+`' style='position:absolute; width:`+props.width+`px; height:`+props.height+`px; z-index:1; '></canvas>
+            <canvas id='`+props.id+`points' width='`+props.width+`' height='`+props.height+`' style='position:absolute; width:`+props.width+`px; height:`+props.height+`px; z-index:2; '></canvas>
+            <table id='`+props.id+`menu' style='position:absolute; z-index:3; '>
+                <tr><td><h3>Brain Map</h3></td>
+                <td><h4>Viewing:</h4></td>
+                <td>`+genBandviewSelect(props.id+'bandview')+`</td></tr>
             </table>
         </div>
         `;
@@ -50,12 +50,15 @@ export class BrainMapApplet {
         this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML()},undefined,"NEVER"); //Changes to this.props will automatically update the html template
         this.class.genHeatMap();
         this.class.points = [];
-        ATLAS.fftMap.forEach((row,i) => {
-            this.class.points.push({x:row.data.x*1.5+200, y:200-row.data.y*1.5, size:130, intensity:0.8});
-        });
-        this.class.updateHeatmap();
-        this.class.updatePointsFromAtlas(EEG.atlas,EEG.channelTags);
 
+        this.class.scale = this.AppletHTML.node.clientHeight*.5*0.01*.8;
+        ATLAS.fftMap.map.forEach((row,i) => {
+            this.class.points.push({x:row.data.x*this.class.scale+this.class.pointsCanvas.width*.5, y: this.class.pointsCanvas.height*.5-row.data.y*this.class.scale, size:90*this.class.scale, intensity:0.8});
+        });
+        
+        this.class.updatePointsFromAtlas(ATLAS.fftMap,ATLAS.channelTags);
+        this.class.updateHeatmap();
+        
         this.sub = State.subscribe('FFTResult', this.onUpdate);
     }
 
@@ -75,6 +78,22 @@ export class BrainMapApplet {
         brainmapcanvas.style.width = brainmapcanvas.style.height;
         brainpointscanvas.style.height = this.AppletHTML.node.style.height;
         brainpointscanvas.style.width = brainpointscanvas.style.height;
+        brainmapcanvas.height = this.AppletHTML.node.clientHeight;
+        brainmapcanvas.width = this.AppletHTML.node.clientHeight;
+        brainpointscanvas.height = this.AppletHTML.node.clientHeight;
+        brainpointscanvas.width = this.AppletHTML.node.clientHeight;
+        
+        this.class.scale = this.AppletHTML.node.clientHeight*.5*0.01*.8;
+
+        this.class.genHeatMap();
+        this.class.points = [];
+        ATLAS.fftMap.map.forEach((row,i) => {
+            this.class.points.push({x:row.data.x*this.class.scale+this.class.pointsCanvas.width*.5, y: this.class.pointsCanvas.height*.5-row.data.y*this.class.scale, size:90*this.class.scale, intensity:0.8});
+        });
+
+        this.class.updateHeatmap();
+        this.class.updatePointsFromAtlas(ATLAS.fftMap,ATLAS.channelTags);
+
     }
 
     //------------ add new functions below ---------------

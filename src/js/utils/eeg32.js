@@ -376,6 +376,18 @@ export class eegAtlas {
 		return found;
 	}
 
+	//Return the object corresponding to the atlas tag
+	getAtlasCoherenceCoordByTag(tag="Fp1:Fpz"){
+		var found = undefined;
+		let atlasCoord = this.coherenceMap.map.find((o, i) => {
+			if(o.tag === tag){
+				found = o;
+				return true;
+			}
+		});
+		return found;
+	}
+
 	//Return an array of Array(3)s for each coordinate. Useful e.g. for graphics
 	getAtlasCoordsList() {
 		var coords = [];
