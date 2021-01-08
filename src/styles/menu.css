@@ -1,10 +1,8 @@
-* {
-  transition: all 0.5s ease-in-out;
-}
 
 #menu_header {
   background-color: rgb(175, 224, 217);
   color: white;
+  transition: all 0.5s ease-in-out;
 }
 
 #menu_header > td {
@@ -17,16 +15,18 @@
   background-color: rgb(210, 229, 250);
   opacity:0;
   transform:translateY(-500px);
+  transition: all 0.5s ease-in-out;
 }
 
 #menu_header button {
   border:none;
   background-color: Transparent; 
-  transition: all 0.05s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
 button {
   cursor: pointer;
+  transition: all 0.5s ease-in-out;
 }
 
 #menu_header button:hover{
@@ -39,6 +39,14 @@ button {
   outline: none;
   box-shadow: none;
   color: purple;
+}
+
+svg {
+  transition: all 0.5s ease-in-out;
+}
+
+img {
+  transition: all 0.5s ease-in-out;
 }
 
 img:hover{
