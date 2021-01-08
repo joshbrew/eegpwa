@@ -457,7 +457,7 @@ export class TimeChartMaker {
 
 
 //heatmap-js based brain mapping with active channel markers (incl assigned ADC input), based on the atlas system in eeg32
-export class brainMap2D {
+export class BrainMap2D {
 	constructor(heatmapCanvasId = null, pointsCanvasId = null) {
 		if(typeof(createWebGLHeatmap) === 'undefined'){
 			console.log("webgl-heatmap.js not found! Please include in your app correctly");

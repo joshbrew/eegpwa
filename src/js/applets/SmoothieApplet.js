@@ -46,8 +46,6 @@ export class SmoothieApplet {
     //Setup javascript functions for the new HTML here
     setupHTML() {
         addChannelOptions(this.renderProps.id+"channel");
-        this.class = new SmoothieChartMaker(8, document.getElementById(this.renderProps.id+"canvas"));
-        this.class.init('rgba(0,100,100,0.5)');
         
         /*
         document.getElementById(this.renderProps.id+"mode").onchange = () => {
@@ -66,6 +64,10 @@ export class SmoothieApplet {
     //Initialize the applet. Keep the first line.
     init() {
         this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML();},undefined,"NEVER"); //Changes to this.props will automatically update the html template
+        
+        this.class = new SmoothieChartMaker(8, document.getElementById(this.renderProps.id+"canvas"));
+        this.class.init('rgba(0,100,100,0.5)');
+        
         this.sub = State.subscribe('FFTResult', this.onUpdate);
 
         document.getElementById("stopbutton").addEventListener('click',this.stopEvent);
