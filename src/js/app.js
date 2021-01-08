@@ -29,8 +29,6 @@ State.data.appletClasses.push(
 //TODO: find a better place for this
 
 
-
-
 /*
 //TODO: 
 //Port over all original features
@@ -108,6 +106,7 @@ function initEEGui() {
 
 const UI = new UIManager(initEEGui, deInitEEGui);
 UI.responsiveUIUpdate();
+
 
 
 

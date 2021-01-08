@@ -31,15 +31,17 @@ export class uPlotApplet {
     HTMLtemplate(props=this.renderProps) {
         return `
         <div id='`+props.id+`'>    
-            <div id='`+props.id+`canvas' style='position:absolute;'></div>
-            <select id='`+props.id+`mode'>
-            <option value="FFT" selected="selected">FFTs</option>
-            <option value="Coherence">Coherence</option>
-            <option value="CoherenceTimeSeries">Coherence Time Series</option>
-            <option value="TimeSeries">Raw</option>
-            </select>
-            `+genBandviewSelect(props.id+'bandview')+`
-            <h3 id='`+props.id+`title'>FFTs</h3>
+            <div id='`+props.id+`canvas' style='position:absolute;z-index:3;'></div>
+            <div id='`+props.id+`menu' style='position:absolute;z-index:4;'>
+                <select id='`+props.id+`mode'>
+                <option value="FFT" selected="selected">FFTs</option>
+                <option value="Coherence">Coherence</option>
+                <option value="CoherenceTimeSeries">Coherence Time Series</option>
+                <option value="TimeSeries">Raw</option>
+                </select>
+                `+genBandviewSelect(props.id+'bandview')+`
+                <h3 id='`+props.id+`title'>FFTs</h3>
+            </div>
         </div>
         `;
     }
@@ -77,7 +79,7 @@ export class uPlotApplet {
         this.setPlotDims();
         
         this.class = new uPlotMaker(this.renderProps.id+'canvas');
-        this.class.uPlotData = ATLAS.fftMap.shared.bandPassWindow;
+        this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow]];
         ATLAS.channelTags.forEach(() => {
             this.class.uPlotData.push(ATLAS.fftMap.shared.bandPassWindow)
         });
@@ -122,23 +124,23 @@ export class uPlotApplet {
       if(graphmode === "FFT"){
           //Animate plot(s)
           this.class.uPlotData = [
-              ATLAS.fftMap.shared.bandPassWindow
+              [...ATLAS.fftMap.shared.bandPassWindow]
           ];
 
           ATLAS.channelTags.forEach((row,i) => {
               if(row.viewing === true) {
-                this.class.uPlotData.push(State.data.FFTResult[i]);
+                this.class.uPlotData.push([...State.data.FFTResult[i]]);
               }
           });
       }
       else if (graphmode === "Coherence") {
-        this.class.uPlotData = [ATLAS.coherenceMap.shared.bandPassWindow,...State.data.coherenceResult];
+        this.class.uPlotData = [[...ATLAS.coherenceMap.shared.bandPassWindow],...State.data.coherenceResult];
       }
       else if (graphmode === "CoherenceTimeSeries") {
         var band = document.getElementById(this.class.plotId+"bandview").value
-        this.class.uPlotData = [ATLAS.coherenceMap.map[0].data.times];
+        this.class.uPlotData = [[...ATLAS.coherenceMap.map[0].data.times]];
         ATLAS.coherenceMap.map.forEach((row,i) => {
-            this.class.uPlotData.push(row.data.means[band]);
+            this.class.uPlotData.push([...row.data.means[band]]);
         });
       }
       else {
@@ -198,9 +200,9 @@ export class uPlotApplet {
             });
             }
           else {
-            this.class.uPlotData = [ATLAS.fftMap.shared.bandPassWindow];
+            this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow]];
             ATLAS.channelTags.forEach((row,i) => {
-              this.class.uPlotData.push(ATLAS.fftMap.shared.bandPassWindow);
+              this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
             });
           }
       
@@ -217,25 +219,26 @@ export class uPlotApplet {
       
               document.getElementById(this.renderProps.id+"title").innerHTML = "FFTs";
                 //Animate plot(s)
+               
               this.class.uPlotData = [
-                ATLAS.fftMap.shared.bandPassWindow
+                [...ATLAS.fftMap.shared.bandPassWindow]
               ];
               if((State.data.FFTResult.length > 0) && (State.data.FFTResult.length <= ATLAS.channelTags.length)) {
                 //console.log(posFFTList);
                 ATLAS.channelTags.forEach((row,i) => {
                   if(i < State.data.FFTResult.length){
                     if(row.viewing === true) {
-                      this.class.uPlotData.push(State.data.FFTResult[i]);
+                      this.class.uPlotData.push([...State.data.FFTResult[i]]);
                     }
                   }
                   else{
-                    this.class.uPlotData.push(ATLAS.fftMap.shared.bandPassWindow); // Placeholder for unprocessed channel data.
+                    this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]); // Placeholder for unprocessed channel data.
                   }
                 });
               }
               else {
                 ATLAS.channelTags.forEach((row,i) => {
-                  this.class.uPlotData.push(ATLAS.fftMap.shared.bandPassWindow);
+                  this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
                 });
               }
       
@@ -263,9 +266,9 @@ export class uPlotApplet {
             });
           }
           else {
-            this.class.uPlotData = [ATLAS.fftMap.shared.bandPassWindow];
+            this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow]];
             ATLAS.channelTags.forEach((row,i) => {
-              this.class.uPlotData.push(ATLAS.fftMap.shared.bandPassWindow);
+              this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
             });
           }
       
@@ -285,10 +288,10 @@ export class uPlotApplet {
         else if (gmode === "Coherence") {
       
           if((State.data.coherenceResult.length > 0) && (State.data.coherenceResult.length <= ATLAS.coherenceMap.map.length)){
-            this.class.uPlotData = [ATLAS.fftMap.shared.bandPassWindow,...State.data.coherenceResult];
+            this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow],...State.data.coherenceResult];
             if(this.class.uPlotData.length < ATLAS.coherenceMap.map.length+1) {
               for(var i = this.class.uPlotData.length; i < ATLAS.coherenceMap.map.length+1; i++){
-                this.class.uPlotData.push(ATLAS.fftMap.shared.bandPassWindow);
+                this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
               }
             }
             //console.log(uPlotData)
@@ -316,9 +319,9 @@ export class uPlotApplet {
             });
           }
           else {
-            this.class.uPlotData = [ATLAS.fftMap.shared.bandPassWindow];
+            this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow]];
             ATLAS.channelTags.forEach((row,i) => {
-              this.class.uPlotData.push(ATLAS.fftMap.shared.bandPassWindow);
+              this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
             });
           }
           //console.log(newSeries.length);
@@ -333,7 +336,7 @@ export class uPlotApplet {
         }
         else if (gmode === "CoherenceTimeSeries") {
           var band = document.getElementById(this.renderProps.id+"bandview").value;
-          this.class.uPlotData = [ATLAS.coherenceMap.map[0].data.times];
+          this.class.uPlotData = [[...ATLAS.coherenceMap.map[0].data.times]];
           var newSeries = [{}];
           ATLAS.coherenceMap.map.forEach((row,i) => {
             newSeries.push({
@@ -341,7 +344,7 @@ export class uPlotApplet {
               value: (u, v) => v == null ? "-" : v.toFixed(1),
               stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
             });
-            this.class.uPlotData.push(row.data.means[band]);
+            this.class.uPlotData.push([...row.data.means[band]]);
           });
           //console.log(this.class.uPlotData)
           this.class.makeuPlot(

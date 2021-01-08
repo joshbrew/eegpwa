@@ -19,7 +19,6 @@ export const EEGInterfaceSetup = () => {
     //EEG interface setup
 
     let bandPassWindow = ATLAS.bandPassWindow(State.data.freqStart,State.data.freqEnd,EEG.sps)
-
     ATLAS.fftMap = ATLAS.makeAtlas10_20();
     ATLAS.coherenceMap = ATLAS.genCoherenceMap(ATLAS.channelTags);
     ATLAS.fftMap.shared.bandPassWindow = bandPassWindow;
