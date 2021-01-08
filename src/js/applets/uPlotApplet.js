@@ -79,16 +79,7 @@ export class uPlotApplet {
         this.setPlotDims();
         
         this.class = new uPlotMaker(this.renderProps.id+'canvas');
-        this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow]];
-        ATLAS.channelTags.forEach(() => {
-            this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow])
-        });
-        this.class.makeuPlot(
-            this.class.makeSeriesFromChannelTags(ATLAS.channelTags),
-            this.class.uPlotData,
-            this.plotWidth, 
-            this.plotWidth
-        );
+        //this.setuPlot();
         this.sub = State.subscribe('FFTResult',this.onUpdate);
     }
 
@@ -110,7 +101,7 @@ export class uPlotApplet {
 
     setPlotDims = () => {
         this.plotWidth = this.AppletHTML.node.clientWidth;
-        this.plotHeight = this.AppletHTML.node.clientHeight - 75;
+        this.plotHeight = this.AppletHTML.node.clientHeight - 30;
     }
 
     updateLoop = () => {

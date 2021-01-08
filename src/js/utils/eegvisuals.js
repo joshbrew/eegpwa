@@ -125,7 +125,6 @@ export class uPlotMaker {
 		var uPlotOptions = {};
 		if(options === null){
 			uPlotOptions = {
-				title: "EEG Output",
 				width: width,
 				height: height,
 				series: series,
@@ -292,7 +291,6 @@ export class uPlotMaker {
 		var uPlotOptions;
 		if(options === null){
 		uPlotOptions = {
-		  title: "EEG Output",
 		  width: width,
 		  height: height,
 		  series: newSeries,
@@ -538,8 +536,8 @@ export class BrainMap2D {
 				points[points.length - 1].size *= sizeMul; //Need a better method
 
 				//simplecoherence *= points[points.length-1].size;
-				if(points[points.length - 1].size > 90*this.class.scale){
-				  points[points.length - 1].size = 90*this.class.scale;
+				if(points[points.length - 1].size > 90*this.scale){
+				  points[points.length - 1].size = 90*this.scale;
 				}
 			  }
 			});
