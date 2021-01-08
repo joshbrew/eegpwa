@@ -18,8 +18,11 @@ export class uPlotApplet {
         this.class = null;
         this.mode = "uplot";
         this.sub = null;
-        
+
         this.loop = null;
+
+        this.plotWidth = 500;
+        this.plotHeight = 300;
     }
 
     //----------- default functions, keep and customize these --------
@@ -27,16 +30,16 @@ export class uPlotApplet {
     //Create HTML template string with dynamic properties set in this.renderProps. Updates to these props will cause updates to the template
     HTMLtemplate(props=this.renderProps) {
         return `
-        <div id='`+this.renderProps.id+`'>
-            <h3 id='`+this.renderProps.id+`title'>FFTs</h3>
-            <select id='`+this.renderProps.id+`mode'>
+        <div id='`+props.id+`'>    
+            <div id='`+props.id+`canvas' style='position:absolute;'></div>
+            <select id='`+props.id+`mode'>
             <option value="FFT" selected="selected">FFTs</option>
             <option value="Coherence">Coherence</option>
             <option value="CoherenceTimeSeries">Coherence Time Series</option>
             <option value="TimeSeries">Raw</option>
             </select>
-            `+genBandviewSelect(this.renderProps.id+'bandview')+`
-            <div id='`+this.renderProps.id+`canvas'></div>
+            `+genBandviewSelect(props.id+'bandview')+`
+            <h3 id='`+props.id+`title'>FFTs</h3>
         </div>
         `;
     }
@@ -64,11 +67,14 @@ export class uPlotApplet {
                 this.setuPlot();
             }
         }
+        
     }   
 
     //Initialize the applet. Keep the first line.
     init() {
         this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML()},undefined,"NEVER"); //Changes to this.props will automatically update the html template
+        
+        this.setPlotDims();
         
         this.class = new uPlotMaker(this.renderProps.id+'canvas');
         this.class.uPlotData = ATLAS.fftMap.shared.bandPassWindow;
@@ -78,8 +84,8 @@ export class uPlotApplet {
         this.class.makeuPlot(
             this.class.makeSeriesFromChannelTags(ATLAS.channelTags),
             this.class.uPlotData,
-            this.AppletHTML.node.clientWidth, 
-            this.AppletHTML.node.clientHeight
+            this.plotWidth, 
+            this.plotWidth
         );
 
         this.sub = State.subscribe('FFTResult',this.onUpdate);
@@ -95,10 +101,16 @@ export class uPlotApplet {
 
     //Callback for when the window resizes. This gets called by the UIManager class to help resize canvases etc.
     onResize() {
+        this.setPlotDims();
         this.setuPlot();
     }
 
     //------------ add new functions below ---------------
+
+    setPlotDims = () => {
+        this.plotWidth = this.AppletHTML.node.clientWidth;
+        this.plotHeight = this.AppletHTML.node.clientHeight - 75;
+    }
 
     updateLoop = () => {
         this.onUpdate();
@@ -156,8 +168,8 @@ export class uPlotApplet {
             this.class.uPlotData,
             undefined,
             ATLAS.channelTags,
-            this.AppletHTML.node.clientWidth, 
-            this.AppletHTML.node.clientHeight);
+            this.plotWidth, 
+            this.plotHeight);
       }
       else {
         this.class.plot.setData(this.class.uPlotData);
@@ -195,8 +207,8 @@ export class uPlotApplet {
           this.class.makeuPlot(
               this.class.makeSeriesFromChannelTags(ATLAS.channelTags), 
               this.class.uPlotData, 
-              this.AppletHTML.node.clientWidth, 
-              this.AppletHTML.node.clientHeight
+              this.plotWidth, 
+              this.plotHeight
             );
           this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +((v-EEG.data.ms[0])*0.001).toFixed(2) + "s");
       
@@ -230,8 +242,8 @@ export class uPlotApplet {
               this.class.makeuPlot(
                   this.class.makeSeriesFromChannelTags(ATLAS.channelTags), 
                   this.class.uPlotData, 
-                  this.AppletHTML.node.clientWidth, 
-                  this.AppletHTML.node.clientHeight
+                  this.plotWidth, 
+                  this.plotHeight
                 );
         }
         else if (gmode === "Stacked") {
@@ -264,8 +276,8 @@ export class uPlotApplet {
               undefined, 
               this.class.uPlotData,
               undefined, ATLAS.channelTags,
-              this.AppletHTML.node.clientWidth, 
-              this.AppletHTML.node.clientHeight
+              this.plotWidth, 
+              this.plotHeight
             );
           this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001).toFixed(2) + "s");
       
@@ -314,8 +326,8 @@ export class uPlotApplet {
           this.class.makeuPlot(
               newSeries, 
               this.class.uPlotData, 
-              this.AppletHTML.node.clientWidth, 
-              this.AppletHTML.node.clientHeight
+              this.plotWidth, 
+              this.plotHeight
             );
           document.getElementById(this.renderProps.id+"title").innerHTML = "Coherence from tagged signals";
         }
@@ -335,8 +347,8 @@ export class uPlotApplet {
           this.class.makeuPlot(
               newSeries, 
               this.class.uPlotData, 
-              this.AppletHTML.node.clientWidth, 
-              this.AppletHTML.node.clientHeight
+              this.plotWidth, 
+              this.plotHeight
             );
           document.getElementById(this.renderProps.id+"title").innerHTML = "Mean Coherence over time";
           this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001).toFixed(2) + "s");

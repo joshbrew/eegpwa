@@ -19,10 +19,11 @@ import {
 //Import applets!
 import {AppletExample} from './applets/AppletExample'
 import {SmoothieApplet} from './applets/SmoothieApplet'
+import {uPlotApplet} from './applets/uPlotApplet'
 
 //Add applets here that you want accessible (Follow Applet.js format!!!)
 State.data.appletClasses.push(
-  AppletExample,
+  uPlotApplet,
   SmoothieApplet
 );
 //TODO: find a better place for this
