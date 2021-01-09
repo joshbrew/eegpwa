@@ -6,6 +6,7 @@ export const State = new StateManager(
         applets:[],
         appletsSpawned:0,
         appletClasses:[],
+        appletNames:[],
         
         lastPostTime:0,
         FFTResult:[],

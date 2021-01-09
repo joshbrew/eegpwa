@@ -95,11 +95,6 @@ img:hover{
   transform: rotate(2000deg);
 }
 
-
-#visualsbutton .fil0 {
-  transition: all 0.5s ease-in-out;
-}
-
 #visualsbutton:hover .fil0 {
   fill:blue;
 }

@@ -39,12 +39,12 @@ export function menuheader_template(props={}) {
     <td id="visuals" style="width:10%;">
         <button id="visualsbutton" style="height:40px; width:40px; transform:translate(2px,13px); font-size:35px;">   
                 <svg id="squaresvg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" version="1.1" style="fill:black; transform:translate(-19px,-13px); height:50px; width:50px; shape-rendering:geometricPrecision;text-rendering:geometricPrecision;image-rendering:optimizeQuality;" viewBox="0 0 1128.88 1411.1000000000001" x="0px" y="0px" fill-rule="evenodd" clip-rule="evenodd"><defs><style type="text/css">
-                    .fil0 {fill-rule:nonzero}
+                    .fil0 {}
                     </style></defs><g><g><g>
-                    <path class="fil0" d="M474.78 230.32l-177.76 0c-36.93,0 -66.83,29.89 -66.83,66.83l0 177.75c0,36.94 29.9,66.83 66.83,66.83l177.76 -0.01c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.75c0,-36.93 -29.89,-66.82 -66.83,-66.82z"/>
-                    <path class="fil0" d="M474.78 587.16l-177.76 0c-36.93,0 -66.83,29.89 -66.83,66.83l0.02 177.74c0,36.94 29.89,66.83 66.83,66.83l177.74 0c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.76c0,-36.87 -29.89,-66.81 -66.83,-66.81z"/>
-                    <path class="fil0" d="M831.84 587.16l-177.75 0c-36.94,0 -66.83,29.89 -66.83,66.83l0.01 177.74c0,36.94 29.89,66.83 66.83,66.83l177.74 0c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.76c0,-36.87 -29.89,-66.81 -66.83,-66.81z"/>
-                    <path class="fil0" d="M831.84 230.32l-177.75 0c-36.94,0 -66.83,29.89 -66.83,66.83l0 177.75c0,36.94 29.89,66.83 66.83,66.83l177.75 -0.01c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.75c0,-36.93 -29.89,-66.82 -66.83,-66.82z"/>
+                    <path class='fil0' style='transition: all 0.3s;' d="M474.78 230.32l-177.76 0c-36.93,0 -66.83,29.89 -66.83,66.83l0 177.75c0,36.94 29.9,66.83 66.83,66.83l177.76 -0.01c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.75c0,-36.93 -29.89,-66.82 -66.83,-66.82z"/>
+                    <path class='fil0' style='transition: all 0.6s;' d="M474.78 587.16l-177.76 0c-36.93,0 -66.83,29.89 -66.83,66.83l0.02 177.74c0,36.94 29.89,66.83 66.83,66.83l177.74 0c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.76c0,-36.87 -29.89,-66.81 -66.83,-66.81z"/>
+                    <path class='fil0' style='transition: all 0.4s;' d="M831.84 587.16l-177.75 0c-36.94,0 -66.83,29.89 -66.83,66.83l0.01 177.74c0,36.94 29.89,66.83 66.83,66.83l177.74 0c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.76c0,-36.87 -29.89,-66.81 -66.83,-66.81z"/>
+                    <path class='fil0' style='transition: all 0.8s;' d="M831.84 230.32l-177.75 0c-36.94,0 -66.83,29.89 -66.83,66.83l0 177.75c0,36.94 29.89,66.83 66.83,66.83l177.75 -0.01c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.75c0,-36.93 -29.89,-66.82 -66.83,-66.82z"/>
                 </g></g></g><text x="0" y="1143.88" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">Created by Ilham Fitrotul Hayat</text><text x="0" y="1148.88" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">from the Noun Project</text></svg>
         </button>
     </td>
