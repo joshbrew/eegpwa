@@ -41,22 +41,19 @@ export class StateManager {
 
         this.listener.addListener(
             "push",
-            this,
-            "pushToState",
+            this.pushToState,
+            "__ANY__",
             () => {
-                if(this.pushToState !== {}){
-                    this.prev=JSON.parse(JSON.stringifyWithCircularRefs(this.data));
-                    //console.log(this.prev);
-                    Object.keys(this.pushToState).forEach((key,i) =>{
-                        if(this.data[key] === undefined) {
-                            this.addToState(key, this.pushToState[key])
+                    if(Object.keys(this.pushToState).length > 0) {
+                        //console.log("set state called")
+                        Object.assign(this.prev,this.data);
+                        for(var prop in this.pushToState){
+                            this.data[prop] = this.pushToState[prop];
                         }
-                        else{
-                            this.data[key] = this.pushToState[key];
-                        }
-                    });
-                    this.pushToState = {};
-                }
+                        //Object.assign(this.data,this.pushToState);
+                        console.log(this.prev); console.log(this.data); console.log(this.pushToState);
+                        this.pushToState = {};
+                    }
             },
             interval
         );
@@ -76,7 +73,7 @@ export class StateManager {
     }
 
     setState(updateObj={}){ //Pass object with keys in. Undefined keys in state will be added automatically. State only notifies of change based on update interval
-        Object.assign(this.pushToState,updateObj);
+        return Object.assign(this.pushToState,updateObj);
     }
 
     //Set main onchange response for the property-specific object listener. Don't touch the state

@@ -84,9 +84,9 @@ window.threadrot = 0;
 
   
   //foo options: "xcor, autocor, cov1d, cov2d, sma, dft, multidft, multibandpassdft"
-  window.postToWorker = (foo,input,workeridx = null) => {
+  window.postToWorker = (input,workeridx = null) => {
     if(workeridx === null) {
-      window[window.threadrot].postMessage({foo:foo, input:input});
+      window.workers[window.threadrot].postMessage(input);
       if(window.threads > 1){
         window.threadrot++;
         if(window.threadrot >= window.threads){
@@ -95,7 +95,7 @@ window.threadrot = 0;
       }
     }
     else{
-     window.workers[workeridx].postMessage({foo:foo, input:input});
+     window.workers[workeridx].postMessage(input);
     }
   }
 </script>

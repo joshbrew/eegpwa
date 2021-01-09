@@ -16,22 +16,24 @@ export class DOMFragment {
         }
         this.templateString = templateStringGen(props);
         this.props = props; //Soft copy of a properties object the node may rely on
+        var interval = propUpdateInterval;
+        if(this.props === {}) {interval = "NEVER";}
         this.node = null;
 
         this.listener = new ObjectListener();
-
-        if(this.props !== {} && (propUpdateInterval !== null || propUpdateInterval !== undefined || propUpdateInterval !== "NEVER")) {
+    
+        if((Object.keys(this.props).length > 0) && !(interval === null || interval === undefined || interval === "NEVER")) {
+            console.log("making listeners for ", templateStringGen)
             this.listener.addListener('templateChange',this.renderSettings,'templateStringGen',() => {
                 this.updateNode();
-            },propUpdateInterval);
+            }, interval);
 
-            if(this.props!=={}){
-                this.listener.addListener('props',this.renderSettings,'props',() => {
-                    this.updateNode();
-                    this.renderSettings.onchange();
-                },propUpdateInterval);
-            }
+            this.listener.addListener('props',this.renderSettings,'props',() => {
+                this.updateNode();
+                this.renderSettings.onchange();
+            }, interval);
         }
+      
 
         this.renderNode();
 

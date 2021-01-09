@@ -59,7 +59,7 @@ export class BrainMapApplet {
         this.class.updatePointsFromAtlas(ATLAS.fftMap,ATLAS.channelTags);
         this.class.updateHeatmap();
         
-        this.sub = State.subscribe('FFTResult', this.onUpdate);
+        this.sub = State.subscribe('FFTResult', ()=>{try{this.onUpdate();}catch(e){console.error(e);}});
     }
 
     //Destroy applet. Keep this one line

@@ -129,9 +129,9 @@ export class UIManager {
     }
 
     responsiveUIUpdate(nodes=State.data.applets, topoffset=90) {
-        console.log(nodes);
+        //console.log(nodes);
         nodes.forEach((node,i) => {
-            console.log(node)
+            //console.log(node)
             //TODO: replace this with something more procedural for n-elements with varied arrangements 
             //(e.g. arbitrary sizes and arrangements for applets. This is why we didn't use tables to place the apps.)
             
@@ -161,7 +161,7 @@ export class UIManager {
             if(nodes.length === 3) {
                 var transformy = window.innerHeight*.5- topoffset;
                 if(i===0){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
                     node.classinstance.AppletHTML.node.style.top = 0+"px";
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
@@ -182,7 +182,7 @@ export class UIManager {
             if(nodes.length === 4) {
                 var transformy = window.innerHeight*.5- topoffset;
                 if(i===0){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
                     node.classinstance.AppletHTML.node.style.top = 0+"px";
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
@@ -194,7 +194,7 @@ export class UIManager {
                     node.classinstance.AppletHTML.node.style.top = 0+"px";
                 }
                 else if(i === 2){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5-topoffset + "px";
                     node.classinstance.AppletHTML.node.style.top = transformy+"px";
                     node.classinstance.AppletHTML.node.style.left = 0+"px";

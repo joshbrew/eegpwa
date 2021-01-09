@@ -76,7 +76,7 @@ export class MirrorBarsApplet {
         this.class = new mirrorBarChart(this.renderProps.id+"visuals",this.renderProps.id+"leftbars", this.renderProps.id+"rightbars",1000);
         this.class.init();
 
-        this.sub = State.subscribe('FFTResult',this.onUpdate);
+        this.sub = State.subscribe('FFTResult',()=>{try{this.onUpdate()}catch(e){console.error(e);}});
     }
 
     //Destroy applet. Keep this one line

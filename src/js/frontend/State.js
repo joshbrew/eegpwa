@@ -19,7 +19,7 @@ export const State = new StateManager(
 
         connected:false,
         analyze:false,
-        rawFeed:true,
+        rawFeed:false,
 
         workerMaxSpeed: 50
     }

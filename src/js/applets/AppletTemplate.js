@@ -7,7 +7,7 @@ export class Applet {
         this.parentNode = parentNode;
         this.AppletHTML = null;
 
-        this.renderProps = {  //Add properties to set and auto-update the HTML. 
+        this.renderProps = {  //Add properties to set or update the HTML
             width: "100px",
             height: "100px",
             id: String(Math.floor(Math.random()*1000000))

@@ -8,10 +8,12 @@ let defaultTags = [
 
 
 export const ATLAS = new eegAtlas(defaultTags);
-export const EEG = new eeg32(undefined,() => {
-    State.setState({connected:true, rawFeed: true});
+export const EEG = new eeg32(
+() => {
 }, () => {
-    State.setState({connected:false, rawFeed: false, analyze: false});
+    State.setState({connected:true, rawFeed:true});
+}, () => {
+    State.setState({connected:false,rawFeed:false,analyze:false});
 }); //onConnected callback to set state on front end.
 
 
@@ -25,32 +27,6 @@ export const EEGInterfaceSetup = () => {
     ATLAS.fftMap.shared.bandFreqs = ATLAS.getBandFreqs(bandPassWindow);
     ATLAS.coherenceMap.shared.bandPassWindow = bandPassWindow;
     ATLAS.coherenceMap.shared.bandFreqs = ATLAS.fftMap.shared.bandFreqs;
-
-    function bufferEEGData() {
-        var buffer = [];
-        for(var i = 0; i < ATLAS.channelTags.length; i++){
-            if(i < EEG.nChannels) {
-                var channel = "A"+ATLAS.channelTags[i].ch;
-                var dat = EEG.data[channel].slice(EEG.data.counter - EEG.sps, EEG.data.counter);
-                buffer.push(dat);
-            }
-        }
-        return buffer;
-
-    }    
-
-    function runEEGWorker() {
-
-        var s = State.data;
-        if(EEG.data.ms[EEG.data.ms.length-1] - s.lastPostTime < s.workerMaxSpeed) {
-        setTimeout(()=>{runEEGWorker()}, s.workerMaxSpeed - (EEG.data.ms[EEG.data.ms.length-1] - s.lastPostTime) );
-        }
-        State.setState({lastPostTime: EEG.data.ms[EEG.data.ms.length-1]});
-        if(s.fdBackMode === 'coherence') {
-            //console.log("post to worker")
-            window.postToWorker({foo:'coherence', input:[bufferEEGData(), s.nSec, s.freqStart, s.freqEnd, EEG.scalar]});
-        }
-    }
 
     window.receivedMsg = (msg) => { //Set worker message response
         //console.log("received!");
@@ -67,12 +43,8 @@ export const EEGInterfaceSetup = () => {
         
             ATLAS.mapCoherenceData(coher, State.data.lastPostTime);
 
-            State.setState(
-                {
-                    FFTResult:ffts, 
-                    coherenceResult:coher
-                }
-            );
+            State.setState({FFTResult:ffts,coherenceResult:coher});
+
         }
 
         if(State.data.analyze === true) {
@@ -81,6 +53,32 @@ export const EEGInterfaceSetup = () => {
         
     }
 
+}
+
+export const bufferEEGData = () => {
+    var buffer = [];
+    for(var i = 0; i < ATLAS.channelTags.length; i++){
+        if(i < EEG.nChannels) {
+            var channel = "A"+ATLAS.channelTags[i].ch;
+            var dat = EEG.data[channel].slice(EEG.data.counter - EEG.sps, EEG.data.counter);
+            buffer.push(dat);
+        }
+    }
+    return buffer;
+}    
+
+export const runEEGWorker = () => {
+
+    var s = State.data;
+    if(EEG.data.ms[EEG.data.ms.length-1] - s.lastPostTime < s.workerMaxSpeed) {
+        setTimeout(()=>{runEEGWorker();}, s.workerMaxSpeed - (EEG.data.ms[EEG.data.ms.length-1] - s.lastPostTime) );
+    }
+    State.setState({lastPostTime: EEG.data.ms[EEG.data.ms.length-1]});
+    if(s.fdBackMode === 'coherence') {
+        //console.log("post to worker")
+        var buf = bufferEEGData();
+        window.postToWorker({foo:'coherence', input:[buf, s.nSec, s.freqStart, s.freqEnd, EEG.scalar]});
+    }
 }
 
 export const updateBandPass = (freqStart, freqEnd) => {

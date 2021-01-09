@@ -61,7 +61,7 @@ export class SpectrogramApplet {
         this.class = new Spectrogram(this.renderProps.id+'canvas', 1000);
         this.class.init();
 
-        this.sub = State.subscribe('FFTResult', this.onUpdate);
+        this.sub = State.subscribe('FFTResult', ()=>{try{this.onUpdate();}catch(e){console.error(e);}});
     }
 
     //Destroy applet. Keep this one line

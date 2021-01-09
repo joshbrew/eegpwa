@@ -38,10 +38,11 @@ export class ObjectListener {
     }
 
     hasKey(key) {
+        var found = false;
         this.listeners.forEach((item,i) =>{
-            if(item.key === key) return true;
+            if(item.key === key) {found = true;}
         });
-        return false;
+        return found;
     }
 
     getKeyIndices(key) {
@@ -158,6 +159,7 @@ export class ObjectListener {
 //Instance of an object listener. This will subscribe to object properties (or whole objects) and run attached functions when a change is detected.
 export class ObjectListenerInstance {
     constructor(object,propName="__ANY__",onchange=this.onchange,interval="FRAMERATE") {
+        this.debug=true;
 
         this.onchange = onchange; //Main onchange function
         this.onchangeFuncs = []; //Execute extra functions pushed to this array
@@ -168,6 +170,7 @@ export class ObjectListenerInstance {
         this.setListenerRef(propName);
 
         this.running = true;
+
 
         this.interval;
         if(interval <= 0) {
@@ -205,6 +208,7 @@ export class ObjectListenerInstance {
     //Execute extra onchange functions
     onchangeMulti = () => {
         this.onchangeFuncs.forEach((func,i) => {
+            if(this.debug === true) { console.log(func); }
             func();
         });
     }
@@ -223,12 +227,13 @@ export class ObjectListenerInstance {
         else{
             this.propOld = this.object[propName] //usually a number;
         }
+        if(this.debug === true) { console.log("propname", propName, ", new assignment: ", this.propOld); }
     }
 
     check = () => {
-
         if(this.propName === "__ANY__"){
             if(this.propOld !== JSON.stringifyWithCircularRefs(this.object)){
+                if(this.debug === true) { console.log("onchange: ", this.onchange); }
                 this.onchange();
                 if(this.onchangeFuncs.length > 0) { this.onchangeMulti(); }
                 this.setListenerRef(this.propName);
@@ -236,6 +241,7 @@ export class ObjectListenerInstance {
         }
         else if(typeof this.object[this.propName] === "object") {
             if(this.propOld !== JSON.stringifyWithCircularRefs(this.object[this.propName])){
+                if(this.debug === true) { console.log("onchange: ", this.onchange); }
                 this.onchange();
                 if(this.onchangeFuncs.length > 0) { this.onchangeMulti(); }
                 this.setListenerRef(this.propName);
@@ -243,12 +249,14 @@ export class ObjectListenerInstance {
         }
         else if(typeof this.object[this.propName] === "function") {
             if(this.propOld !== this.object[this.propName].toString()){
+                if(this.debug === true) { console.log("onchange: ", this.onchange); }
                 this.onchange()
                 if(this.onchangeFuncs.length > 0) { this.onchangeMulti(); }
                 this.setListenerRef(this.propName);
             }
         }
         else if(this.object[this.propName] !== this.propOld) {
+            if(this.debug === true) { console.log("onchange: ", this.onchange); }
             this.onchange();
             if(this.onchangeFuncs.length > 0) { this.onchangeMulti(); }
             this.setListenerRef(this.propName);

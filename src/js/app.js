@@ -12,7 +12,8 @@ import {
 } from './frontend/UITemplates'
 import {
   EEG, ATLAS,
-  EEGInterfaceSetup, 
+  EEGInterfaceSetup,
+  runEEGWorker, 
   updateBandPass, 
   updateChannelTags, 
   updateChannelView,

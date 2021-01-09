@@ -62,7 +62,7 @@ export class BarChartApplet {
         this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML()},undefined,"NEVER"); //Changes to this.props will automatically update the html template
         this.class = new eegBarChart(this.renderProps.id+"canvas",1000);
         this.class.init();
-        this.sub = State.subscribe('FFTResult',this.onUpdate);
+        this.sub = State.subscribe('FFTResult',()=>{try{this.onUpdate();}catch(e){console.error(e);}});
     }
 
     //Destroy applet. Keep this one line

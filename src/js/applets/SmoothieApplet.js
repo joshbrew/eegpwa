@@ -68,7 +68,7 @@ export class SmoothieApplet {
         this.class = new SmoothieChartMaker(8, document.getElementById(this.renderProps.id+"canvas"));
         this.class.init('rgba(0,100,100,0.5)');
         
-        this.sub = State.subscribe('FFTResult', this.onUpdate);
+        this.sub = State.subscribe('FFTResult', ()=>{try{this.onUpdate()}catch(e){console.error(e);}});
 
         document.getElementById("stopbutton").addEventListener('click',this.stopEvent);
         document.getElementById("runbutton").addEventListener('click',this.startEvent);

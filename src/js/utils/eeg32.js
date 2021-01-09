@@ -138,14 +138,23 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.onDecodedCallback();
 	}
 
-	async onPortSelected(port,baud) {
+	async onPortSelected(port,baud=115200) {
 		try{
-			try {await port.open({ baudRate: baud, bufferSize: 1000 });} //API inconsistency in syntax between linux and windows
-			catch {await port.open({ baudrate: baud, buffersize: 1000 });}
-			this.onConnectedCallback();
-			this.connected = true;
-			this.subscribed = true;
-			this.subscribe(port);//this.subscribeSafe(port);
+			try {
+				await port.open({ baudRate: baud, bufferSize: 2048 });
+				this.onConnectedCallback();
+				this.connected = true;
+				this.subscribed = true;
+				this.subscribe(port);//this.subscribeSafe(port);
+		
+			} //API inconsistency in syntax between linux and windows
+			catch {
+				await port.open({ baudrate: baud, buffersize: 2048 });
+				this.onConnectedCallback();
+				this.connected = true;
+				this.subscribed = true;
+				this.subscribe(port);//this.subscribeSafe(port);
+			}
 		}
 		catch(err){
 			console.log(err);
@@ -542,7 +551,7 @@ export class eegAtlas {
 		if(o.tag === tag){
 			this.fftMap.map[i].count++;
 			this.fftMap.map[i].data.times.push(lastPostTime);
-			this.atlas.map[i].data.amplitudes.push(data[channel]);
+			this.fftMap.map[i].data.amplitudes.push(data[channel]);
 			if(this.fftMap.shared.bandFreqs.scp[1].length > 0){
 			var scp = data[channel].slice( this.fftMap.shared.bandFreqs.scp[1][0], this.fftMap.shared.bandFreqs.scp[1][this.fftMap.shared.bandFreqs.scp[1].length-1]+1);
 			this.fftMap.map[i].data.slices.scp.push(scp);
@@ -817,7 +826,7 @@ export class eegmath {
 		dat.forEach((row1,i) => {
 			dat.forEach((row2,j) => {
 				if(j >= i) {
-					correlograms.push(EegMath.crosscorrelation(row1,row2));
+					correlograms.push(eegmath.crosscorrelation(row1,row2));
 				}
 			})
 		});
