@@ -54,24 +54,26 @@ export const EEGInterfaceSetup = () => {
 
     window.receivedMsg = (msg) => { //Set worker message response
         //console.log("received!");
-        var ffts = [...msg.output[1]];
-        var coher = [...msg.output[2]];
+        if(msg.foo === "coherence"){
+            var ffts = [...msg.output[1]];
+            var coher = [...msg.output[2]];
 
-        ATLAS.channelTags.forEach((row, i) => {
-            if(row.tag !== null && i < EEG.nChannels){
-                //console.log(tag);
-                ATLAS.mapFFTData(ffts, State.data.lastPostTime, i, row.tag);
-            }
-        });
-    
-        ATLAS.mapCoherenceData(coher, State.data.lastPostTime);
+            ATLAS.channelTags.forEach((row, i) => {
+                if(row.tag !== null && i < EEG.nChannels){
+                    //console.log(tag);
+                    ATLAS.mapFFTData(ffts, State.data.lastPostTime, i, row.tag);
+                }
+            });
+        
+            ATLAS.mapCoherenceData(coher, State.data.lastPostTime);
 
-        State.setState(
-            {
-                FFTResult:ffts, 
-                coherenceResult:coher
-            }
-        );
+            State.setState(
+                {
+                    FFTResult:ffts, 
+                    coherenceResult:coher
+                }
+            );
+        }
 
         if(State.data.analyze === true) {
             runEEGWorker();

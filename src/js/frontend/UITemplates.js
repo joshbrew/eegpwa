@@ -63,8 +63,8 @@ export function menudropdown_template(props={}) {
     <td style="width:100%; vertical-align:center; border:2px inset black;" colspan=5>
         <table style="margin-left:auto; margin-right:auto; ">
             <tr><td>Set Bandpass</td><td><input type="text" style="width:95%;" id="freqStart" placeholder="0 (Hz)"></td><td>to</td><td><input type="text" style="width:100%;" id="freqEnd" placeholder="256 (Hz)"></td><td><button id="setBandpass">Set</button></td></tr>
-            <tr><td>Set Channel View</td><td colspan=3><input type="text" style="width:100%;" id="View" placeholder=""></input></td><td><button id="setView">Set</button></td></tr>
-            <tr><td>Set Tags</td><td colspan=3><input type="text" style="width:100%;" id="Tags" placeholder=""></input></td><td><button id="setTags">Set</button></td></tr>
+            <tr><td>Set Channel View</td><td colspan=3><input type="text" style="width:100%;" id="View" placeholder="Format: 0,1,2,5,6,7,etc"></input></td><td><button id="setView">Set</button></td></tr>
+            <tr><td>Set Tags</td><td colspan=3><input type="text" style="width:100%;" id="Tags" placeholder="Format: 0:Fp1;2:Fz;6:P6:0,1,2;etc"></input></td><td><button id="setTags">Set</button></td></tr>
         </table>
      </td>`;
 }
@@ -137,6 +137,11 @@ export function menu_setup() {
      document.getElementById("menucheckbox").addEventListener('click',() => {
 
       if(document.getElementById("menucheckbox").checked === true){
+        
+        document.getElementById("menu_dropdown2").style.opacity = 0;
+        document.getElementById("menu_dropdown2").style.transform = "translateY(-900px)";   
+        document.getElementById("menu_dropdown2").style.transition ="transform 0.5s ease-in-out, opacity 0.1s ease";
+
         document.getElementById("menu_dropdown").style.opacity = 1;
         document.getElementById("menu_dropdown").style.transform = "translateY(0px)";
         document.getElementById("menu_dropdown").style.transition ="transform 0.5s ease-in-out, opacity 0.4s ease 0.3s";
@@ -151,14 +156,25 @@ export function menu_setup() {
      });
 
      document.getElementById("visualsbutton").addEventListener('click',() => {
+        if(document.getElementById("menucheckbox").checked === true){
+            document.getElementById("menuxsvg").click();
+        }
          if(document.getElementById("menu_dropdown2").style.transform === "translateY(-900px)"){
+
             document.getElementById("menu_dropdown2").style.opacity = 1;
             document.getElementById("menu_dropdown2").style.transform = "translateY(-400px)";
+            document.getElementById("menu_dropdown2").style.transition ="transform 0.5s ease-in-out, opacity 0.4s ease 0.3s";
+
+            
+            document.getElementById("menu_dropdown").style.opacity = 0;
+            document.getElementById("menu_dropdown").style.transform = "translateY(-500px)";
+            document.getElementById("menu_dropdown").style.transition ="transform 0.5s ease-in-out, opacity 0.1s ease";
             document.getElementById("UI").style.zIndex = 999;
          }
          else{
             document.getElementById("menu_dropdown2").style.opacity = 0;
-            document.getElementById("menu_dropdown2").style.transform = "translateY(-900px)"
+            document.getElementById("menu_dropdown2").style.transform = "translateY(-900px)";   
+            document.getElementById("menu_dropdown2").style.transition ="transform 0.5s ease-in-out, opacity 0.1s ease";
             document.getElementById("UI").style.zIndex = -1;
          }
      });
