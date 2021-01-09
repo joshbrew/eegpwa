@@ -34,7 +34,7 @@ export class UIManager {
         if(State.data.appletsSpawned < this.maxApplets) {
             State.data.appletClasses.forEach((classObj,i) => {
                 if(State.data.appletsSpawned < this.maxApplets) {
-                    State.data.applets.push({ appletIdx:i+1, classinstance:new classObj("applets")});
+                    State.data.applets.push({ appletIdx:i+1, name:classObj.name, classinstance: new classObj.cls("applets")});
                     State.data.appletsSpawned++;
                 }
             });
@@ -60,7 +60,7 @@ export class UIManager {
                 return true;
             }
         });
-        State.data.applets.splice(appletIdx-1,0,{appletIdx:appletIdx, classinstance: new classObj("applets")});
+        State.data.applets.splice(appletIdx-1,0,{appletIdx: appletIdx, name: classObj.name, classinstance: new classObj.cls("applets")});
         State.data.applets[appletIdx-1].classinstance.init();
         State.data.applets[appletIdx-1].classinstance.AppletHTML.node.style.position = "absolute";
         State.data.appletsSpawned++;
@@ -104,12 +104,12 @@ export class UIManager {
                 return true;
             }
         });
-        State.data.appletClasses.forEach((cls,i) => {
-            if(State.data.applets[stateIdx].classinstance.constructor.name===cls.name) {
-              newhtml += `<option value='`+cls.name+`' selected="selected">`+State.data.appletNames[i]+`</option>`;
+        State.data.appletClasses.forEach((classObj,i) => {
+            if(State.data.applets[stateIdx].name===classObj.name) {
+              newhtml += `<option value='`+classObj.name+`' selected="selected">`+State.data.appletClasses[i].name+`</option>`;
             }
             else{
-              newhtml += `<option value='`+cls.name+`'>`+State.data.appletNames[i]+`</option>`;
+              newhtml += `<option value='`+classObj.name+`'>`+State.data.appletClasses[i].name+`</option>`;
             }
         });
         select.innerHTML = newhtml;

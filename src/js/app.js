@@ -30,13 +30,13 @@ import {TimeChartsApplet} from './applets/TimeChartsApplet'
 
 //Add applets here that you want accessible (Follow Applet.js format!!!)
 State.data.appletClasses.push(
-  uPlotApplet,
-  SmoothieApplet,
-  BrainMapApplet,
-  SpectrogramApplet,
-  BarChartApplet,
-  MirrorBarsApplet,
-  TimeChartsApplet
+  { name:"uPlot Applet",         cls: uPlotApplet        },
+  { name:"SmoothieJS Applet",    cls: SmoothieApplet     },
+  { name:"BrainMap Applet",      cls: BrainMapApplet     },
+  { name:"Spectrogram Applet",   cls: SpectrogramApplet  },
+  { name:"BarChart Applet",      cls: BarChartApplet     },
+  { name:"MirrorBars Applet",    cls: MirrorBarsApplet   },
+  { name:"TimeCharts Applet",    cls: TimeChartsApplet   }
 );
 
 State.data.appletNames.push(
@@ -65,7 +65,7 @@ State.data.appletNames.push(
 
 function deInitEEGui() {
     State.data.applets.forEach((applet,i) => {
-        applet.deInit();
+        applet.classinstance.deInit();
     })
     State.data.menunode.deleteNode()
     State.data.appletbox.deleteNode();
@@ -129,8 +129,6 @@ function initEEGui() {
 }
 
 const UI = new UIManager(initEEGui, deInitEEGui);
-UI.responsiveUIUpdate();
-
 
 
 
