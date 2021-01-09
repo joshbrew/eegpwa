@@ -26,7 +26,7 @@ export class BarChartApplet {
     HTMLtemplate(props=this.renderProps) {
         return `
         <div id='`+props.id+`'>
-            <canvas id='`+props.id+`+canvas'style='position:absolute; width:`+props.width+`px; height:`+props.height+`px;'></canvas>
+            <canvas id='`+props.id+`canvas'style='position:absolute; width:`+props.width+`px; height:`+props.height+`px;'></canvas>
             Mode:
             <div id='`+props.id+`menu'>
                 <select id='`+props.id+`mode'>
@@ -60,10 +60,9 @@ export class BarChartApplet {
     //Initialize the applet. Keep the first line.
     init() {
         this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML()},undefined,"NEVER"); //Changes to this.props will automatically update the html template
-        this.class = new eegBarChart(this.renderProps.id+"canvas",1000)
+        this.class = new eegBarChart(this.renderProps.id+"canvas",1000);
         this.class.init();
         this.sub = State.subscribe('FFTResult',this.onUpdate);
-    
     }
 
     //Destroy applet. Keep this one line
@@ -78,6 +77,8 @@ export class BarChartApplet {
     onResize() {
         this.class.canvas.style.width = this.AppletHTML.node.style.width;
         this.class.canvas.style.height = this.AppletHTML.node.style.height;
+        this.class.canvas.width = this.AppletHTML.node.clientWidth;
+        this.class.canvas.height = this.AppletHTML.node.clientHeight;
     }
 
     //------------ add new functions below ---------------

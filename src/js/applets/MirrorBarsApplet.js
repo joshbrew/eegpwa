@@ -93,6 +93,12 @@ export class MirrorBarsApplet {
         this.class.leftbars.canvas.style.height = this.AppletHTML.node.style.height;
         this.class.rightbars.canvas.style.width = this.AppletHTML.node.style.width*.5;
         this.class.rightbars.canvas.style.height = this.AppletHTML.node.style.height;
+        
+        this.class.leftbars.width = this.AppletHTML.node.clientWidth*.5;
+        this.class.leftbars.height = this.AppletHTML.node.clientHeight;
+        
+        this.class.rightbars.width = this.AppletHTML.node.clientWidth*.5;
+        this.class.rightbars.height = this.AppletHTML.node.clientHeight;
     }
 
     //------------ add new functions below ---------------

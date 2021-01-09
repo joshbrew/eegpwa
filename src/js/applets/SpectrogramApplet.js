@@ -76,6 +76,10 @@ export class SpectrogramApplet {
     onResize() {
         this.class.canvas.style.width = this.AppletHTML.node.style.width;
         this.class.canvas.style.height = this.AppletHTML.node.style.height;
+      
+        this.class.canvas.width = this.AppletHTML.node.clientWidth;
+        this.class.canvas.height = this.AppletHTML.node.clientHeight;
+    
     }
 
     //------------ add new functions below ---------------

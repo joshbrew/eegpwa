@@ -58,16 +58,22 @@ export class UIManager {
                 this.deInitApplet(appletIdx)
                 return true;
             }
-        })
-        State.data.applets.push({appletIdx:appletIdx, classinstance: new classObj("applets")});
-        State.data.applets[State.data.applets.length-1].classinstance.init();
-        State.data.applets[State.data.applets.length-1].classinstance.AppletHTML.node.style.position = "absolute";
+        });
+        State.data.applets.splice(appletIdx-1,0,{appletIdx:appletIdx, classinstance: new classObj("applets")});
+        State.data.applets[appletIdx-1].classinstance.init();
+        State.data.applets[appletIdx-1].classinstance.AppletHTML.node.style.position = "absolute";
         State.data.appletsSpawned++;
+        console.log("applet added");
     }
 
     initApplet = (appletIdx) => {
-        State.data.applets[appletIdx].classinstance.init();
-        State.data.applets[appletIdx].classinstance.AppletHTML.node.style.position = "absolute";
+        var found = State.data.applets.find((o,i) => {
+            if(o.appletIdx === appletIdx) {
+                o.classinstance.init();
+                o.classinstance.AppletHTML.node.style.position = "absolute";
+                return true;
+            }
+        });
     }
 
     deInitApplet = (appletIdx) => {
@@ -75,15 +81,13 @@ export class UIManager {
         var found = State.data.applets.find((o,i) => {
             if(o.appletIdx === appletIdx) {
                 console.log(o);
-                stateIdx = i;
+                stateIdx = i;  
+                State.data.applets[stateIdx].classinstance.deInit();
+                State.data.applets.splice(stateIdx,1);
+                State.data.appletsSpawned--;
                 return true;
             }
         });
-        if(stateIdx !== null){
-            State.data.applets[stateIdx].classinstance.deInit();
-            State.data.applets.splice(stateIdx,1);
-            State.data.appletsSpawned--;
-        }
     }
 
     addAppletOptions = (selectId,appletIdx) => {
@@ -121,65 +125,78 @@ export class UIManager {
     }
 
     responsiveUIUpdate(nodes=State.data.applets, topoffset=90) {
-        //console.log(nodes);
+        console.log(nodes);
         nodes.forEach((node,i) => {
-            
+            console.log(node)
             //TODO: replace this with something more procedural for n-elements with varied arrangements 
             //(e.g. arbitrary sizes and arrangements for applets. This is why we didn't use tables to place the apps.)
             
             if(nodes.length === 1) { //1 full view
-                if(node.appletIdx === 1){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth + "px";
+                if(i===0){
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth-20 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight - topoffset + "px";
+                    node.classinstance.AppletHTML.node.style.top = 0+"px";
+                    node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
             }
             if(nodes.length === 2) { //2 stacked views
                 var transformy = window.innerHeight*.5- topoffset;
-                if(node.appletIdx === 1){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth + "px";
+                if(i===0){
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth-20 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
+                    node.classinstance.AppletHTML.node.style.top = 0+"px";
+                    node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
-                else if(node.appletIdx === 2){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth + "px";
+                else if(i===1){
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth-20 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
                     node.classinstance.AppletHTML.node.style.top = transformy+"px";
+                    node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
             }
             if(nodes.length === 3) {
                 var transformy = window.innerHeight*.5- topoffset;
-                if(node.appletIdx === 1){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5 + "px";
+                if(i===0){
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
+                    node.classinstance.AppletHTML.node.style.top = 0+"px";
+                    node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
-                else if(node.appletIdx === 2){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5 + "px";
+                else if(i===1){
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
-                    node.classinstance.AppletHTML.node.style.left = window.innerWidth*.5;
+                    node.classinstance.AppletHTML.node.style.top = 0+"px";
+                    node.classinstance.AppletHTML.node.style.left = window.innerWidth*.5+"px";
                 }
-                else if(node.appletIdx === 3){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth + "px";
+                else if(i === 2){
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth-20 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5-topoffset + "px";
                     node.classinstance.AppletHTML.node.style.top = transformy+"px";
+                    node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
             }
             if(nodes.length === 4) {
                 var transformy = window.innerHeight*.5- topoffset;
-                if(node.appletIdx === 1){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5 + "px";
+                if(i===0){
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
+                    node.classinstance.AppletHTML.node.style.top = 0+"px";
+                    node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
-                else if(node.appletIdx === 2){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5 + "px";
+                else if(i===1){
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
                     node.classinstance.AppletHTML.node.style.left = window.innerWidth*.5+"px";
+                    node.classinstance.AppletHTML.node.style.top = 0+"px";
                 }
-                else if(node.appletIdx === 3){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5 + "px";
+                else if(i === 2){
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5-topoffset + "px";
                     node.classinstance.AppletHTML.node.style.top = transformy+"px";
+                    node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
-                else if(node.appletIdx === 4){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5 + "px";
+                else if(i === 3){
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5-topoffset + "px";
                     node.classinstance.AppletHTML.node.style.top = transformy+"px";
                     node.classinstance.AppletHTML.node.style.left = window.innerWidth*.5+"px";
