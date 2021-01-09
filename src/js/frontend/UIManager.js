@@ -8,7 +8,6 @@ export class UIManager {
         this.initUI();
         
         this.menuNode = document.getElementById(menuId);
-        this.maxApplets = 4;
         this.appletSelectIds = appletSelectIds;
 
         this.initAddApplets();
@@ -31,9 +30,9 @@ export class UIManager {
     deInitUI = () => {}
 
     initAddApplets = () => {
-        if(State.data.appletsSpawned < this.maxApplets) {
+        if(State.data.appletsSpawned < State.data.maxApplets) {
             State.data.appletClasses.forEach((classObj,i) => {
-                if(State.data.appletsSpawned < this.maxApplets) {
+                if(State.data.appletsSpawned < State.data.maxApplets) {
                     State.data.applets.push({ appletIdx:i+1, name:classObj.name, classinstance: new classObj.cls("applets")});
                     State.data.appletsSpawned++;
                 }
@@ -53,19 +52,21 @@ export class UIManager {
     }
 
     addApplet = (appletClassIdx, appletIdx) => {
-        var classObj = State.data.appletClasses[appletClassIdx];
-        var found = State.data.applets.find((o,i) => {
-            if(o.appletIdx === appletIdx) {
-                this.deInitApplet(appletIdx);
-                return true;
-            }
-        });
-        State.data.applets.splice(appletIdx-1,0,{appletIdx: appletIdx, name: classObj.name, classinstance: new classObj.cls("applets")});
-        State.data.applets[appletIdx-1].classinstance.init();
-        State.data.applets[appletIdx-1].classinstance.AppletHTML.node.style.position = "absolute";
-        State.data.appletsSpawned++;
-        this.responsiveUIUpdate();
-        console.log("applet added");
+        if(State.data.appletsSpawned < State.data.maxApplets) {
+            var classObj = State.data.appletClasses[appletClassIdx];
+            var found = State.data.applets.find((o,i) => {
+                if(o.appletIdx === appletIdx) {
+                    this.deInitApplet(appletIdx);
+                    return true;
+                }
+            });
+            State.data.applets.splice(appletIdx-1,0,{appletIdx: appletIdx, name: classObj.name, classinstance: new classObj.cls("applets")});
+            State.data.applets[appletIdx-1].classinstance.init();
+            State.data.applets[appletIdx-1].classinstance.AppletHTML.node.style.position = "absolute";
+            State.data.appletsSpawned++;
+            this.responsiveUIUpdate();
+            console.log("applet added");
+        }
     }
 
     initApplet = (appletIdx) => {

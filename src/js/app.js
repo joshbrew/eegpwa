@@ -39,15 +39,6 @@ State.data.appletClasses.push(
   { name:"TimeCharts Applet",    cls: TimeChartsApplet   }
 );
 
-State.data.appletNames.push(
-    "uPlot Applet",
-    "SmoothieJS Applet",
-    "BrainMap Applet",
-    "Spectrogram Applet",
-    "BarChart Applet",
-    "MirrorBars Applet",
-    "TimeCharts Applet"
-  );
 //TODO: find a better place for this
 
 

@@ -5,8 +5,8 @@ export const State = new StateManager(
     {
         applets:[],
         appletsSpawned:0,
+        maxApplets:4,
         appletClasses:[],
-        appletNames:[],
         
         lastPostTime:0,
         FFTResult:[],
