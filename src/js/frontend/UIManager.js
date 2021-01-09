@@ -18,7 +18,7 @@ export class UIManager {
         })
 
         //this.responsiveUIUpdate();
-        State.subscribe('appletsSpawned', this.responsiveUIUpdate); 
+        //State.subscribe('appletsSpawned', this.responsiveUIUpdate); 
     
         appletSelectIds.forEach((id,i) => {
             this.addAppletOptions(id,i+1);
@@ -49,13 +49,14 @@ export class UIManager {
             if(applet.classinstance.AppletHTML === null) { applet.classinstance.init(); }
             applet.classinstance.AppletHTML.node.style.position = "absolute";
         });
+        this.responsiveUIUpdate();
     }
 
     addApplet = (appletClassIdx, appletIdx) => {
         var classObj = State.data.appletClasses[appletClassIdx];
         var found = State.data.applets.find((o,i) => {
             if(o.appletIdx === appletIdx) {
-                this.deInitApplet(appletIdx)
+                this.deInitApplet(appletIdx);
                 return true;
             }
         });
@@ -63,6 +64,7 @@ export class UIManager {
         State.data.applets[appletIdx-1].classinstance.init();
         State.data.applets[appletIdx-1].classinstance.AppletHTML.node.style.position = "absolute";
         State.data.appletsSpawned++;
+        this.responsiveUIUpdate();
         console.log("applet added");
     }
 
@@ -80,14 +82,15 @@ export class UIManager {
         var stateIdx = null;
         var found = State.data.applets.find((o,i) => {
             if(o.appletIdx === appletIdx) {
-                console.log(o);
                 stateIdx = i;  
                 State.data.applets[stateIdx].classinstance.deInit();
                 State.data.applets.splice(stateIdx,1);
                 State.data.appletsSpawned--;
+                this.responsiveUIUpdate();
                 return true;
             }
         });
+
     }
 
     addAppletOptions = (selectId,appletIdx) => {

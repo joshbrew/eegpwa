@@ -26,7 +26,7 @@ export class SpectrogramApplet {
     HTMLtemplate(props=this.renderProps) {
         return `
         <div id='`+props.id+`'>
-            <canvas id='`+props.id+`canvas' style='position:absolute; z-index:3;  width:`+props.width+`px; height:`+props.height+`px;'></canvas>
+            <canvas id='`+props.id+`canvas' height='`+props.height+`' width='`+props.width+`' style='position:absolute; z-index:3;  width:`+props.width+`px; height:`+props.height+`px;'></canvas>
             <div id='`+props.id+`menu' style='position:absolute; z-index:4; color: white;'>
                 Mode
                 <select id='`+props.id+`mode'>
@@ -77,9 +77,10 @@ export class SpectrogramApplet {
         this.class.canvas.style.width = this.AppletHTML.node.style.width;
         this.class.canvas.style.height = this.AppletHTML.node.style.height;
       
-        this.class.canvas.width = this.AppletHTML.node.clientWidth;
-        this.class.canvas.height = this.AppletHTML.node.clientHeight;
+        this.class.canvas.width = Math.floor(this.AppletHTML.node.clientWidth);
+        this.class.canvas.height = Math.floor(this.AppletHTML.node.clientHeight);
     
+        this.class.init();
     }
 
     //------------ add new functions below ---------------
@@ -109,7 +110,7 @@ export class SpectrogramApplet {
             }
           });
           this.class.latestData = coord.data.amplitudes[coord.data.amplitudes.length - 1];
-          this.class.draw()
+          this.class.draw();
         }
     }
 
