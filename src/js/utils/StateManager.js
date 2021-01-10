@@ -7,32 +7,32 @@ export class StateManager {
     constructor(init = {},interval="FRAMERATE") { //Default interval is at the browser framerate
         this.data = init;
         this.data["stateUpdateInterval"] = interval;
-        this.prev = JSON.parse(JSON.stringifyWithCircularRefs(this.data));
+        this.pushToState={};
+        this.prev = Object.assign({},this.data);;
+                
         this.listener = new ObjectListener();
 
-        this.pushToState={};
+        /*
+        const onStateChanged = () => {
+            this.prev = Object.assign(this.prev,this.data);;
+            //this.prev=JSON.parse(JSON.stringifyWithCircularRefs(this.data)); //Not sure why this is problematic
+        }
 
-        /* //This keeps running for some reason.
+        //Causes app to be stuck on startup
         this.listener.addListener(
             "state",
             this.data,
-            null,
-            () => {
-                this.listener.listeners.forEach((obj,i) => {
-                    this.prev=JSON.parse(JSON.stringifyWithCircularRefs(this.data));
-                });
-            },
-            interval
+            "__ANY__",
+            onStateChanged,
+            interval,
         );
-
         */
-
+        
         const stateUpdateResponse = () => {
             this.listener.listeners.forEach((obj,i) => {
                 obj.interval = this.data["stateUpdateInterval"];
             });
         }
-        
 
         this.listener.addListener(
             "interval",
@@ -44,13 +44,9 @@ export class StateManager {
 
         const pushToStateResponse = () => {
             if(Object.keys(this.pushToState).length > 0) {
-                Object.assign(this.prev,this.data);
-                for(var prop in this.pushToState){
-                    this.prev[prop]
-                    this.data[prop] = this.pushToState[prop];
-                }
+                Object.assign(this.prev,this.data);//Temp fix until the global state listener function works as expected
                 //Object.assign(this.data,this.pushToState);
-                console.log("previous state: ", this.prev); console.log("new state: ", this.data); console.log("props set: ", this.pushToState);
+                console.log("new state: ", this.data); console.log("props set: ", this.pushToState);
                 for (const prop of Object.getOwnPropertyNames(this.pushToState)) {
                     delete this.pushToState[prop];
                 }

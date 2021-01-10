@@ -216,7 +216,7 @@ export class ObjectListenerInstance {
 
     //Update listener reference copy.
     setListenerRef = (propName) => {
-        if(propName === "__ANY__") {
+        if(propName === "__ANY__" || propName === null || propName === undefined) {
             this.propOld = JSON.stringifyWithCircularRefs(this.object);
         }
         else if(typeof this.object[propName] === "object"){
@@ -232,7 +232,7 @@ export class ObjectListenerInstance {
     }
 
     check = () => {
-        if(this.propName === "__ANY__"){
+        if(this.propName === "__ANY__" || this.propName === null || this.propName === undefined){
             if(this.propOld !== JSON.stringifyWithCircularRefs(this.object)){
                 if(this.debug === true) { console.log("onchange: ", this.onchange); }
                 this.onchange();
@@ -287,7 +287,7 @@ export class ObjectListenerInstance {
 }
 
 
-
+//This only really matters in Chrome and one other browser
 export function sortObjectByValue(object) { //Sorts number and string objects by numeric value. Strings have charcodes summed for comparison. Objects and functions are stringified.
     var sortable = [];
     for(var prop in object) {
@@ -300,15 +300,16 @@ export function sortObjectByValue(object) { //Sorts number and string objects by
         if(typeof prop1[1] === "function"){
             prop1[1] = prop1[1].toString();
         }
+        else if(typeof prop1[1] === "object"){
+            prop1[1] = JSON.stringifyWithCircularRefs(prop1[1]);
+        }
         if(typeof prop2[1] === "function"){
             prop2[1] = prop2[1].toString();
         }
-        if(typeof prop1[1] === "object"){
-            prop1[1] = JSON.stringify(prop1[1]);
+        else if(typeof prop2[1] === "object"){
+            prop2[1] = JSON.stringifyWithCircularRefs(prop2[1]);
         }
-        if(typeof prop2[1] === "object"){
-            prop2[1] = JSON.stringify(prop2[1]);
-        }
+        
         if(typeof prop1[1] === "string") {
             var temp = 0;
             prop1.forEach((char,i) => {
