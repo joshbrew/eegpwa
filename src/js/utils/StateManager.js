@@ -45,8 +45,8 @@ export class StateManager {
         const pushToStateResponse = () => {
             if(Object.keys(this.pushToState).length > 0) {
                 Object.assign(this.prev,this.data);//Temp fix until the global state listener function works as expected
-                //Object.assign(this.data,this.pushToState);
-                console.log("new state: ", this.data); console.log("props set: ", this.pushToState);
+                Object.assign(this.data,this.pushToState);
+                //console.log("new state: ", this.data); console.log("props set: ", this.pushToState);
                 for (const prop of Object.getOwnPropertyNames(this.pushToState)) {
                     delete this.pushToState[prop];
                 }

@@ -147,13 +147,13 @@ export class UIManager {
                 var transformy = window.innerHeight*.5- topoffset;
                 if(i===0){
                     node.classinstance.AppletHTML.node.style.width = window.innerWidth-20 + "px";
-                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
+                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.top = 0+"px";
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
                 else if(i===1){
                     node.classinstance.AppletHTML.node.style.width = window.innerWidth-20 + "px";
-                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
+                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.top = transformy+"px";
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
@@ -162,46 +162,46 @@ export class UIManager {
                 var transformy = window.innerHeight*.5- topoffset;
                 if(i===0){
                     node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5 + "px";
-                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
+                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.top = 0+"px";
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
                 else if(i===1){
                     node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
-                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
+                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.top = 0+"px";
                     node.classinstance.AppletHTML.node.style.left = window.innerWidth*.5+"px";
                 }
                 else if(i === 2){
                     node.classinstance.AppletHTML.node.style.width = window.innerWidth-20 + "px";
-                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5-topoffset + "px";
+                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5-topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.top = transformy+"px";
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
             }
             if(nodes.length === 4) {
-                var transformy = window.innerHeight*.5- topoffset;
+                var transformy = window.innerHeight*.5- topoffset*.5;
                 if(i===0){
                     node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5 + "px";
-                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
+                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.top = 0+"px";
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
                 else if(i===1){
                     node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
-                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset + "px";
+                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.left = window.innerWidth*.5+"px";
                     node.classinstance.AppletHTML.node.style.top = 0+"px";
                 }
                 else if(i === 2){
                     node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5 + "px";
-                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5-topoffset + "px";
+                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5-topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.top = transformy+"px";
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
                 else if(i === 3){
                     node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
-                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5-topoffset + "px";
+                    node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5-topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.top = transformy+"px";
                     node.classinstance.AppletHTML.node.style.left = window.innerWidth*.5+"px";
                 }

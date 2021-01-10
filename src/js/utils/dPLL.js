@@ -30,7 +30,7 @@ export function PLL(signal, freq) {
     }
 
     function carg(c){
-        return Math.atan(c[1]/c[0]);
+        return Math.atan(c[1]/c[0]); //atan(imag/real);
     }
 
     function cmag(c){
@@ -41,7 +41,7 @@ export function PLL(signal, freq) {
         return [amplitude,0]; //[real,imaginary]
     }
 
-    let result={signal_in:signal,signal_out:[],phase_err:[]};
+    let result={signal_in:signal,signal_out:new Array(signal.length).fill(0),phase_err:new Array(signal.length).fill(0)};
     for(let i=0; i<n; i++){
         let signal_in = ampToC(signal[i]);
         let signal_out = cexp(phase_out,0);
@@ -53,9 +53,9 @@ export function PLL(signal, freq) {
 
         phase_out += freq_out;
 
-        result.signal_out.push(cmag(signal_out));
+        result.signal_out[i]=cmag(signal_out);
 
-        result.phase_err.push(phase_err);
+        result.phase_err[i]=phase_err;
 
     }
 

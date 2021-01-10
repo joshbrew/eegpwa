@@ -73,11 +73,13 @@ export const runEEGWorker = () => {
     if(EEG.data.ms[EEG.data.ms.length-1] - s.lastPostTime < s.workerMaxSpeed) {
         setTimeout(()=>{runEEGWorker();}, s.workerMaxSpeed - (EEG.data.ms[EEG.data.ms.length-1] - s.lastPostTime) );
     }
-    State.setState({lastPostTime: EEG.data.ms[EEG.data.ms.length-1]});
-    if(s.fdBackMode === 'coherence') {
-        //console.log("post to worker")
-        var buf = bufferEEGData();
-        window.postToWorker({foo:'coherence', input:[buf, s.nSec, s.freqStart, s.freqEnd, EEG.scalar]});
+    else{
+        State.setState({lastPostTime: EEG.data.ms[EEG.data.ms.length-1]});
+        if(s.fdBackMode === 'coherence') {
+            //console.log("post to worker")
+            var buf = bufferEEGData();
+            window.postToWorker({foo:'coherence', input:[buf, s.nSec, s.freqStart, s.freqEnd, EEG.scalar]});
+        }
     }
 }
 

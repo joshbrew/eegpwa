@@ -129,7 +129,7 @@ export class uPlotApplet {
     }
 
     onUpdate = () => {
-      var graphmode = document.getElementById(this.class.plotId+"mode").value;
+      var graphmode = document.getElementById(this.renderProps.id+"mode").value;
       if(graphmode === "FFT"){
           //Animate plot(s)
           this.class.uPlotData = [
@@ -146,7 +146,7 @@ export class uPlotApplet {
         this.class.uPlotData = [[...ATLAS.coherenceMap.shared.bandPassWindow],...State.data.coherenceResult];
       }
       else if (graphmode === "CoherenceTimeSeries") {
-        var band = document.getElementById(this.class.plotId+"bandview").value
+        var band = document.getElementById(this.renderProps.id+"bandview").value
         this.class.uPlotData = [[...ATLAS.coherenceMap.map[0].data.times]];
         ATLAS.coherenceMap.map.forEach((row,i) => {
             this.class.uPlotData.push([...row.data.means[band]]);

@@ -26,8 +26,10 @@ export class BrainMapApplet {
     HTMLtemplate(props=this.renderProps) {
         return `
         <div id='`+props.id+`'>
-            <canvas id='`+props.id+`canvas' width='`+props.width+`' height='`+props.height+`' style='position:absolute; width:`+props.width+`px; height:`+props.height+`px; z-index:1; '></canvas>
-            <canvas id='`+props.id+`points' width='`+props.width+`' height='`+props.height+`' style='position:absolute; width:`+props.width+`px; height:`+props.height+`px; z-index:2; '></canvas>
+            <div id='`+props.id+`canvascontainer'>
+                <canvas id='`+props.id+`canvas' width='`+props.width+`' height='`+props.height+`' style='position:absolute; width:`+props.height+`px; height:`+props.height+`px; z-index:1; '></canvas>
+                <canvas id='`+props.id+`points' width='`+props.width+`' height='`+props.height+`' style='position:absolute; width:`+props.height+`px; height:`+props.height+`px; z-index:2; '></canvas>
+            </div>
             <table id='`+props.id+`menu' style='position:absolute; z-index:3; '>
                 <tr><td><h3>Brain Map</h3></td>
                 <td><h4>Viewing:</h4></td>
@@ -102,7 +104,7 @@ export class BrainMapApplet {
         var viewing = document.getElementById(this.renderProps.id+"bandview").value;
         this.class.updateHeatmapFromAtlas(ATLAS.fftMap,ATLAS.channelTags,viewing);
 
-        if(State.data.coherenceResults.length === ATLAS.coherenceMap.map.length){
+        if(State.data.coherenceResult.length === ATLAS.coherenceMap.map.length){
             this.class.updateConnectomeFromAtlas(ATLAS.coherenceMap,ATLAS.fftMap,ATLAS.channelTags,viewing);
         }
     }
