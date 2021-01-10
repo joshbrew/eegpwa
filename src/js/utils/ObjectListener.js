@@ -18,12 +18,13 @@ x.y = 2;
 //Create instance and then call instance.addListener(listenerName,objectToListenTo,propToListenTo,onchange,interval).
 //name, propToListenTo, onchange, and interval are optional (leave or set as undefined). Onchange is a custom callback just like for other event listeners. Set a name to make it easier to start and stop or edit each listener.
 export class ObjectListener {
-    constructor() {
+    constructor(debug=false) {
+        this.debug = debug;
         this.listeners = [];
     }
 
     //add a new object listener with specified props (or none to watch the whole object), and onchange functions, with optional interval
-    addListener(listenerKey=null,objectToListenTo,propToListenTo=undefined,onchange=undefined,interval=undefined) {
+    addListener(listenerKey=null,objectToListenTo,propToListenTo=undefined,onchange=undefined,interval=undefined,debug=this.debug) {
         if(objectToListenTo === undefined) {
             console.error("You must assign an object");
             return;
@@ -33,7 +34,7 @@ export class ObjectListener {
         if(key === null) {
             key = Math.floor(Math.random()*100000);
         }
-        var listener = {key:key, listener: new ObjectListenerInstance(objectToListenTo,propToListenTo,onchange,interval)};
+        var listener = {key:key, listener: new ObjectListenerInstance(objectToListenTo,propToListenTo,onchange,interval,debug)};
         this.listeners.push(listener);
     }
 
@@ -158,8 +159,8 @@ export class ObjectListener {
 
 //Instance of an object listener. This will subscribe to object properties (or whole objects) and run attached functions when a change is detected.
 export class ObjectListenerInstance {
-    constructor(object,propName="__ANY__",onchange=this.onchange,interval="FRAMERATE") {
-        this.debug=true;
+    constructor(object,propName="__ANY__",onchange=this.onchange,interval="FRAMERATE",debug="false") {
+        this.debug=debug;
 
         this.onchange = onchange; //Main onchange function
         this.onchangeFuncs = []; //Execute extra functions pushed to this array
@@ -174,7 +175,7 @@ export class ObjectListenerInstance {
 
         this.interval;
         if(interval <= 0) {
-            this.interval = 1; console.log("Min recommended interval set: 1ms");}
+            this.interval = 10; console.log("Min recommended interval set: 10ms");}
         else {
             this.interval = interval;
         }
@@ -261,7 +262,9 @@ export class ObjectListenerInstance {
             if(this.onchangeFuncs.length > 0) { this.onchangeMulti(); }
             this.setListenerRef(this.propName);
         }
+        
         if(this.running === true) {
+            if(this.debug === true) {console.log("checking", this.object, this.propName);}
             if(this.interval === "FRAMERATE"){
                 this.checker = requestAnimationFrame(this.check);
             }
@@ -356,63 +359,64 @@ export function sortObjectByPropName(object) {
 }
 
 
-//Workaround for objects containing DOM nodes, which can't be stringified with JSON. From: https://stackoverflow.com/questions/4816099/chrome-sendrequest-error-typeerror-converting-circular-structure-to-json
-JSON.stringifyWithCircularRefs = (function() {
-    const refs = new Map();
-    const parents = [];
-    const path = ["this"];
+if(JSON.stringifyWithCircularRefs === undefined) {
+    //Workaround for objects containing DOM nodes, which can't be stringified with JSON. From: https://stackoverflow.com/questions/4816099/chrome-sendrequest-error-typeerror-converting-circular-structure-to-json
+    JSON.stringifyWithCircularRefs = (function() {
+        const refs = new Map();
+        const parents = [];
+        const path = ["this"];
 
-    function clear() {
-      refs.clear();
-      parents.length = 0;
-      path.length = 1;
-    }
-
-    function updateParents(key, value) {
-      var idx = parents.length - 1;
-      var prev = parents[idx];
-      if (prev[key] === value || idx === 0) {
-        path.push(key);
-        parents.push(value);
-      } else {
-        while (idx-- >= 0) {
-          prev = parents[idx];
-          if (prev[key] === value) {
-            idx += 2;
-            parents.length = idx;
-            path.length = idx;
-            --idx;
-            parents[idx] = value;
-            path[idx] = key;
-            break;
-          }
+        function clear() {
+        refs.clear();
+        parents.length = 0;
+        path.length = 1;
         }
-      }
-    }
 
-    function checkCircular(key, value) {
-      if (value != null) {
-        if (typeof value === "object") {
-          if (key) { updateParents(key, value); }
-
-          let other = refs.get(value);
-          if (other) {
-            return '[Circular Reference]' + other;
-          } else {
-            refs.set(value, path.join('.'));
-          }
+        function updateParents(key, value) {
+        var idx = parents.length - 1;
+        var prev = parents[idx];
+        if (prev[key] === value || idx === 0) {
+            path.push(key);
+            parents.push(value);
+        } else {
+            while (idx-- >= 0) {
+            prev = parents[idx];
+            if (prev[key] === value) {
+                idx += 2;
+                parents.length = idx;
+                path.length = idx;
+                --idx;
+                parents[idx] = value;
+                path[idx] = key;
+                break;
+            }
+            }
         }
-      }
-      return value;
-    }
+        }
 
-    return function stringifyWithCircularRefs(obj, space) {
-      try {
-        parents.push(obj);
-        return JSON.stringify(obj, checkCircular, space);
-      } finally {
-        clear();
-      }
-    }
-  })();
+        function checkCircular(key, value) {
+        if (value != null) {
+            if (typeof value === "object") {
+            if (key) { updateParents(key, value); }
 
+            let other = refs.get(value);
+            if (other) {
+                return '[Circular Reference]' + other;
+            } else {
+                refs.set(value, path.join('.'));
+            }
+            }
+        }
+        return value;
+        }
+
+        return function stringifyWithCircularRefs(obj, space) {
+        try {
+            parents.push(obj);
+            return JSON.stringify(obj, checkCircular, space);
+        } finally {
+            clear();
+        }
+        }
+    })();
+}

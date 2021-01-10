@@ -1,7 +1,29 @@
 import {ObjectListener} from './ObjectListener'
 
+
+/* 
+const htmlprops;
+
+function templateStringGen(props) {
+    return `
+    <div id=`+props.id+`>Clickme</div>
+    `;
+}
+
+function onRender() {
+    document.getElementById(htmlprops.id).onclick = () => { document.getElementById(htmlprops.id).innerHTML = "Clicked!"; }
+}
+
+const fragment = new DOMFragment(templateStringGen,document.body,htmlprops,onRender,undefined,"NEVER"); 
+//Renders a static DOM fragment to the given parent node. 
+// Change propUpdateInterval to "FRAMERATE" or any millisecond value and add an 
+// onchange function to have the html re-render when the props update and have an 
+// additional function fire.
+
+*/
+
 export class DOMFragment {
-    constructor(templateStringGen=this.templateStringGen, parentNode={}, props={}, onRender=()=>{}, onchange=()=>{},propUpdateInterval="FRAMERATE") {
+    constructor(templateStringGen=this.templateStringGen, parentNode=document.body, props={}, onRender=()=>{}, onchange=()=>{}, propUpdateInterval="FRAMERATE") {
         this.templateStringGen = templateStringGen(props);
         this.onRender = onRender;
         
@@ -15,28 +37,42 @@ export class DOMFragment {
             props: props
         }
         this.templateString = templateStringGen(props);
-        this.props = props; //Soft copy of a properties object the node may rely on
         var interval = propUpdateInterval;
-        if(this.props === {}) {interval = "NEVER";}
+        if(this.renderSettings.props === {}) {interval = "NEVER";}
         this.node = null;
 
         this.listener = new ObjectListener();
     
-        if((Object.keys(this.props).length > 0) && !(interval === null || interval === undefined || interval === "NEVER")) {
+        if((Object.keys(this.renderSettings.props).length > 0) && !(interval === null || interval === undefined || interval === "NEVER")) {
             console.log("making listeners for ", templateStringGen)
-            this.listener.addListener('templateChange',this.renderSettings,'templateStringGen',() => {
-                this.updateNode();
-            }, interval);
 
-            this.listener.addListener('props',this.renderSettings,'props',() => {
+            const templateChange = () => {
+                this.updateNode();
+            }
+
+            this.listener.addListener(
+                'templateChange',
+                this.renderSettings,
+                'templateStringGen',
+                templateChange, 
+                interval
+                );
+
+            const propsChange = () => {
                 this.updateNode();
                 this.renderSettings.onchange();
-            }, interval);
+            }
+
+            this.listener.addListener(
+                'props',
+                this.renderSettings,
+                'props',
+                propsChange, 
+                interval
+            );
         }
       
-
         this.renderNode();
-
     }
 
     onRender = () => {}
