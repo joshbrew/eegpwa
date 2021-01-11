@@ -60,9 +60,10 @@ export class UIManager {
                     return true;
                 }
             });
-            State.data.applets.splice(appletIdx-1,0,{appletIdx: appletIdx, name: classObj.name, classinstance: new classObj.cls("applets")});
-            State.data.applets[appletIdx-1].classinstance.init();
-            State.data.applets[appletIdx-1].classinstance.AppletHTML.node.style.position = "absolute";
+            var pos = appletIdx-1; if(pos > State.data.applets.length) {pos = State.data.applets.length; State.data.applets.push({appletIdx: appletIdx, name: classObj.name, classinstance: new classObj.cls("applets")});}
+            else { State.data.applets.splice(pos,0,{appletIdx: appletIdx, name: classObj.name, classinstance: new classObj.cls("applets")});}
+            State.data.applets[pos].classinstance.init();
+            State.data.applets[pos].classinstance.AppletHTML.node.style.position = "absolute";
             State.data.appletsSpawned++;
             this.responsiveUIUpdate();
             console.log("applet added");
@@ -152,7 +153,7 @@ export class UIManager {
                 }
             }
             if(nodes.length === 2) { //2 stacked views
-                var transformy = window.innerHeight*.5- topoffset;
+                var transformy = window.innerHeight*.5- topoffset*.55;
                 if(i===0){
                     node.classinstance.AppletHTML.node.style.width = window.innerWidth-20 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset*.55 + "px";
@@ -167,7 +168,7 @@ export class UIManager {
                 }
             }
             if(nodes.length === 3) {
-                var transformy = window.innerHeight*.5- topoffset;
+                var transformy = window.innerHeight*.5 - topoffset*.55;
                 if(i===0){
                     node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset*.55 + "px";
