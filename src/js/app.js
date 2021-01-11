@@ -136,7 +136,6 @@ function initEEGui() {
         var setting = parseFloat(document.getElementById("GraphTime").value); 
         if(setting === NaN || setting < 1) {setting = 1;}
         State.setState({nSecAdcGraph: setting});
-        console.log(State.data)
     });
 
     State.subscribe('connected', () => {
