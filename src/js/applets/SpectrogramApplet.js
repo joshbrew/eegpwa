@@ -1,6 +1,6 @@
 import {State} from '../frontend/State'
 import {DOMFragment} from '../utils/DOMFragment'
-import {EEG, ATLAS, addChannelOptions} from '../frontend/EEGInterface'
+import {EEG, ATLAS, addChannelOptions, addCoherenceOptions} from '../frontend/EEGInterface'
 import {Spectrogram} from '../utils/eegvisuals'
 
 //You can extend or call this class and set renderProps and these functions

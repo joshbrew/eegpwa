@@ -78,7 +78,7 @@ export const runEEGWorker = () => {
         if(s.fdBackMode === 'coherence') {
             //console.log("post to worker")
             var buf = bufferEEGData();
-            console.log(buf)
+            //console.log(buf)
             window.postToWorker({foo:'coherence', input:[buf, s.nSec, s.freqStart, s.freqEnd, EEG.scalar]});
         }
     }

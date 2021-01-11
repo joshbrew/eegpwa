@@ -318,7 +318,7 @@ export class uPlotApplet {
               this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
             });
           }
-          console.log(newSeries);
+          //console.log(newSeries);
           //console.log(uPlotData.length);
           this.class.makeuPlot(
               newSeries, 
