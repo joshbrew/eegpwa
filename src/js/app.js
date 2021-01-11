@@ -91,7 +91,7 @@ function initEEGui() {
     document.getElementById("runbutton").addEventListener('click',() => {
         if(State.data.connected === true) {
             State.setState({analyze: true, rawFeed: true});
-            runEEGWorker();
+            setTimeout(runEEGWorker,100);
         }
         else{
             EEG.setupSerialAsync();

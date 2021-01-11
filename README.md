@@ -24,16 +24,13 @@ Everything here now was accomplished over the past month, when it's done it will
 * Live charting, coherence, more to come - the UI is not done
 * Modular data and visual tools with class based modules, and a modifiable decoder for enabling any hardware.
 * Configured for the [FreeEEG32](https://github.com/neuroidss/freeeeg32_beta), easy to add other configurations.
-
+* Wicked fast HTML rendering with custom fragment system.
+* State based UI system for easy subscribing/unsubcribing disparate features to data streams. 
+* Applet based feature system, easy to write features and add to the main app. The whole app is interchangable.
 
 ## Javascript EEG Utilities (WIP docs as we add features)
 
 This is still being organized and added to but the core functions are there to start doing some fun stuff with the EEG
-
-testeeg.html
-
-* graphing and ux testing. e.g. brain heat map with channel assignment and streaming multi channel data with different settings
-* this is gonna turn into a nice UI module for working with the EEG
 
 There are two main classes you should know about:
 
@@ -45,11 +42,14 @@ There are two main classes you should know about:
 
 eeg32 class instance functions:
 
-`var eegclass = new eeg32();`
+`var eegclass = new eeg32(onDecodedCallback, onConnectedCallback, onDisconnectedCallback);`
 
 * `eegclass.setupSerialAsync()` - asks for your serial port.
-* `eegclass.makeAtlas10_20()` - makes an MNI atlas with tags for standard 10_20 electrode placements. It contains a data substructure for organizing channel FFT data.
-* `eegclass.newAtlas(tags,coords)` - make a new MNI atlas with the tags and 3D coords via an array of Array(3)'s. 
+
+`var eegAtlas = new eegAtlas(defaultTags)`
+
+* `eegAtlas.makeAtlas10_20()` - makes an MNI atlas with tags for standard 10_20 electrode placements. It contains a data substructure for organizing channel FFT data.
+* `eegatlas.newAtlas(tags,coords)` - make a new MNI atlas with the tags and 3D coords via an array of Array(3)'s. 
 
 There are a couple handlers you can customize in the serial streaming to handle updates on the front end.
 * `eegclass.onDecoded = () => {console.log("decoded!");}`

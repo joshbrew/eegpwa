@@ -7,12 +7,15 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
     constructor(
 		onDecodedCallback = this.onDecodedCallback,
 		onConnectedCallback = this.onConnectedCallback,
-		onDisconnectedCallback = this.onDisconnectedCallback
+		onDisconnectedCallback = this.onDisconnectedCallback,
+		CustomDecoder = this.decode,
+		baudrate = 115200
 		) {
 		this.onDecodedCallback = onDecodedCallback;
 		this.onConnectedCallback = onConnectedCallback;
 		this.onDisconnectedCallback = onDisconnectedCallback;
-        //Free EEG 32 data structure:
+		this.decode = CustomDecoder;
+		//Free EEG 32 data structure:
         /*
             [stop byte, start byte, counter byte, 32x3 channel data bytes (24 bit), 3x2 accelerometer data bytes, stop byte, start byte...]
             Total = 105 bytes/line
@@ -53,6 +56,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		}
 		this.port = null;
 		this.reader = null;
+		this.baudrate = baudrate;
 
     }
 
@@ -139,7 +143,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.onDecodedCallback();
 	}
 
-	async onPortSelected(port,baud=115200) {
+	async onPortSelected(port,baud=this.baudrate) {
 		try{
 			try {
 				await port.open({ baudRate: baud, bufferSize: 2048 });
@@ -246,7 +250,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		}
 	}
 
-	async setupSerialAsync(baudrate=115200) { //You can specify baudrate just in case
+	async setupSerialAsync(baudrate=this.baudrate) { //You can specify baudrate just in case
 
 		const filters = [
 			{ usbVendorId: 0x10c4, usbProductId: 0x0043 } //CP2102 filter (e.g. for UART via ESP32)
