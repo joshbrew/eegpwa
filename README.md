@@ -42,18 +42,22 @@ There are two main classes you should know about:
 
 eeg32 class instance functions:
 
-`var eegclass = new eeg32(onDecodedCallback, onConnectedCallback, onDisconnectedCallback);`
+`var eegclass = new eeg32(onDecodedCallback, onConnectedCallback, onDisconnectedCallback, CustomDecoder, baudrate);`
 
 * `eegclass.setupSerialAsync()` - asks for your serial port.
 
-`var eegAtlas = new eegAtlas(defaultTags)`
-
-* `eegAtlas.makeAtlas10_20()` - makes an MNI atlas with tags for standard 10_20 electrode placements. It contains a data substructure for organizing channel FFT data.
-* `eegatlas.newAtlas(tags,coords)` - make a new MNI atlas with the tags and 3D coords via an array of Array(3)'s. 
-
-There are a couple handlers you can customize in the serial streaming to handle updates on the front end.
+There are a couple handlers you can customize on init (or at any time) in the serial streaming to handle updates on the front end.
 * `eegclass.onDecoded = () => {console.log("decoded!");}`
 * `eegclass.onConnectedCallback = () => {console.log("port connected!");}`
+* `eegclass.onDisconnectedCallback = () => {console.log("port disconnected!");}`
+* `eegclass.decode = (buffer) => {//byte or string decoding protocol here.}`
+Set these all on init, including a custom baudrate if needed (it automatically picks 115200)
+
+`var Atlas = new eegAtlas(defaultTags)`
+
+* `Atlas.makeAtlas10_20()` - makes an MNI atlas with tags for standard 10_20 electrode placements. It contains a data substructure for organizing channel FFT data.
+* `Atlas.newAtlas(tags,coords)` - make a new MNI atlas with the tags and 3D coords via an array of Array(3)'s. 
+
 
 Static functions in eegmath class:
 * `eegmath.genSineWave(frequency, amplitude, seconds, sampleRate, frequency2 (optional), amplitude2 (optional));` - generates a sine wave of the given frequencies, with array length equal to sampleRate * seconds. Frequency 2 is optional e.g. for simulating simple noise.
