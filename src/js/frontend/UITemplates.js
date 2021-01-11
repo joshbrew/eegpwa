@@ -65,6 +65,7 @@ export function menudropdown_template(props={}) {
             <tr><td>Set Bandpass</td><td><input type="text" style="width:95%;" id="freqStart" placeholder="0 (Hz)"></td><td>to</td><td><input type="text" style="width:100%;" id="freqEnd" placeholder="256 (Hz)"></td><td><button id="setBandpass">Set</button></td></tr>
             <tr><td>Set Channel View</td><td colspan=3><input type="text" style="width:100%;" id="View" placeholder="Format: 0,1,2,5,6,7,etc"></input></td><td><button id="setView">Set</button></td></tr>
             <tr><td>Set Tags</td><td colspan=3><input type="text" style="width:100%;" id="Tags" placeholder="Format: 0:Fp1;2:Fz;6:P6:0,1,2;etc"></input></td><td><button id="setTags">Set</button></td></tr>
+            <tr><td>Set Graph Time Window</td><td colspan=2><input type="text" style="width:100%;" id="GraphTime" placeholder="10 (seconds)"></input></td><td><button id="setTimeSpan">Set</button></td></tr>
         </table>
      </td>`;
 }

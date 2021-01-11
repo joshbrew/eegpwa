@@ -508,7 +508,7 @@ export class eegAtlas {
 		return coherenceMap;
 	}
 
-	regenAtlas(freqStart,freqEnd,sps=512) {
+	regenAtlases(freqStart,freqEnd,sps=512) {
 		this.fftMap = this.makeAtlas10_20(); //reset atlas
 
 		let bandPassWindow = this.bandPassWindow(freqStart,freqEnd,sps);
@@ -516,11 +516,10 @@ export class eegAtlas {
 		this.fftMap.shared.bandPassWindow = bandPassWindow;//Push the x-axis values for each frame captured as they may change - should make this lighter
 		this.fftMap.shared.bandFreqs = this.getBandFreqs(bandPassWindow); //Update bands accessed by the atlas for averaging
 
-		if(State.data.fdBackMode === "coherence") {
-			this.coherenceMap = this.genCoherenceMap(this.channelTags);
-			this.coherenceMap.bandPasswindow = bandPassWindow;
-			this.coherenceMap.shared.bandFreqs = this.fftMap.shared.bandFreqs;
-		}
+		this.coherenceMap = this.genCoherenceMap(this.channelTags);
+		this.coherenceMap.bandPasswindow = bandPassWindow;
+		this.coherenceMap.shared.bandFreqs = this.fftMap.shared.bandFreqs;
+	
 	}
 
 	setDefaultTags() {

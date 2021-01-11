@@ -94,7 +94,7 @@ export const updateBandPass = (freqStart, freqEnd) => {
         State.data.freqEnd=freq1;
     }
 
-    ATLAS.regenAtlas(State.data.freqStart,State.data.freqEnd,EEG.sps);
+    ATLAS.regenAtlases(State.data.freqStart,State.data.freqEnd,EEG.sps);
 }
 
 export const updateChannelView = (input) => {

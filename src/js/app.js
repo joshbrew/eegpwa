@@ -82,7 +82,7 @@ function initEEGui() {
         else{  
             EEG.setupSerialAsync(); 
             if(ATLAS.fftMap.map[0].data.count > 0) {
-                ATLAS.regenAtlas(State.data.freqStart,State.data.freqEnd,EEG.sps);
+                ATLAS.regenAtlases(State.data.freqStart,State.data.freqEnd,EEG.sps);
                 UI.reInitApplets();
             }
         }
@@ -115,13 +115,19 @@ function initEEGui() {
         var settings = document.getElementById("View").value;
         updateChannelView(settings);
         UI.reInitApplets();
-    })
+    });
 
     document.getElementById("setTags").addEventListener('click',() => {
         var settings = document.getElementById("Tags").value;
         updateChannelTags(settings);
         UI.reInitApplets();
-    })
+    });
+
+    document.getElementById("setTags").addEventListener('click',() => {
+        var setting = document.getElementById("GraphTime").value;
+        if(setting < 1) {setting = 1;}
+        State.setState({nSecAdcGraph: setting});
+    });
 
     State.subscribe('connected', () => {
         if(State.data.connected === true) {document.getElementById("usbico").style.fill = "orange";}
