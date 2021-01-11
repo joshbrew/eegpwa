@@ -33,8 +33,8 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.gain = 8;
 
 		this.vscale = this.vref*this.stepSize*this.gain;
-		this.stepsPeruV = 0.000001 / (this.vref*this.stepSize);
-		this.scalar = 1/(0.000001 / (this.vref*this.stepSize));
+		this.stepsPeruV = 0.000001 / (this.vref*this.stepSize*this.gain);
+		this.scalar = 1/(0.000001 / (this.vref*this.stepSize*this.gain));
 
 
 		this.data = { //Data object to keep our head from exploding. Get current data with e.g. this.data.A0[this.data.counter-1]
