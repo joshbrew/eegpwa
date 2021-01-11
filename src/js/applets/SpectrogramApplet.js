@@ -1,5 +1,5 @@
 import {State} from '../frontend/State'
-import {DOMFragment} from '../utils/DOMFragment'
+import {DOMFragment} from '../frontend/DOMFragment'
 import {EEG, ATLAS, addChannelOptions, addCoherenceOptions} from '../frontend/EEGInterface'
 import {Spectrogram} from '../utils/eegvisuals'
 

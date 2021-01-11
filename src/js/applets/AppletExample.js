@@ -1,5 +1,5 @@
 import {State} from '../frontend/State'
-import {DOMFragment} from '../utils/DOMFragment'
+import {DOMFragment} from '../frontend/DOMFragment'
 //import {Applet} from './Applet'
 
 export class AppletExample { //Filled in Applet class copy (without extending, which needs less javascript knowledge)

@@ -1,7 +1,7 @@
 import {State} from '../frontend/State'
 import { EEG, ATLAS, addChannelOptions, addCoherenceOptions } from '../frontend/EEGInterface';
 import {eegBarChart} from '../utils/eegvisuals'
-import {DOMFragment} from '../utils/DOMFragment'
+import {DOMFragment} from '../frontend/DOMFragment'
 
 //You can extend or call this class and set renderProps and these functions
 export class BarChartApplet {

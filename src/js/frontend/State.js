@@ -1,4 +1,4 @@
-import {StateManager} from '../utils/StateManager'
+import {StateManager} from './StateManager'
 
 //Initial state values
 export const State = new StateManager(

@@ -1,6 +1,6 @@
 import {State} from './frontend/State'
 import {UIManager} from './frontend/UIManager'
-import {DOMFragment} from './utils/DOMFragment'
+import {DOMFragment} from './frontend/DOMFragment'
 import {
     menu_template,
     menuheader_template,

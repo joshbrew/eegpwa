@@ -1,5 +1,5 @@
 import {State} from '../frontend/State'
-import {DOMFragment} from '../utils/DOMFragment'
+import {DOMFragment} from '../frontend/DOMFragment'
 
 //You can extend or call this class and set renderProps and these functions
 export class Applet {
