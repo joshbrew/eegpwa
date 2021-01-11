@@ -31,7 +31,7 @@ export class BrainMapApplet {
                 <canvas id='`+props.id+`points' width='`+props.width+`' height='`+props.height+`' style='position:absolute; width:`+props.height+`px; height:`+props.height+`px; z-index:2; '></canvas>
             </div>
             <table id='`+props.id+`menu' style='position:absolute; z-index:3; '>
-                <tr><td><h3>Brain Map | </h3></td>
+                <tr><td><h3>Brain Map |</h3></td>
                 <td><h4>Viewing:</h4></td>
                 <td>`+genBandviewSelect(props.id+'bandview')+`</td></tr>
             </table>
@@ -58,8 +58,8 @@ export class BrainMapApplet {
             this.class.points.push({x:row.data.x*this.class.scale+this.class.pointsCanvas.width*.5, y: this.class.pointsCanvas.height*.5-row.data.y*this.class.scale, size:90*this.class.scale, intensity:0.8});
         });
         
-        this.class.updatePointsFromAtlas(ATLAS.fftMap,ATLAS.channelTags);
         this.class.updateHeatmap();
+        this.class.updatePointsFromAtlas(ATLAS.fftMap,ATLAS.channelTags);
         
         this.sub = State.subscribe('FFTResult', ()=>{try{this.onUpdate();}catch(e){console.error(e);}});
     }
@@ -102,7 +102,7 @@ export class BrainMapApplet {
 
     onUpdate = () => {
         var viewing = document.getElementById(this.renderProps.id+"bandview").value;
-        this.class.updateHeatmapFromAtlas(ATLAS.fftMap,ATLAS.channelTags,viewing);
+        this.class.updateHeatmapFromAtlas(ATLAS.fftMap,ATLAS.channelTags,viewing, 10000);
 
         if(State.data.coherenceResult.length === ATLAS.coherenceMap.map.length){
             this.class.updateConnectomeFromAtlas(ATLAS.coherenceMap,ATLAS.fftMap,ATLAS.channelTags,viewing);
@@ -112,7 +112,7 @@ export class BrainMapApplet {
     setBrainMap = () => {
         var viewing = document.getElementById(this.renderProps.id+"bandview");
         this.class.updatePointsFromAtlas(ATLAS.fftMap,ATLAS.channelTags);
-        this.class.updateHeatmapFromAtlas(ATLAS.fftMap,ATLAS.channelTags,viewing);
+        this.class.updateHeatmapFromAtlas(ATLAS.fftMap,ATLAS.channelTags,viewing, 10000);
         this.class.updateConnectomeFromAtlas(ATLAS.coherenceMap,ATLAS.fftMap,ATLAS.channelTags,viewing);
     }
 

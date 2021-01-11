@@ -130,7 +130,12 @@ export class uPlotApplet {
 
     updateLoop = () => {
         this.onUpdate();
-        this.requestAnimationFrame(this.updateLoop);
+        this.loop = requestAnimationFrame(this.updateLoop);
+    }
+
+    stop = () => {
+      cancelAnimationFrame(this.loop);
+      this.loop = null;
     }
 
     onUpdate = () => {
@@ -149,6 +154,7 @@ export class uPlotApplet {
       }
       else if (graphmode === "Coherence") {
         this.class.uPlotData = [[...ATLAS.coherenceMap.shared.bandPassWindow],...State.data.coherenceResult];
+        console.log(this.class.uPlotData);
       }
       else if (graphmode === "CoherenceTimeSeries") {
         var band = document.getElementById(this.renderProps.id+"bandview").value

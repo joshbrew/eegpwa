@@ -35,9 +35,9 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.vref = 2.50; //2.5V voltage ref +/- 250nV
 		this.gain = 8;
 
-		this.vscale = this.vref*this.stepSize*this.gain;
-		this.stepsPeruV = 0.000001 / (this.vref*this.stepSize*this.gain);
-		this.scalar = 1/(0.000001 / (this.vref*this.stepSize*this.gain));
+		this.vscale = this.vref*this.stepSize*this.gain; //volts per step.
+		this.uVperStep = 0.000001 / (this.vref*this.stepSize*this.gain); //uV per step.
+		this.scalar = 1/(0.000001 / (this.vref*this.stepSize*this.gain)); //step per uV.
 
 
 		this.data = { //Data object to keep our head from exploding. Get current data with e.g. this.data.A0[this.data.counter-1]

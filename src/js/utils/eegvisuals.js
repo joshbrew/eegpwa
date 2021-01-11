@@ -505,45 +505,46 @@ export class BrainMap2D {
 		this.heatmap.display();
 	}
 
-	updateHeatmapFromAtlas(fftMap, channelTags, viewing, normalize=1) {
-		var points = [];
+	updateHeatmapFromAtlas(fftMap, channelTags, viewing, normalize=1) { //Normalize is the peak expected value
+		var newpoints = [];
 
 		var halfwidth = this.pointsCanvas.width*.5;
 		var halfheight = this.pointsCanvas.height*.5;
 
-		var sizeMul = normalize;
+		var sizeMul = 1/normalize;
 		channelTags.forEach((row,i) => {
 			let atlasCoord = fftMap.map.find((o, j) => {
 			  if(o.tag === row.tag){
-				points.push({x:o.data.x*this.scale-halfwidth, y:halfheight-o.data.y*this.scale, size:10, intensity:0.7});
+				    newpoints.push({x:o.data.x*this.scale+halfwidth, y:halfheight-o.data.y*this.scale, size:10, intensity:0.7});
 				if(viewing === "scp"){
-					points[points.length - 1].size = Math.max(...o.data.slices.scp[o.data.slices.scp.length-1])}//o.data.means.scp[o.data.means.scp.length - 1];}
+					newpoints[i].size = Math.max(...o.data.slices.scp[o.data.slices.scp.length-1])}//o.data.means.scp[o.data.means.scp.length - 1];}
 				else if(viewing === "delta"){
-				  points[points.length - 1].size = Math.max(...o.data.slices.delta[o.data.slices.delta.length-1])}//o.data.means.delta[o.data.means.delta.length - 1];}
+					newpoints[i].size = Math.max(...o.data.slices.delta[o.data.slices.delta.length-1])}//o.data.means.delta[o.data.means.delta.length - 1];}
 				else if(viewing === "theta"){
-				  points[points.length - 1].size = Math.max(...o.data.slices.theta[o.data.slices.theta.length-1])}//o.data.means.theta[o.data.means.theta.length - 1];}
+					newpoints[i].size = Math.max(...o.data.slices.theta[o.data.slices.theta.length-1])}//o.data.means.theta[o.data.means.theta.length - 1];}
 				else if(viewing === "alpha1"){
-				  points[points.length - 1].size = Math.max(...o.data.slices.alpha1[o.data.slices.alpha1.length-1])}//o.data.means.alpha[o.data.means.alpha.length - 1];}
+					newpoints[i].size = Math.max(...o.data.slices.alpha1[o.data.slices.alpha1.length-1])}//o.data.means.alpha[o.data.means.alpha.length - 1];}
 				else if(viewing === "alpha2"){
-					points[points.length - 1].size = Math.max(...o.data.slices.alpha2[o.data.slices.alpha2.length-1])}//o.data.means.alpha[o.data.means.alpha.length - 1];}
+					newpoints[i].size = Math.max(...o.data.slices.alpha2[o.data.slices.alpha2.length-1])}//o.data.means.alpha[o.data.means.alpha.length - 1];}
 				else if(viewing === "beta"){
-				points[points.length - 1].size = Math.max(...o.data.slices.beta[o.data.slices.beta.length-1])}//o.data.means.beta[o.data.means.beta.length - 1];}
+					newpoints[i].size = Math.max(...o.data.slices.beta[o.data.slices.beta.length-1])}//o.data.means.beta[o.data.means.beta.length - 1];}
 				else if(viewing === "lowgamma"){
-				  points[points.length - 1].size = Math.max(...o.data.slices.lowgamma[o.data.slices.lowgamma.length-1])}//o.data.means.gamma[o.data.means.gamma.length - 1];}
+					newpoints[i].size = Math.max(...o.data.slices.lowgamma[o.data.slices.lowgamma.length-1])}//o.data.means.gamma[o.data.means.gamma.length - 1];}
 				else if(viewing === "highgamma"){
-					points[points.length - 1].size = Math.max(...o.data.slices.highgamma[o.data.slices.highgamma.length-1])}//o.data.means.gamma[o.data.means.gamma.length - 1];}
+					newpoints[i].size = Math.max(...o.data.slices.highgamma[o.data.slices.highgamma.length-1])}//o.data.means.gamma[o.data.means.gamma.length - 1];}
 
-				points[points.length - 1].size *= sizeMul; //Need a better method
+					newpoints[i].size *= sizeMul; //Need a better method
 
 				//simplecoherence *= points[points.length-1].size;
-				if(points[points.length - 1].size > 90*this.scale){
-				  points[points.length - 1].size = 90*this.scale;
+				if(newpoints[i].size > 90*this.scale){
+					newpoints[i].size = 90*this.scale;
 				}
+
 			  }
 			});
 		  });
-		//console.log(points)
-		this.points = points;
+		this.points = newpoints;
+		console.log(newpoints);
 		this.heatmap.clear();
 		this.heatmap.addPoints(this.points); //update size and intensity
 		this.heatmap.update();
@@ -568,8 +569,9 @@ export class BrainMap2D {
 			if(o.tag === row.tag){
 				this.pointsCtx.fillStyle = "rgba(0,0,0,0.7)";
 				this.pointsCtx.fillText(o.ch,halfwidth-15+row.data.x*this.scale,halfheight+10-row.data.y*this.scale,14);
-				this.points[i] = { x: row.data.x, y: row.data.y, size: 10, intensity: 0.7 };
+				//this.points[i] = { x: row.data.x*this.scale-halfwidth, y: halfheight+10-row.data.y, size: 10, intensity: 0.7 };
 				this.pointsCtx.fillStyle="rgba(0,255,0,1)";
+				//console.log("updating points")
 			  return true;
 			}
 		  });
