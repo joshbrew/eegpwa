@@ -91,8 +91,16 @@ function initEEGui() {
 
     document.getElementById("runbutton").addEventListener('click',() => {
         if(State.data.connected === true) {
-            State.setState({analyze: true, rawFeed: true});
-            setTimeout(runEEGWorker,100);
+            if(EEG.data.counter < 512){
+                setTimeout(()=> {
+                    State.setState({analyze: true, rawFeed: true});
+                    setTimeout(runEEGWorker,100);
+                },1000);
+            }
+            else{
+                State.setState({analyze: true, rawFeed: true});
+                setTimeout(runEEGWorker,100);
+            }
         }
         else{
             EEG.setupSerialAsync();
@@ -124,10 +132,11 @@ function initEEGui() {
         UI.reInitApplets();
     });
 
-    document.getElementById("setTags").addEventListener('click',() => {
-        var setting = document.getElementById("GraphTime").value;
-        if(setting < 1) {setting = 1;}
+    document.getElementById("setTimeSpan").addEventListener('click',() => {
+        var setting = parseFloat(document.getElementById("GraphTime").value); 
+        if(setting === NaN || setting < 1) {setting = 1;}
         State.setState({nSecAdcGraph: setting});
+        console.log(State.data)
     });
 
     State.subscribe('connected', () => {

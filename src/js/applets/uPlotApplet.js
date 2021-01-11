@@ -158,9 +158,17 @@ export class uPlotApplet {
       }
       else if (graphmode === "CoherenceTimeSeries") {
         var band = document.getElementById(this.renderProps.id+"bandview").value
-        this.class.uPlotData = [[...ATLAS.coherenceMap.map[0].data.times]];
+        
+        var count = ATLAS.coherenceMap.map[0].data.count-1;
+        //console.log(ATLAS.coherenceMap.map[0].data.times[count-1])
+        while(ATLAS.coherenceMap.map[0].data.times[ATLAS.coherenceMap.map[0].data.count-1]-ATLAS.coherenceMap.map[0].data.times[count-1] < State.data.nSecAdcGraph*1000 && count > 0) {
+          count-=1;
+        }
+        //console.log(State.data.nSecAdcGraph)
+
+        this.class.uPlotData = [ATLAS.coherenceMap.map[0].data.times.slice(count, ATLAS.coherenceMap.map[0].data.count)];
         ATLAS.coherenceMap.map.forEach((row,i) => {
-            this.class.uPlotData.push([...row.data.means[band]]);
+            this.class.uPlotData.push(row.data.means[band].slice(count, ATLAS.coherenceMap.map[0].data.count));
         });
       }
       else {
@@ -169,7 +177,7 @@ export class uPlotApplet {
 
         if ((graphmode === "TimeSeries") || (graphmode === "Stacked")) {
             var nsamples = Math.floor(EEG.sps*State.data.nSecAdcGraph);
-
+            if(nsamples > EEG.data.counter) { nsamples = EEG.data.counter-1;}
             this.class.uPlotData = [
                 EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
             ];
@@ -341,7 +349,15 @@ export class uPlotApplet {
         }
         else if (gmode === "CoherenceTimeSeries") {
           var band = document.getElementById(this.renderProps.id+"bandview").value;
-          this.class.uPlotData = [[...ATLAS.coherenceMap.map[0].data.times]];
+          
+          var count = ATLAS.coherenceMap.map[0].data.count-1;
+          //console.log(ATLAS.coherenceMap.map[0].data.times[count-1])
+          while(ATLAS.coherenceMap.map[0].data.times[ATLAS.coherenceMap.map[0].data.count-1]-ATLAS.coherenceMap.map[0].data.times[count-1] < State.data.nSecAdcGraph*1000 && count > 1) {
+            count-=1;
+          }
+
+          this.class.uPlotData = [ATLAS.coherenceMap.map[0].data.times.slice(count, ATLAS.coherenceMap.map[0].data.count)];
+
           var newSeries = [{}];
           ATLAS.coherenceMap.map.forEach((row,i) => {
             newSeries.push({
@@ -349,7 +365,7 @@ export class uPlotApplet {
               value: (u, v) => v == null ? "-" : v.toFixed(1),
               stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
             });
-            this.class.uPlotData.push([...row.data.means[band]]);
+            this.class.uPlotData.push(row.data.means[band].slice(count, ATLAS.coherenceMap.map[0].data.count));
           });
           //console.log(this.class.uPlotData)
           this.class.makeuPlot(

@@ -74,7 +74,7 @@ export const runEEGWorker = () => {
         setTimeout(()=>{runEEGWorker();}, s.workerMaxSpeed - (EEG.data.ms[EEG.data.ms.length-1] - s.lastPostTime) );
     }
     else{
-        State.setState({lastPostTime: EEG.data.ms[EEG.data.ms.length-1]});
+        State.data.lastPostTime = EEG.data.ms[EEG.data.ms.length-1];
         if(s.fdBackMode === 'coherence') {
             //console.log("post to worker")
             var buf = bufferEEGData();

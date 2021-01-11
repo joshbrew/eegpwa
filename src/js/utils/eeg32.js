@@ -573,7 +573,7 @@ export class eegAtlas {
 	mapFFTData = (data, lastPostTime, channel, tag) => {
 		let atlasCoord = this.fftMap.map.find((o, i) => {
 		if(o.tag === tag){
-			this.fftMap.map[i].count++;
+			this.fftMap.map[i].data.count++;
 			this.fftMap.map[i].data.times.push(lastPostTime);
 			this.fftMap.map[i].data.amplitudes.push(data[channel]);
 			if(this.fftMap.shared.bandFreqs.scp[1].length > 0){
@@ -624,7 +624,7 @@ export class eegAtlas {
 
 	mapCoherenceData = (data, lastPostTime) => { //Expects data in correct order
 		data.forEach((row,i) => {
-		  this.coherenceMap.map[i].count++;
+		  this.coherenceMap.map[i].data.count++;
 		  this.coherenceMap.map[i].data.amplitudes.push(row);
 		  this.coherenceMap.map[i].data.times.push(lastPostTime);
 
