@@ -1,3 +1,10 @@
+body {
+  font-family: 'Montserrat';
+}
+
+#applets { 
+  font-size: 12px;
+}
 
 #menu_header {
   background-color: rgb(175, 224, 217);
