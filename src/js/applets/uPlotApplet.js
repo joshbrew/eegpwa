@@ -154,7 +154,7 @@ export class uPlotApplet {
       }
       else if (graphmode === "Coherence") {
         this.class.uPlotData = [[...ATLAS.coherenceMap.shared.bandPassWindow],...State.data.coherenceResult];
-        console.log(this.class.uPlotData);
+        //console.log(this.class.uPlotData);
       }
       else if (graphmode === "CoherenceTimeSeries") {
         var band = document.getElementById(this.renderProps.id+"bandview").value

@@ -544,7 +544,7 @@ export class BrainMap2D {
 			});
 		  });
 		this.points = newpoints;
-		console.log(newpoints);
+		//console.log(newpoints);
 		this.heatmap.clear();
 		this.heatmap.addPoints(this.points); //update size and intensity
 		this.heatmap.update();

@@ -91,6 +91,7 @@ onmessage = (e) => {
           //if(timeMod <= 1) { timeMod = 1; }
           dft.forEach((amp,j) => {
               newdft[j] = amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j];//*1.6666666;
+              newdft[j] = Math.pow(newdft[j],.125)
           });
           l++;
           if((l+k) === nChannels) {
