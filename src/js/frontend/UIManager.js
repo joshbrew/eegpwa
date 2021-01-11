@@ -146,7 +146,7 @@ export class UIManager {
             
             if(nodes.length === 1) { //1 full view
                 if(i===0){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth-20 + "px";
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth-22 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight - topoffset + "px";
                     node.classinstance.AppletHTML.node.style.top = 0+"px";
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
@@ -155,13 +155,13 @@ export class UIManager {
             if(nodes.length === 2) { //2 stacked views
                 var transformy = window.innerHeight*.5- topoffset*.55;
                 if(i===0){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth-20 + "px";
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth-22 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.top = 0+"px";
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
                 else if(i===1){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth-20 + "px";
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth-22 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.top = transformy+"px";
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
@@ -176,13 +176,13 @@ export class UIManager {
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
                 else if(i===1){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-22 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.top = 0+"px";
                     node.classinstance.AppletHTML.node.style.left = window.innerWidth*.5+"px";
                 }
                 else if(i === 2){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth-20 + "px";
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth-22 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5-topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.top = transformy+"px";
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
@@ -197,7 +197,7 @@ export class UIManager {
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
                 else if(i===1){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-22 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5 - topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.left = window.innerWidth*.5+"px";
                     node.classinstance.AppletHTML.node.style.top = 0+"px";
@@ -209,7 +209,7 @@ export class UIManager {
                     node.classinstance.AppletHTML.node.style.left = 0+"px";
                 }
                 else if(i === 3){
-                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-20 + "px";
+                    node.classinstance.AppletHTML.node.style.width = window.innerWidth*.5-22 + "px";
                     node.classinstance.AppletHTML.node.style.height = window.innerHeight*.5-topoffset*.55 + "px";
                     node.classinstance.AppletHTML.node.style.top = transformy+"px";
                     node.classinstance.AppletHTML.node.style.left = window.innerWidth*.5+"px";
