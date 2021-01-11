@@ -31,7 +31,7 @@ export class BrainMapApplet {
                 <canvas id='`+props.id+`points' width='`+props.width+`' height='`+props.height+`' style='position:absolute; width:`+props.height+`px; height:`+props.height+`px; z-index:2; '></canvas>
             </div>
             <table id='`+props.id+`menu' style='position:absolute; z-index:3; '>
-                <tr><td><h3>Brain Map</h3></td>
+                <tr><td><h3>Brain Map | </h3></td>
                 <td><h4>Viewing:</h4></td>
                 <td>`+genBandviewSelect(props.id+'bandview')+`</td></tr>
             </table>

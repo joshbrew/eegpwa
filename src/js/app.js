@@ -45,7 +45,8 @@ State.data.appletClasses.push(
 
 /*
 //TODO: 
-//Port over all original features
+//More visualization of settings i.e. channel tag assignments and which channels are being computed
+//Slow cortical signal features.
 //Deal with data saving and local storage, state saving (use nodeFS or whatever its called)
 //UI/Applet cleanup and flare
 //Signal analysis cleanup

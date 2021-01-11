@@ -3,6 +3,11 @@ import {EEG, ATLAS, genBandviewSelect} from '../frontend/EEGInterface'
 import {DOMFragment} from '../frontend/DOMFragment'
 import {uPlotMaker} from '../utils/eegvisuals'
 
+/*
+TODO:
+Custom plot legend, still clickable but much more compact.
+*/
+
 //You can extend or call this class and set renderProps and these functions
 export class uPlotApplet {
     constructor (parentNode=document.getElementById("applets")) { // customize the render props in your constructor
