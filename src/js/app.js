@@ -77,7 +77,15 @@ function initEEGui() {
     menu_setup();
 
     document.getElementById("connectbutton").addEventListener('click',() => {
-        EEG.setupSerialAsync();
+        //console.log(State.data.connected);
+        if(State.data.connected === true) {EEG.closePort();} 
+        else{  
+            EEG.setupSerialAsync(); 
+            if(ATLAS.fftMap.map[0].data.count > 0) {
+                ATLAS.regenAtlas(State.data.freqStart,State.data.freqEnd,EEG.sps);
+                UI.reInitApplets();
+            }
+        }
     });
 
     document.getElementById("runbutton").addEventListener('click',() => {

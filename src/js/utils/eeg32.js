@@ -52,6 +52,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			console.error("`navigator.serial not found! Enable #enable-experimental-web-platform-features in chrome://flags (search 'experimental')")
 		}
 		this.port = null;
+		this.reader = null;
 
     }
 
@@ -163,14 +164,14 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	}
 
 	async subscribe(port){
-		while (this.port.readable) {
-			var reader = port.readable.getReader();
+		while (this.port.readable && this.subscribed === true) {
+			this.reader = port.readable.getReader();
 			while(this.subscribed === true) {
 				try {
-					const { value, done } = await reader.read();
-					if (done) {
+					const { value, done } = await this.reader.read();
+					if (done || this.subscribed === false) {
 						// Allow the serial port to be closed later.
-						await reader.releaseLock();
+						await this.reader.releaseLock();
 						break;
 					}
 					if (value) {
@@ -193,17 +194,17 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	//Unfinished
 	async subscribeSafe(port) { //Using promises instead of async/await to cure hangs when the serial update does not meet tick requirements
 		var readable = new Promise((resolve,reject) => {
-			while(this.port.readable){
-				var reader = port.readable.getReader();
+			while(this.port.readable && this.subscribed === true){
+				this.reader = port.readable.getReader();
 				var looper = true;
 				var prom1 = new Promise((resolve,reject) => {
-					return reader.read();
+					return this.reader.read();
 				});
 
 				var prom2 = new Promise((resolve,reject) => {
 					setTimeout(resolve,100,"readfail");
 				});
-				while(looper === true) {
+				while(looper === true ) {
 					//console.log("reading...");
 					Promise.race([prom1,prom2]).then((result) => {
 						console.log("newpromise")
@@ -212,8 +213,8 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 						}
 						else{
 							const {value, done} = result;
-							if(done === true) { var donezo = new Promise((resolve,reject) => {
-								resolve(reader.releaseLock())}).then(() => {
+							if(done === true || this.subscribed === true) { var donezo = new Promise((resolve,reject) => {
+								resolve(this.reader.releaseLock())}).then(() => {
 									looper = false;
 									return;
 								});
@@ -231,13 +232,18 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 
 	async closePort(port=this.port) {
 		//if(this.reader) {this.reader.releaseLock();}
-		this.subscribed = false;
-		setTimeout(async () => {
-			await port.close();
-			this.port = null;
-			this.connected = false;
-			this.onDisconnectedCallback();
-		}, 100);
+		if(this.port){
+			this.subscribed = false;
+			setTimeout(async () => {
+				if (this.reader) {
+					this.reader = null;
+				}
+				await port.close();
+				this.port = null;
+				this.connected = false;
+				this.onDisconnectedCallback();
+			}, 100);
+		}
 	}
 
 	async setupSerialAsync(baudrate=115200) { //You can specify baudrate just in case
@@ -500,6 +506,21 @@ export class eegAtlas {
 			}
 		}
 		return coherenceMap;
+	}
+
+	regenAtlas(freqStart,freqEnd,sps=512) {
+		this.fftMap = this.makeAtlas10_20(); //reset atlas
+
+		let bandPassWindow = this.bandPassWindow(freqStart,freqEnd,sps);
+
+		this.fftMap.shared.bandPassWindow = bandPassWindow;//Push the x-axis values for each frame captured as they may change - should make this lighter
+		this.fftMap.shared.bandFreqs = this.getBandFreqs(bandPassWindow); //Update bands accessed by the atlas for averaging
+
+		if(State.data.fdBackMode === "coherence") {
+			this.coherenceMap = this.genCoherenceMap(this.channelTags);
+			this.coherenceMap.bandPasswindow = bandPassWindow;
+			this.coherenceMap.shared.bandFreqs = this.fftMap.shared.bandFreqs;
+		}
 	}
 
 	setDefaultTags() {
