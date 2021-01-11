@@ -106,11 +106,13 @@ function initEEGui() {
     document.getElementById("setView").addEventListener('click',() => {
         var settings = document.getElementById("View").value;
         updateChannelView(settings);
+        UI.reInitApplets();
     })
 
     document.getElementById("setTags").addEventListener('click',() => {
         var settings = document.getElementById("Tags").value;
         updateChannelTags(settings);
+        UI.reInitApplets();
     })
 
     State.subscribe('connected', () => {

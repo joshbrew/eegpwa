@@ -355,8 +355,8 @@ export class eegAtlas {
 	}
 
 	//EEG Atlas generator
-	newAtlasData(x,y,z, counts=[], times=[], amplitudes=[], slices= {scp: [], delta: [], theta: [], alpha1: [], alpha2: [], beta: [], lowgamma: [], highgamma: []}, means={scp: [], delta: [], theta: [], alpha1: [], alpha2: [], beta: [], lowgamma:[], highgamma: []}){
-		return {x: x, y:y, z:z, times:times, amplitudes:amplitudes, slices:slices, means:means};
+	newAtlasData(x,y,z, count=0, times=[], amplitudes=[], slices= {scp: [], delta: [], theta: [], alpha1: [], alpha2: [], beta: [], lowgamma: [], highgamma: []}, means={scp: [], delta: [], theta: [], alpha1: [], alpha2: [], beta: [], lowgamma:[], highgamma: []}){
+		return {x: x, y:y, z:z, counts:count, times:times, amplitudes:amplitudes, slices:slices, means:means};
 	}
 
 	//Input arrays of corresponding tags, xyz coordinates as Array(3) objects, and DFT amplitudes (optional).
@@ -471,7 +471,7 @@ export class eegAtlas {
 		var coherenceMap = {shared:{bandPassWindow:[],bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha1:[[],[]], alpha2:[[],[]], beta:[[],[]], lowgamma:[[],[]], highgamma:[[],[]]}},map:[]};
 		var l = 1, k = 0;
 		var freqBins = {scp: [], delta: [], theta: [], alpha1: [], alpha2: [], beta: [], lowgamma: [], highgamma: []}
-
+		
 		for( var i = 0; i < (channelTags.length*(channelTags.length + 1)/2)-channelTags.length; i++){
 			var coord0 = this.getAtlasCoordByTag(channelTags[k].tag);
 			var coord1 = this.getAtlasCoordByTag(channelTags[k+l].tag);

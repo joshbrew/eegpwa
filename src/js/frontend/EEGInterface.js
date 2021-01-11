@@ -78,6 +78,7 @@ export const runEEGWorker = () => {
         if(s.fdBackMode === 'coherence') {
             //console.log("post to worker")
             var buf = bufferEEGData();
+            console.log(buf)
             window.postToWorker({foo:'coherence', input:[buf, s.nSec, s.freqStart, s.freqEnd, EEG.scalar]});
         }
     }
@@ -138,6 +139,14 @@ export const updateChannelView = (input) => {
             }
         }
     });
+
+    //console.log(ATLAS.channelTags)
+
+    if(State.data.fdBackMode === "coherence") {
+        ATLAS.coherenceMap = ATLAS.genCoherenceMap(ATLAS.channelTags);
+        ATLAS.coherenceMap.bandPasswindow = ATLAS.fftMap.shared.bandPassWindow;
+        ATLAS.coherenceMap.shared.bandFreqs = ATLAS.fftMap.shared.bandFreqs;
+    }
 
 }
 

@@ -161,7 +161,7 @@ function FFT(signal, len, freq, sr){ //Extract a particular frequency
 }
 
 //Conjugated real and imaginary parts for iDFT (need to test still)
-function iDFT(amplitudes, len, freq){ //inverse DFT to return time domain
+function iDFT(fft, len, freq){ //inverse DFT to return time domain
     var real = 0;
     var imag = 0;
     var _len = 1/len;
@@ -169,28 +169,28 @@ function iDFT(amplitudes, len, freq){ //inverse DFT to return time domain
 
     for(var i = 0; i<len; i++){
       var sharedi = shared*i; //this.thread.x is the target frequency
-      real = real+amplitudes[i]*Math.cos(sharedi);
-      imag = amplitudes[i]*Math.sin(sharedi)-imag;  
+      real = real+fft[i]*Math.cos(sharedi);
+      imag = fft[i]*Math.sin(sharedi)-imag;  
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
     return [real*_len,imag*_len]; //mag(real,imag)
 }
 
-function iDFTlist(amplitudes,len,freq,n){ //inverse DFT to return time domain 
+function iDFTlist(fft,len,freq,n){ //inverse DFT to return time domain 
     var real = 0;
     var imag = 0;
     var _len = 1/len;
     var shared = 6.28318530718*freq*_len
     for (var i = 0; i<len; i++) {
       var sharedi = shared*i; //this.thread.x is the target frequency
-      real = real+amplitudes[i+(len-1)*n]*Math.cos(sharedi);
-      imag = amplitudes[i+(len-1)*n]*Math.sin(sharedi)-imag;  
+      real = real+fft[i+(len-1)*n]*Math.cos(sharedi);
+      imag = fft[i+(len-1)*n]*Math.sin(sharedi)-imag;  
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
     return [real*_len,imag*_len]; //mag(real,imag)
 }
 
-function iFFT(amplitudes, len, freq, sr){ //inverse FFT to return time domain
+function iFFT(fft, len, freq, sr){ //inverse FFT to return time domain
     var real = 0;
     var imag = 0;
     var _len = 1/len;
@@ -210,8 +210,8 @@ function iFFT(amplitudes, len, freq, sr){ //inverse FFT to return time domain
       var j = i;
       if(j > len) { j = len; }
       var sharedi = shared*j; //this.thread.x is the target frequency
-      real = real+amplitudes[j]*Math.cos(sharedi);
-      imag = amplitudes[j]*Math.sin(sharedi)-imag;  
+      real = real+fft[j]*Math.cos(sharedi);
+      imag = fft[j]*Math.sin(sharedi)-imag;  
       N += 1;
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
@@ -378,14 +378,29 @@ function listdft1D_windowedKern(signals, sampleRate, freqStart, freqEnd, scalar)
     return mag(result[0]*2,result[1]*2)*scalar; //Multiply result by 2 since we are only getting the positive results and want to estimate the actual amplitudes (positive = half power, reflected in the negative axis)
 }
 
-//e.g. arrays = [[arr1],[arr2],[arr3],[arr4],[arr5],[arr6]], len = 10, n = 2, mod=1... return results of [arr1*arr2], [arr3*arr4], [arr5*arr6] as one long array that needs to be split
-function bulkArrayMulKern(arrays, len, n, mod) {
-    var i = n*Math.floor(this.thread.x/len); //Jump forward in array buffer
-    var products = arrays[i][this.thread.x];
-    for (var j = 0; j < n; j++) {
-      products *= arrays[j][this.thread.x];
+function listidft1D_windowedKern(ffts, sampleRate, freqStart, freqEnd, scalar) { //Will make a higher resolution DFT for a smaller frequency window.
+    var result = [0, 0];
+    if (this.thread.x <= sampleRate) {
+      var freq = ( (this.thread.x/sampleRate) * ( freqEnd - freqStart ) ) + freqStart;
+      result = iDFT(ffts,sampleRate,freq);
+    } else {
+      var n = Math.floor(this.thread.x/sampleRate);
+      var freq = ( ( ( this.thread.x - n * sampleRate) / sampleRate ) * ( freqEnd - freqStart ) ) + freqStart;
+      result = iDFTlist(ffts,sampleRate,freq-n*sampleRate,n);
     }
-    return products*mod;
+    //var mags = mag(result[0],result[1]);
+
+    return mag(result[0]*2,result[1]*2)*scalar; //Multiply result by 2 since we are only getting the positive results and want to estimate the actual amplitudes (positive = half power, reflected in the negative axis)
+}
+
+//e.g. arrays = [[arr1],[arr2],[arr3],[arr4],[arr5],[arr6]], len = 10, n = 2, scalar=1... return results of [arr1*arr2], [arr3*arr4], [arr5*arr6] as one long array that needs to be split
+function bulkArrayMulKern(arrays, len, n, scalar) {
+    var i = n*Math.floor(this.thread.x/len); //Jump forward in array buffer
+    var product = arrays[i][this.thread.x];
+    for (var j = 0; j < n; j++) {
+      product *= arrays[j][this.thread.x];
+    }
+    return product*scalar;
 }
 
 function multiImgConv2DKern(img, width, height, kernels, kernelLengths, nKernels, graphical) {
@@ -415,16 +430,7 @@ Scene drawing:
 */
 
 
-//-----------------------------------
-//------------Combine Kernels-------- gpu.combineKernels(f1,f2,function(a,b,c) { f1(f2(a,b),c); });
-//-----------------------------------
-
-
-function signalBandpass(signal, sampleRate, freqStart, freqEnd, scalar) { //Returns the signal wave with the bandpass filter applied
-    var dft = dft_windowedKern(signal, sampleRate, freqStart, freqEnd, scalar);
-    var idft = idft_windowedKern(dft, sampleRate, freqStart, freqEnd, scalar); 
-}
-
+//Note on pixel operations in gpujs: create kernel with setGraphical(true), render() to offscreencanvas, get render.getPixels() on each frame for pixel values which can be stored math operations
 
 
 //Exports
@@ -432,8 +438,8 @@ function signalBandpass(signal, sampleRate, freqStart, freqEnd, scalar) { //Retu
 export const createGpuKernels = {
     correlogramsKern, correlogramsPCKern, dftKern, idftKern, fftKern, ifftKern,
     dft_windowedKern, idft_windowedKern, fft_windowedKern, ifft_windowedKern, 
-    listdft2DKern, listdft1DKern, listdft1D_windowedKern, bulkArrayMulKern, 
-    fftKern, ifftKern, multiImgConv2DKern
+    listdft2DKern, listdft1DKern, listdft1D_windowedKern, listidft1D_windowedKern, 
+    bulkArrayMulKern, fftKern, ifftKern, multiImgConv2DKern
 }
 
 export const addGpuFunctions = [
@@ -442,7 +448,3 @@ export const addGpuFunctions = [
     mse, rms, xcor, softmax, DFT, DFTlist,
     iDFT, iDFTlist, FFT, iFFT, conv2D
 ];
-
-export const combineGpuKernels = {
-    signalBandpass
-}

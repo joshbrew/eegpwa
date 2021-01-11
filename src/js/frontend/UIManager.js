@@ -91,7 +91,15 @@ export class UIManager {
                 return true;
             }
         });
+    }
 
+    reInitApplets = () => {
+        State.data.applets.forEach((applet,i) => {
+            applet.classinstance.deInit();
+            applet.classinstance.init();
+            applet.classinstance.AppletHTML.node.style.position = "absolute";
+        });
+        this.responsiveUIUpdate();
     }
 
     addAppletOptions = (selectId,appletIdx) => {

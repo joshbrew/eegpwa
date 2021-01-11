@@ -1,5 +1,5 @@
 import { GPU } from 'gpu.js'
-import { addGpuFunctions, createGpuKernels as krnl, combineGpuKernels as kcombo } from './gpuUtils-functs';
+import { addGpuFunctions, createGpuKernels as krnl } from './gpuUtils-functs';
 
 function makeKrnl(gpu, f, opts = {
   setDynamicOutput: true,
@@ -96,14 +96,45 @@ export class gpuUtils {
     this.fft = makeKrnl(this.gpu, krnl.fftKern);
     this.ifft = makeKrnl(this.gpu, krnl.ifftKern);
     this.fft_windowed = makeKrnl(this.gpu, krnl.fft_windowedKern);
-    this.ifft_windoed = makeKrnl(this.gpu, krnl.ifft_windowedKern);
+    this.ifft_windowed = makeKrnl(this.gpu, krnl.ifft_windowedKern);
     this.listdft2D = makeKrnl(this.gpu, krnl.listdft2DKern);
     this.listdft1D = makeKrnl(this.gpu, krnl.listdft1DKern);
     this.listdft1D_windowed = makeKrnl(this.gpu, krnl.listdft1D_windowedKern);
+    this.listidft1D_windowed = makeKrnl(this.gpu, krnl.listidft1D_windowedKern);
     this.bulkArrayMul = makeKrnl(this.gpu, krnl.bulkArrayMulKern);
     this.multiConv2D = makeKrnl(this.gpu, krnl.multiImgConv2DKern);
 
-    //this.bandpassSignal = this.gpu.combineKernels(this.dft_windowed,this.idft_windowed, kcombo.signalBandpass);
+    
+    //----------------------------------- Easy gpu pipelining
+    //------------Combine Kernels-------- gpu.combineKernels(f1,f2,function(a,b,c) { f1(f2(a,b),c); });
+    //----------------------------------- TODO: Make this actually work (weird error)
+
+    //Bandpass FFT+iFFT to return a cleaned up waveform
+    const signalBandpass = (signal, sampleRate, freqStart, freqEnd, scalar) => { //Returns the signal wave with the bandpass filter applied
+      var dft = this.fft_windowed(signal, sampleRate, freqStart, freqEnd, scalar);
+      var filtered_signal = this.ifft_windowed(dft, sampleRate, freqStart, freqEnd, scalar); 
+      return filtered_signal;
+    }
+
+    //this.signalBandpass = this.gpu.combineKernels(this.dft_windowedKern,this.idft_windowedKern, signalBandpass);
+    
+    const signalBandpassMulti = (signals, sampleRate, freqStart, freqEnd, scalar) => {
+      var dfts = this.listdft1D_windowed(signals,sampleRate,freqStart,freqEnd,scalar);
+      var filtered_signals = this.listidft1D_windowed(dfts,sampleRate,freqStart,freqEnd,scalar);
+      return filtered_signals;
+    }
+
+    //this.signalBandpassMulti = this.gpu.combineKernels(this.listdft1D_windowed,this.listidft1D_windowed, signalBandpassMulti);
+
+    //TODO: automatic auto/cross correlation and ordering.
+    //Input signals like this : [signal1,signal2,autocor1,autocor2,crosscor,...repeat for desired coherence calculations] or any order of that.
+    const gpuCoherence = (signals, sampleRate, freqStart, freqEnd, scalar) => { //Take FFTs of the signals, their autocorrelations, and cross correlation (5 FFTs per coherence), then multiply.
+      var ffts = this.listdft1D_windowed(signals, sampleRate, freqStart, freqEnd, scalar);
+      var products = this.bulkArrayMul(ffts, sampleRate, 5, 1);
+      return products;
+    }
+
+    //this.gpuCoherence = this.gpu.combineKernels(this.listdft1D_windowedKern, this.bulkArrayMulKern, gpuCoherence);
   }
 
   gpuXCors(arrays, precompute=false, texOut = false) { //gpu implementation for bulk cross/auto correlations, outputs [[0:0],[0:1],...,[1:1],...[n:n]]

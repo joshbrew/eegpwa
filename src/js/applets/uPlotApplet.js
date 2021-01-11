@@ -294,7 +294,16 @@ export class uPlotApplet {
       
         }
         else if (gmode === "Coherence") {
+          var newSeries = [{}];
       
+          ATLAS.coherenceMap.map.forEach((row,i) => {
+            newSeries.push({
+              label:row.tag,
+              value: (u, v) => v == null ? "-" : v.toFixed(1),
+              stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
+            });
+          });
+
           if((State.data.coherenceResult.length > 0) && (State.data.coherenceResult.length <= ATLAS.coherenceMap.map.length)){
             this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow],...State.data.coherenceResult];
             if(this.class.uPlotData.length < ATLAS.coherenceMap.map.length+1) {
@@ -302,29 +311,6 @@ export class uPlotApplet {
                 this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
               }
             }
-            //console.log(uPlotData)
-      
-            var newSeries = [{}];
-      
-            var l = 1;
-            var k = 0;
-      
-            ATLAS.coherenceMap.map.forEach((row,i) => {
-              var tag1 = ATLAS.channelTags[k].tag;
-              var tag2 = ATLAS.channelTags[k+l].tag;
-              if(tag1 === null){tag1 = "A"+ATLAS.channelTags[k].ch} //Untagged, give it the channel number
-              if(tag2 === null){tag2 = "A"+ATLAS.channelTags[k+l].ch}
-              newSeries.push({
-                label:tag1+":"+tag2,
-                value: (u, v) => v == null ? "-" : v.toFixed(1),
-                stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
-              });
-              l++;
-              if(l+k === ATLAS.channelTags.length){
-                k++;
-                l=1;
-              }
-            });
           }
           else {
             this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow]];
@@ -332,7 +318,7 @@ export class uPlotApplet {
               this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
             });
           }
-          //console.log(newSeries.length);
+          console.log(newSeries);
           //console.log(uPlotData.length);
           this.class.makeuPlot(
               newSeries, 
