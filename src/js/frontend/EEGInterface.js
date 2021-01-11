@@ -94,18 +94,7 @@ export const updateBandPass = (freqStart, freqEnd) => {
         State.data.freqEnd=freq1;
     }
 
-    ATLAS.fftMap = ATLAS.makeAtlas10_20(); //reset ATLAS
-
-    let bandPassWindow = ATLAS.bandPassWindow(freq0,freq1,EEG.sps);
-
-    ATLAS.fftMap.shared.bandPassWindow = bandPassWindow;//Push the x-axis values for each frame captured as they may change - should make this lighter
-    ATLAS.fftMap.shared.bandFreqs = ATLAS.getBandFreqs(bandPassWindow); //Update bands accessed by the ATLAS for averaging
-
-    if(State.data.fdBackMode === "coherence") {
-        ATLAS.coherenceMap = ATLAS.genCoherenceMap(ATLAS.channelTags);
-        ATLAS.coherenceMap.bandPasswindow = bandPassWindow;
-        ATLAS.coherenceMap.shared.bandFreqs = ATLAS.fftMap.shared.bandFreqs;
-    }
+    ATLAS.regenAtlas(State.data.freqStart,State.data.freqEnd,EEG.sps);
 }
 
 export const updateChannelView = (input) => {
@@ -158,6 +147,8 @@ export function updateChannelTags (input) {
     var arr = val.split(";");
     //console.log(arr);
     //channelTags.forEach((row,j) => { channelTags[j].viewing = false; });
+
+    var atlasUpdated = false;
     arr.forEach((item,i) => {
         var dict = item.split(":");
         var found = false;
@@ -187,10 +178,11 @@ export function updateChannelTags (input) {
                 }
                 });
                 if(atlasfound !== true) {
-                var coords = dict[2].split(",");
-                if(coords.length === 3){
-                    ATLAS.addToAtlas(dict[1],parseFloat(coords[0]),parseFloat(coords[1]),parseFloat(coords[2]))
-                }
+                    var coords = dict[2].split(",");
+                    if(coords.length === 3){
+                        ATLAS.addToAtlas(dict[1],parseFloat(coords[0]),parseFloat(coords[1]),parseFloat(coords[2]))
+                        atlasUpdated = true;
+                    }
                 }
             }
             }
@@ -210,16 +202,17 @@ export function updateChannelTags (input) {
             if(dict[2] !== undefined){
                 var atlasfound = false;
                 var searchatlas = ATLAS.fftMap.map.find((p,k) => {
-                if(p.tag === dict[1]){
-                    atlasfound = true;
-                    return true;
-                }
+                    if(p.tag === dict[1]){
+                        atlasfound = true;
+                        return true;
+                    }
                 });
                 if(atlasfound !== true) {
-                var coords = dict[2].split(",");
-                if(coords.length === 3){
-                    ATLAS.addToAtlas(dict[1],parseFloat(coords[0]),parseFloat(coords[1]),parseFloat(coords[2]))
-                }
+                    var coords = dict[2].split(",");
+                    if(coords.length === 3){
+                        ATLAS.addToAtlas(dict[1],parseFloat(coords[0]),parseFloat(coords[1]),parseFloat(coords[2]))
+                        atlasUpdated = true;
+                    }
                 }
             }
             }
@@ -227,10 +220,12 @@ export function updateChannelTags (input) {
         }
     });
 
-    ATLAS.coherenceMap = ATLAS.genCoherenceMap(ATLAS.channelTags); //Reset coherence map with new tags
-    ATLAS.coherenceMap.shared.bandPassWindow = ATLAS.fftMap.shared.bandPassWindow;
-    ATLAS.coherenceMap.shared.bandFreqs = ATLAS.fftMap.shared.bandFreqs;
-
+    if(atlasUpdated === true && State.data.fdBackMode === "coherence"){
+        //Regen coherence map
+        ATLAS.coherenceMap = ATLAS.genCoherenceMap(ATLAS.channelTags); //Reset coherence map with new tags
+        ATLAS.coherenceMap.shared.bandPassWindow = ATLAS.fftMap.shared.bandPassWindow;
+        ATLAS.coherenceMap.shared.bandFreqs = ATLAS.fftMap.shared.bandFreqs;
+    }
     //setBrainMap();
     //setuPlot();
 }
