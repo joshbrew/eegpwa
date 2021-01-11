@@ -1,6 +1,11 @@
 body {
   font-family: 'Montserrat';
   overflow: hidden;
+  background-color: ghostwhite;
+}
+
+.u {
+  color: white;
 }
 
 #applets { 
@@ -8,33 +13,33 @@ body {
 }
 
 #menu_header {
-  background-color: rgb(175, 224, 217);
+  background: radial-gradient(circle, rgba(0,189,224,1) 0%, rgb(190, 255, 203) 35%, rgba(0,212,255,1) 100%);
   color: white;
   transition: all 0.5s ease-in-out;
 }
 
 #menu_header > td {
-  border-left: 2px inset black;
-  border-top: 2px inset black;
-  border-right: 2px inset black;
+  border-left: 2px inset gray;
+  border-top: 2px inset gray;
+  border-right: 2px inset gray;
 }
 
 #menu_dropdown {
-  background-color: rgb(210, 229, 250);
+  background: radial-gradient(circle, rgb(175, 190, 231) 0%, rgb(154, 247, 255) 60%, rgb(197, 221, 226) 100%);
   opacity:0;
   transform:translateY(-500px);
   transition: all 0.5s ease-in-out;
 }
 
 #menu_dropdown2 {
-  background-color: rgb(210, 229, 250);
+  background: radial-gradient(circle, rgb(175, 190, 231) 0%, rgb(154, 247, 255) 35%, rgb(197, 221, 226) 100%);
   opacity:0;
   transform:translateY(-500px);
   transition: all 0.5s ease-in-out;
 }
 
 #menu_dropdown3 {
-  background-color: rgb(210, 229, 250);
+  background-color: radial-gradient(circle, rgb(175, 190, 231) 0%, rgb(190, 255, 203) 35%, rgb(197, 221, 226) 100%);
   opacity:0;
   transform:translateY(-500px);
   transition: all 0.5s ease-in-out;
@@ -104,7 +109,7 @@ img:hover{
 }
 
 #visualsbutton:hover .fil0 {
-  fill:blue;
+  fill: lightseagreen;
 }
 
 #visualsbutton:focus svg:hover .fil0 {
@@ -114,7 +119,7 @@ img:hover{
 
 @keyframes color {
   50% { fill: purple; }
-  100% { fill: blue; }
+  100% { fill: lightseagreen; }
 }
 
 #connectbutton:hover #usbico {
