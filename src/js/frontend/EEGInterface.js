@@ -156,12 +156,14 @@ export function updateChannelTags (input) {
         if(o.ch === parseInt(dict[0])){
             if(dict[1] === "delete"){
                 ATLAS.channelTags.splice(j,1);
+                atlasUpdated = true;
             }
             else{
             let otherTags = ATLAS.channelTags.find((p,k) => {
                 if(p.tag === dict[1]){
                     ATLAS.channelTags[k].tag = null;
-                return true;
+                    atlasUpdated = true;
+                    return true;
                 }
             });
 
@@ -191,6 +193,7 @@ export function updateChannelTags (input) {
             }
         else if(o.tag === dict[1]){
             ATLAS.channelTags[j].tag = null; //Set tag to null since it's being assigned to another channel
+            atlasUpdated = true;
         }
         });
         if (found === false){
@@ -220,11 +223,8 @@ export function updateChannelTags (input) {
         }
     });
 
-    if(atlasUpdated === true && State.data.fdBackMode === "coherence"){
-        //Regen coherence map
-        ATLAS.coherenceMap = ATLAS.genCoherenceMap(ATLAS.channelTags); //Reset coherence map with new tags
-        ATLAS.coherenceMap.shared.bandPassWindow = ATLAS.fftMap.shared.bandPassWindow;
-        ATLAS.coherenceMap.shared.bandFreqs = ATLAS.fftMap.shared.bandFreqs;
+    if(atlasUpdated === true){
+        ATLAS.regenAtlases(State.data.freqStart,State.data.freqEnd,EEG.sps);
     }
     //setBrainMap();
     //setuPlot();
