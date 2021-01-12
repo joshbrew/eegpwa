@@ -47,7 +47,11 @@ State.data.appletClasses.push(
 //TODO: 
 //Automatic bandpass applied to ADC stream (fix combine kernels)
 //Control y-axis window in uplot
-//Preconfigurations
+//Overlaid ADC graphs with y-axes adjusted (just subtract from math.min)
+//Channel 9 button visual
+//Moving average for coherence.
+
+//Preconfigurations with links to preconfigure
 //More visualization of settings i.e. channel tag assignments and which channels are being computed
 //Slow cortical signal features.
 //Deal with data saving and local storage, state saving (use nodeFS or whatever its called)

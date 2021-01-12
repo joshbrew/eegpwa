@@ -58,7 +58,7 @@ export class SpectrogramApplet {
     //Initialize the applet. Keep the first line.
     init() {
         this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML();},undefined,"NEVER"); //Changes to this.props will automatically update the html template
-        this.class = new Spectrogram(this.renderProps.id+'canvas', 10000);
+        this.class = new Spectrogram(this.renderProps.id+'canvas', 100000);
         this.class.init();
 
         this.sub = State.subscribe('FFTResult', ()=>{try{this.onUpdate();}catch(e){console.error(e);}});
