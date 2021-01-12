@@ -2,8 +2,8 @@ import {State} from './State'
 import {eeg32, eegAtlas} from '../utils/eeg32'
 
 let defaultTags = [
-    {ch: 4, tag: "T3", viewing: true},
-    {ch: 24, tag: "T4", viewing: true}
+    {ch: 4, tag: "Fp2", viewing: true},
+    {ch: 24, tag: "Fp1", viewing: true}
 ];
 
 
@@ -61,6 +61,7 @@ export const bufferEEGData = () => {
         if(i < EEG.nChannels) {
             var channel = "A"+ATLAS.channelTags[i].ch;
             var dat = EEG.data[channel].slice(EEG.data.counter - EEG.sps, EEG.data.counter);
+            //console.log(channel);
             buffer.push(dat);
         }
     }

@@ -20,7 +20,10 @@ Everything here now was accomplished over the past couple months, when it's done
 
 ![brainmap](screenshots/brainmap.PNG)
 
+![stream](screenshots/Coherence.PNG)
+
 ![stream](screenshots/stream.png)
+
 
 ## Cool features
 

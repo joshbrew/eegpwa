@@ -215,7 +215,7 @@ export class uPlotApplet {
       
           if(EEG.data["A0"].length > 1) {
             var nsamples = Math.floor(EEG.sps*State.data.nSecAdcGraph);
-            if(nsamples > EEG.data.ms.length) {nsamples = EEG.data.ms.length-1}
+            if(nsamples > EEG.data.counter) {nsamples = EEG.data.counter-1;}
       
             this.class.uPlotData = [
                 EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
