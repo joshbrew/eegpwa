@@ -20,6 +20,8 @@ Everything here now was accomplished over the past couple months, when it's done
 
 ![brainmap](screenshots/brainmap.PNG)
 
+![stream](screenshots/stream.png)
+
 ## Cool features
 
 * GPU js FFTs with web workers enabling real time DSP for as many channel inputs as you want. Benchmarked 128 channels * 512 samples in 8.3ms, about 15ms-20ms average on an RTX 2060.
@@ -117,6 +119,3 @@ Incoming:
 * theta-gamma 2 octave - Dmitry's test to show working memory coherence patterns with audio and heatmap visualization using my soundjs toy and uplot
 * more alpha coherence visualization - for alpha training e.g. with meditation
 
-
-On the right you can see single threaded performance statistics (<20ms average for 128x FFTs on worker threads)
-![stream](screenshots/stream.png)
