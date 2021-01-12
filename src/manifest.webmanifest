@@ -1,6 +1,6 @@
 {
-    "short_name": "EEG Web",
-    "name": "EEG Browser",
+    "short_name": "Web BCI",
+    "name": "Web BCI",
     "start_url": ".",
     "display": "standalone",
     "theme_color": "#000000",
