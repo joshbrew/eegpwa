@@ -8,10 +8,11 @@
     "url": "git+https://github.com/moothyknight/eegpwa"
   },
   "scripts": {
-    "start": "node info && parcel ./src/index.html",
+    "start": "node cross-env NODE_OPTIONS=--max-old-space-size=4096 webpack info && parcel ./src/index.html",
     "build": "parcel build ./src/index.html",
     "postbuild": "workbox generateSW"
   },
+
   "author": "",
   "license": "ISC",
   "dependencies": {
