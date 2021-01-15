@@ -13,6 +13,9 @@ export class AppletExample { //Filled in Applet class copy (without extending, w
             id: String(Math.floor(Math.random()*1000000))
         };
 
+        this.settings = settings;
+        if(settings.length > 0) { this.configure(settings);}
+
         State.data.x = 0;
         this.subscription = State.subscribe('x',this.doSomething);
         //this.listener = new ObjectListener();
@@ -43,6 +46,12 @@ export class AppletExample { //Filled in Applet class copy (without extending, w
     deInit() {
         State.unsubscribe('x',this.subscription);
         this.AppletHTML.deleteNode();
+    }
+
+    configure(settings) {
+        settings.forEach((cmd,i) => {
+            //if(cmd === 'x'){//doSomething;}
+        });
     }
 
     onResize() {

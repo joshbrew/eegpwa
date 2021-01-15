@@ -14,6 +14,7 @@ import {
   EEG, ATLAS,
   EEGInterfaceSetup,
   runEEGWorker, 
+  readyDataForWriting,
   updateBandPass, 
   updateChannelTags, 
   updateChannelView,
@@ -51,7 +52,7 @@ State.data.appletClasses.push(
 //Channel 9 button visual
 //Moving average for coherence.
 
-//Preconfigurations with links to preconfigure
+//Preconfigurations with links to preconfigure -- just need to make settings
 //More visualization of settings i.e. channel tag assignments and which channels are being computed
 //Slow cortical signal features.
 //Deal with data saving and local storage, state saving (use nodeFS or whatever its called)
@@ -59,6 +60,25 @@ State.data.appletClasses.push(
 //Signal analysis cleanup
 //UI switching (for HEG inclusion)
 */
+
+
+//import fs from 'fs'
+import * as BrowserFS from 'browserfs'
+const fs = BrowserFS.BFSRequire('fs')
+
+function getConfigsFromHashes() {
+    let hashes = window.location.hash;
+    if(hashes === "") { return [] }
+    let hasharr = hashes.split('#');
+    hashes.shift();
+
+    var appletConfigs = [];
+    hasharr.forEach((hash,i) => {
+        var cfg = JSON.parse(hash); // expects cfg object on end of url like #{name:"",idx:n,settings:["a","b","c"]}#{...}#...
+        appletConfigs.push(cfg);
+    });
+    return appletConfigs;    
+}
 
 
 //UI Code
@@ -90,7 +110,7 @@ function initEEGui() {
         else{  
             EEG.setupSerialAsync(); 
             if(ATLAS.fftMap.map[0].data.count > 0) {
-                ATLAS.regenAtlases(State.data.freqStart,State.data.freqEnd,EEG.sps);
+                ATLAS.regenAtlasses(State.data.freqStart,State.data.freqEnd,EEG.sps);
                 UI.reInitApplets();
             }
         }
@@ -152,8 +172,6 @@ function initEEGui() {
 
 }
 
-const UI = new UIManager(initEEGui, deInitEEGui);
-
 
 
 /* //Mouse target debug
@@ -166,10 +184,96 @@ document.addEventListener('click', function(e) {
 */
 
 
+const initSystem = () => {
+    BrowserFS.configure({
+        fs: "MountableFileSystem",
+        options: {
+        '/data': { fs: "IndexedDB", options:{ storeName:'data'} }
+        //'/zip': { fs: "ZipFS"}
+        //'/tmp': { fs: "InMemory" },
+        //'/mnt/usb0': { fs: "LocalStorage" }
+        //'/cpp': { fs: "Emscripten" } // External C++ and Python scripts via https://developers.google.com/web/updates/2019/01/emscripten-npm. 
+        //'/py': { fs: "" } // See: https://github.com/iodide-project/pyodide -- 
+        }
+    }, (e) => {
+        BrowserFS.initialize()
+    });
+
+    fs.open('/data/settings.json', 'w+', (e,f) => { 
+        if(e) throw e; 
+     
+        //var buffer = new ArrayBuffer(100000);
+        var contents = "";
+        fs.read('/data/settings.json', (err,data) => {
+            if(err) throw err;
+            contents = data.toString();
+        });
+        if(contents.length < 1) {
+            let newcontent = JSON.stringify({appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:0,freqEnd:100,nSecAdcGraph:10});
+            contents = newcontent;
+            fs.write(f, newcontent, function(err){
+                if(err) throw err;
+                console.log("Settings file created");
+            });
+        }
+        
+        fs.close(f);
+
+        let settings = JSON.parse(contents);
+        State.data.coherenceResult  = settings.coherenceResult;
+        State.data.FFTResult        = settings.FFTResult;
+        State.data.freqStart        = settings.freqStart;
+        State.data.freqEnd          = settings.freqEnd;
+        State.data.nSecAdcGraph     = settings.nSecAdcGraph;
+
+        var configs = getConfigsFromHashes();
+        if(configs.length === null){
+            configs = settings.appletConfigs;
+            State.data.appletConfigs = settings.appletConfigs;
+        }
+
+        const UI = new UIManager(initEEGui, deInitEEGui, configs);
+
+    });
+  
+
+    const onMaxData = () => {
+        if(State.data.counter >= EEG.maxBufferedSamples) {
+            let content = readyDataForWriting();
+            let path = "/data/"+State.data.sessionName;
+            if(State.data.sessionName === ""){
+                State.data.sessionName = new Date().toISOString();
+                fs.appendFile(path,content[0].join(","));
+            }
+            content[1].splice(content[1].length-EEG.sps*State.data.nSecAdcGraph,EEG.sps*State.data.nSecAdcGraph);// Shave off the last 10 seconds since we'll be kep
+            fs.appendFile(path,content[1].join(","));
+
+            
+            for(prop in EEG.data){
+                if(typeof EEG.data[prop] === 'object'){
+                    EEG.data[prop].splice(0,EEG.data.counter-EEG.sps*State.data.nSecAdcGraph);
+                    EEG.data[prop].concat(new Array(EEG.data.counter-EEG.sps*State.data.nSecAdcGraph).fill(0));
+                    EEG.data.counter = EEG.sps*State.data.nSecAdcGraph;
+                }
+            }
+            //TODO: Leave some data in the atlasses or just have applets work with their own circular buffers
+            ATLAS.regenAtlasses(State.data.freqStart, State.data.freqEnd, EEG.sps);
+            //Clears heap to save memory
+        }
+    }
+
+    //State.subscribe('counter',onMaxData);
+
+}
 
 
 
 
+//initSystem();
 
 
+var configs = getConfigsFromHashes(); 
+console.log(configs)
 
+
+const UI = new UIManager(initEEGui, deInitEEGui, configs);

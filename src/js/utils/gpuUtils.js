@@ -111,7 +111,7 @@ export class gpuUtils {
 
     //Bandpass FFT+iFFT to return a cleaned up waveform
     const signalBandpass = (signal, sampleRate, freqStart, freqEnd, scalar) => { //Returns the signal wave with the bandpass filter applied
-      var dft = this.fft_windowed(signal, sampleRate, freqStart, freqEnd, scalar);
+      var dft = this.fft_windowed(signal, sampleRate, freqStart, freqEnd, scalar, 0);
       var filtered_signal = this.ifft_windowed(dft, sampleRate, freqStart, freqEnd, scalar); 
       return filtered_signal;
     }
@@ -119,7 +119,7 @@ export class gpuUtils {
     //this.signalBandpass = this.gpu.combineKernels(this.dft_windowedKern,this.idft_windowedKern, signalBandpass);
     
     const signalBandpassMulti = (signals, sampleRate, freqStart, freqEnd, scalar) => {
-      var dfts = this.listdft1D_windowed(signals,sampleRate,freqStart,freqEnd,scalar);
+      var dfts = this.listdft1D_windowed(signals,sampleRate,freqStart,freqEnd,scalar, new Array(Math.ceil(signals/sampleRate)).fill(0));
       var filtered_signals = this.listidft1D_windowed(dfts,sampleRate,freqStart,freqEnd,scalar);
       return filtered_signals;
     }
@@ -129,8 +129,8 @@ export class gpuUtils {
     //TODO: automatic auto/cross correlation and ordering.
     //Input signals like this : [signal1,signal2,autocor1,autocor2,crosscor,...repeat for desired coherence calculations] or any order of that.
     const gpuCoherence = (signals, sampleRate, freqStart, freqEnd, scalar) => { //Take FFTs of the signals, their autocorrelations, and cross correlation (5 FFTs per coherence), then multiply.
-      var ffts = this.listdft1D_windowed(signals, sampleRate, freqStart, freqEnd, scalar);
-      var products = this.bulkArrayMul(ffts, sampleRate, 5, 1);
+      var dfts = this.listdft1D_windowed(signals, sampleRate, freqStart, freqEnd, scalar, new Array(Math.ceil(signals/sampleRate)).fill(0) );
+      var products = this.bulkArrayMul(dfts, sampleRate, 5, 1);
       return products;
     }
 
@@ -191,7 +191,7 @@ export class gpuUtils {
   } 
 
   //Input array buffer and the number of seconds of data
-  gpuDFT(signalBuffer, nSeconds, scalar=1, texOut = false){
+  gpuDFT(signalBuffer, nSeconds, scalar=1, DCoffset=0, texOut = false){
 
     var nSamples = signalBuffer.length;
     var sampleRate = nSamples/nSeconds;
@@ -199,7 +199,7 @@ export class gpuUtils {
     this.dft.setOutput([signalBuffer.length]);
     this.dft.setLoopMaxIterations(nSamples);
 
-    var outputTex = this.dft(signalBuffer, nSamples, scalar);
+    var outputTex = this.dft(signalBuffer, nSamples, scalar, DCoffset);
     var output = null;
     if(texOut === false){
       var freqDist = this.makeFrequencyDistribution(nSamples, sampleRate);
@@ -216,7 +216,7 @@ export class gpuUtils {
   }
 
   //Input array of array buffers of the same length and the number of seconds recorded
-  MultiChannelDFT(signalBuffer, nSeconds, scalar=1, texOut = false) {
+  MultiChannelDFT(signalBuffer, nSeconds, scalar=1, DCoffset=0, texOut = false) {
     
     var signalBufferProcessed = [];
       
@@ -231,7 +231,7 @@ export class gpuUtils {
     this.listdft1D.setOutput([signalBufferProcessed.length]); //Set output to length of list of signals
     this.listdft1D.setLoopMaxIterations(nSamplesPerChannel); //Set loop size to the length of one signal (assuming all are uniform length)
         
-    var outputTex = this.listdft1D(signalBufferProcessed,nSamplesPerChannel, scalar);
+    var outputTex = this.listdft1D(signalBufferProcessed,nSamplesPerChannel, scalar, DCoffset);
     if(texOut === false){
       var orderedMagsList = [];
 
@@ -256,7 +256,7 @@ export class gpuUtils {
 
       
   //Input buffer of signals [[channel 0],[channel 1],...,[channel n]] with the same number of samples for each signal. Returns arrays of the positive DFT results in the given window.
-  MultiChannelDFT_Bandpass(signalBuffer,nSeconds,freqStart,freqEnd,scalar=1, texOut = false) {
+  MultiChannelDFT_Bandpass(signalBuffer,nSeconds,freqStart,freqEnd, scalar=1, DCoffset=0, texOut = false) {
 
     var signalBufferProcessed = [];
       
@@ -272,12 +272,13 @@ export class gpuUtils {
     this.listdft1D_windowed.setOutput([signalBufferProcessed.length]); //Set output to length of list of signals
     this.listdft1D_windowed.setLoopMaxIterations(nSamplesPerChannel); //Set loop size to the length of one signal (assuming all are uniform length)
         
-    var outputTex = this.listdft1D_windowed(signalBufferProcessed,sampleRate,freqStart,freqEnd_nyquist, scalar);
+    var outputTex = this.listdft1D_windowed(signalBufferProcessed,sampleRate,freqStart,freqEnd_nyquist, scalar, DCoffset);
     if(texOut === true) { return outputTex; }
     
     signalBufferProcessed = outputTex.toArray();
     outputTex.delete();
 
+    //console.log(signalBufferProcessed)
     //TODO: Optimize for SPEEEEEEED.. or just pass it str8 to a shader
     var freqDist = this.bandPassWindow(freqStart,freqEnd,sampleRate);
     return [freqDist, this.orderBPMagnitudes(signalBufferProcessed,nSeconds,sampleRate,nSamplesPerChannel)]; //Returns x (frequencies) and y axis (magnitudes)

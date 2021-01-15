@@ -19,22 +19,22 @@ export function PLL(signal, freq) {
         return [re,im];
     }
 
-    function cmul(c1,c2) {
-        let re = c1[0]*c2[0] - c1[1]*c2[1];
-        let im = c1[0]*c2[1] + c1[1]*c2[0];
+    function cmul(re1,im1,re2,im2) {
+        let re = re1*re2 - im1*im2;
+        let im = re1*im2 + im1*re2;
         return [re,im]; 
     }
 
-    function conj(complexArr){
-        complexArr[1] = -complexArr[1];
+    function conj(im){ //complex conjugate
+        return -im;
     }
 
-    function carg(c){
-        return Math.atan(c[1]/c[0]); //atan(imag/real);
+    function carg(re,im){ //complex argument, used for the phase error
+        return Math.atan(im/re); //atan(imag/real);
     }
 
-    function cmag(c){
-        return Math.sqrt(c[0]*c[0]+c[1]*c[1]);
+    function cmag(re,im){ //magnitude i.e. the amplitude of the wave at time t represented by real and imaginary components
+        return Math.sqrt(re*re+im*im);
     }
 
     function ampToC(amplitude){
@@ -42,18 +42,26 @@ export function PLL(signal, freq) {
     }
 
     let result={signal_in:signal,signal_out:new Array(signal.length).fill(0),phase_err:new Array(signal.length).fill(0)};
-    for(let i=0; i<n; i++){
-        let signal_in = ampToC(signal[i]);
-        let signal_out = cexp(phase_out,0);
+    for(let i=0; i<n; i++){ 
+        let signal_in = ampToC(signal[i]); //original signal
+        let signal_out = cexp(phase_out,0); //signal to mix
 
-        let phase_err = carg(cmul(signal_in,conj(signal_out)));
+        let in_real = signal[i];
+        let in_imag = 0;
 
-        phase_out += α*phase_err;
-        freq_out += ß*phase_err;
+        let sim_real = signal_out[0];
+        let sim_imag = signal_out[1];
+
+        let {mul_real,mul_imag} = cmul(in_real,in_imag,sim_real,conj(sim_imag)); //conjugate the simulated imaginary term
+
+        let phase_err = carg(mul_real, mul_imag); //complex argument
+
+        phase_out += α*phase_err; //change the phase by the error
+        freq_out += ß*phase_err; //frequency changed by the error (?)
 
         phase_out += freq_out;
 
-        result.signal_out[i]=cmag(signal_out);
+        result.signal_out[i]=cmag(sim_real,sim_imag);
 
         result.phase_err[i]=phase_err;
 

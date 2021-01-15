@@ -1,8 +1,7 @@
 import {State} from './State'
 
-
 export class UIManager {
-    constructor(initUI = () => {}, deInitUI = () => {}, appletSelectIds=["applet1","applet2","applet3","applet4"], menuId = "UI", menuheaderId = "menu_header", menudropdownId = "menu_dropdown") {
+    constructor(initUI = () => {}, deInitUI = () => {}, appletConfigs=[], appletSelectIds=["applet1","applet2","applet3","applet4"], menuId = "UI") {
         this.initUI = initUI;
         this.deInitUI = deInitUI;
         this.initUI();
@@ -10,7 +9,7 @@ export class UIManager {
         this.menuNode = document.getElementById(menuId);
         this.appletSelectIds = appletSelectIds;
 
-        this.initAddApplets();
+        this.initAddApplets(appletConfigs);
 
         window.addEventListener('resize', ()=>{
             this.responsiveUIUpdate();
@@ -29,17 +28,36 @@ export class UIManager {
 
     deInitUI = () => {}
 
-    initAddApplets = () => {
-        if(State.data.appletsSpawned < State.data.maxApplets) {
+    initAddApplets = (appletConfigs=[]) => {
+        if(appletConfigs.length === 0){
             State.data.appletClasses.forEach((classObj,i) => {
                 if(State.data.appletsSpawned < State.data.maxApplets) {
                     State.data.applets.push({ appletIdx:i+1, name:classObj.name, classinstance: new classObj.cls("applets")});
                     State.data.appletsSpawned++;
                 }
             });
+            this.initApplets();
         }
-
-        this.initApplets();
+        else{
+            appletConfigs.forEach((cfg,i)=> { //Expects objects like {name:"",idx:1 to max,settings:["a","b","c"]} the idx and settings are optional to set up specific layouts
+                State.data.appletClasses.find((o,j) => {
+                    if(cfg.name === o.name) {
+                        let k = i+1;
+                        if(cfg.idx) { k=cfg.idx; }
+                        State.data.applets.push({ appletIdx:k, name:o.name, classinstance: new o.cls("applets")});
+                        State.data.appletsSpawned++;
+                        if(cfg.settings) {
+                            this.initAppletwSettings(k,cfg.settings);
+                        }
+                        else {
+                            this.initAppletwSettings(k,null);
+                        }
+                    }
+                    
+                });
+            });
+        }
+        
 
     }
 
@@ -70,11 +88,17 @@ export class UIManager {
         }
     }
 
-    initApplet = (appletIdx) => {
+    initAppletwSettings = (appletIdx=null,settings=null) => {
         var found = State.data.applets.find((o,i) => {
             if(o.appletIdx === appletIdx) {
                 o.classinstance.init();
-                o.classinstance.AppletHTML.node.style.position = "absolute";
+                if(!!settings){
+                    if(!!o.classinstance.configure){
+                        o.classinstance.configure(settings);
+                    }
+                }
+                o.classinstance.AppletHTML.node.style.position = "absolute";        
+                this.responsiveUIUpdate();
                 return true;
             }
         });
@@ -115,7 +139,7 @@ export class UIManager {
             }
         });
         State.data.appletClasses.forEach((classObj,i) => {
-            if(State.data.applets[stateIdx].name===classObj.name) {
+            if(!!State.data.applets[stateIdx] && State.data.applets[stateIdx].name===classObj.name) {
               newhtml += `<option value='`+classObj.name+`' selected="selected">`+State.data.appletClasses[i].name+`</option>`;
             }
             else{

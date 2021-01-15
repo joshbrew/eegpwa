@@ -10,6 +10,7 @@ const gpu = new gpuUtils();
 
 onmessage = (e) => {
   // define gpu instance
+  //console.log("worker executing...")
   console.time("worker");
   let output = "function not defined";
 
@@ -50,8 +51,13 @@ onmessage = (e) => {
       var dfts;
 
       var scalar = 1;
-      if(e.data.input[4] !== undefined) scalar = e.data.input[4];
-      dfts = gpu.MultiChannelDFT_Bandpass(buffer, e.data.input[1], e.data.input[2], e.data.input[3], scalar);
+      var mins = new Array(buffer.length).fill(0);
+      if(e.data.input[4] !== undefined) {scalar = e.data.input[4];}
+      if(e.data.input[5] !== undefined) {e.data.input[5].forEach((min,i) => {mins[i] = min;});}
+      //console.log(mins)
+      //console.log(buffer);
+      dfts = gpu.MultiChannelDFT_Bandpass(buffer, e.data.input[1], e.data.input[2], e.data.input[3], scalar, mins);
+      //console.log(dfts)
       const cordfts = dfts[1].splice(e.data.input[0].length, buffer.length-e.data.input[0].length);
       //console.log(cordfts)
 
@@ -109,8 +115,6 @@ onmessage = (e) => {
 
   // output some results!
   console.timeEnd("worker");
-  //console.log("worker input: ", e.data)
-  //console.log("worker output: ", output);
 
   postMessage({output: output,foo: e.data.foo});
 };

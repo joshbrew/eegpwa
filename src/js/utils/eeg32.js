@@ -39,7 +39,8 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.uVperStep = 0.000001 / (this.vref*this.stepSize*this.gain); //uV per step.
 		this.scalar = 1/(0.000001 / (this.vref*this.stepSize*this.gain)); //step per uV.
 
-
+		this.maxBufferedSamples = this.sps*60*10; //max samples in buffer this.sps*60*nMinutes = max minutes of data
+		
 		this.data = { //Data object to keep our head from exploding. Get current data with e.g. this.data.A0[this.data.counter-1]
 			counter: 0,
 			ms: [],
@@ -50,6 +51,8 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			'Ax': [], 'Ay': [], 'Az': [], 'Gx': [], 'Gy': [], 'Gz': []  //Peripheral data (accelerometer, gyroscope)
 		};
 
+		this.resetDataBuffers();
+
 		//navigator.serial utils
 		if(!navigator.serial){
 			console.error("`navigator.serial not found! Enable #enable-experimental-web-platform-features in chrome://flags (search 'experimental')")
@@ -58,7 +61,16 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.reader = null;
 		this.baudrate = baudrate;
 
-    }
+	}
+	
+	resetDataBuffers(){
+		this.data.counter = 0;
+		for(const prop in this.data) {
+			if(typeof this.data[prop] === "object"){
+				this.data[prop] = new Array(this.maxBufferedSamples).fill(0);
+			}
+		}
+	}
 
     bytesToInt16(x0,x1){
 		return x0 * 256 + x1;
@@ -101,18 +113,38 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			}
 
 			//line found, decode.
-			this.data.counter++;
-			if(this.data.ms.length === 0) {this.data.ms.push(Date.now());}
-			else {this.data.ms.push(this.data.ms[this.data.ms.length - 1]+this.updateMs);}//Assume no dropped samples
-
-			for(var i = 3; i < 99; i+=3) {
-				var channel = "A"+(i-3)/3;
-				this.data[channel].push(this.bytesToInt24(line[i],line[i+1],line[i+2]));
+			if(this.data.counter < this.maxBufferedSamples){
+				this.data.counter++;
 			}
 
-			this.data["Ax"].push(this.bytesToInt16(line[99],line[100]));
-			this.data["Ay"].push(this.bytesToInt16(line[101],line[102]));
-			this.data["Az"].push(this.bytesToInt16(line[103],line[104]));
+			if(this.data.counter-1 === 0) {this.data.ms[this.data.counter-1]= Date.now();}
+			else {
+				if(this.data.counter === this.maxBufferedSamples) {
+					this.data.ms.push(this.data.ms[this.data.counter-1]+this.updateMs);
+					this.data.ms.shift();
+				}
+				else{
+					this.data.ms[this.data.counter-1]=this.data.ms[this.data.counter-2]+this.updateMs;
+				}
+			}//Assume no dropped samples
+			
+			for(var i = 3; i < 99; i+=3) {
+				var channel = "A"+(i-3)/3;
+				if(this.data[channel][this.data[channel].length-1] !== 0) { 
+					this.data[channel].shift();
+					this.data[channel].push(this.bytesToInt24(line[i],line[i+1],line[i+2]));
+				}
+				else{
+					this.data[channel][this.data.counter-1]=this.bytesToInt24(line[i],line[i+1],line[i+2]);
+				}
+			}
+
+			this.data["Ax"][this.data.counter-1]=this.bytesToInt16(line[99],line[100]);
+			this.data["Ay"][this.data.counter-1]=this.bytesToInt16(line[101],line[102]);
+			this.data["Az"][this.data.counter-1]=this.bytesToInt16(line[103],line[104]);
+			//console.log(this.data)
+
+
 
 			return true;
 			//Continue
@@ -255,7 +287,6 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		const filters = [
 			{ usbVendorId: 0x10c4, usbProductId: 0x0043 } //CP2102 filter (e.g. for UART via ESP32)
 		];
-
 
 		this.port = await navigator.serial.requestPort();
 		navigator.serial.addEventListener("disconnect",(e) => {
@@ -422,7 +453,7 @@ export class eegAtlas {
 
 		this.channelTags.forEach((r, i) => {
 			var row = this.getAtlasCoordByTag(r.tag);
-			var lastIndex = row.data.times.length - 1;
+			var lastIndex = row.data.count - 1;
 			dat.push({tag:row.tag, data:{
 				count:row.data.count,
 				time: row.data.times[lastIndex],
@@ -438,7 +469,7 @@ export class eegAtlas {
 		var raw = [];
 		this.channelTags.forEach((row,i) => {
 			var ch = 'A' + row.ch;
-			raw.push(this.data[ch].slice(this.data[ch].length-nSamples,this.data[ch].length));
+			raw.push(this.data[ch].slice(this.data[ch][this.data.counter-1]-nSamples,this.data[ch].length));
 		});
 		return raw;
 	}
@@ -477,31 +508,33 @@ export class eegAtlas {
 		this.fftMap.map.push({ tag: tag, data: this.newAtlasData(x,y,z) });
 	}
 
-	genCoherenceMap(channelTags = this.channelTags) {
+	genCoherenceMap(channelTags = this.channelTags, taggedOnly = true) {
 		var coherenceMap = {shared:{bandPassWindow:[],bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha1:[[],[]], alpha2:[[],[]], beta:[[],[]], lowgamma:[[],[]], highgamma:[[],[]]}},map:[]};
 		var l = 1, k = 0;
 		var freqBins = {scp: [], delta: [], theta: [], alpha1: [], alpha2: [], beta: [], lowgamma: [], highgamma: []}
 		
 		for( var i = 0; i < (channelTags.length*(channelTags.length + 1)/2)-channelTags.length; i++){
-			var coord0 = this.getAtlasCoordByTag(channelTags[k].tag);
-			var coord1 = this.getAtlasCoordByTag(channelTags[k+l].tag);
+			if(taggedOnly === false || taggedOnly === true && ((channelTags[k].tag !== null && channelTags[k+l].tag !== null)&&(channelTags[k].tag !== 'other' && channelTags[k+l].tag !== 'other'))) {
+				var coord0 = this.getAtlasCoordByTag(channelTags[k].tag);
+				var coord1 = this.getAtlasCoordByTag(channelTags[k+l].tag);
 
-			coherenceMap.map.push({
-				tag: channelTags[k].tag+":"+channelTags[l+k].tag,
-				data: {
-					x0: coord0?.data.x,
-					y0: coord0?.data.y,
-					z0: coord0?.data.z,
-					x1: coord1?.data.x,
-					y1: coord1?.data.y,
-					z1: coord1?.data.z,
-					count: 0,
-					times:[],
-					amplitudes:[],
-					slices: JSON.parse(JSON.stringify(freqBins)),
-					means: JSON.parse(JSON.stringify(freqBins))
-				}
-			});
+				coherenceMap.map.push({
+					tag: channelTags[k].tag+":"+channelTags[l+k].tag,
+					data: {
+						x0: coord0?.data.x,
+						y0: coord0?.data.y,
+						z0: coord0?.data.z,
+						x1: coord1?.data.x,
+						y1: coord1?.data.y,
+						z1: coord1?.data.z,
+						count: 0,
+						times:[],
+						amplitudes:[],
+						slices: JSON.parse(JSON.stringify(freqBins)),
+						means: JSON.parse(JSON.stringify(freqBins))
+					}
+				});
+			}
 
 			l++;
 			if (l + k === channelTags.length) {
@@ -512,7 +545,7 @@ export class eegAtlas {
 		return coherenceMap;
 	}
 
-	regenAtlases(freqStart,freqEnd,sps=512) {
+	regenAtlasses(freqStart,freqEnd,sps=512) {
 		this.fftMap = this.makeAtlas10_20(); //reset atlas
 
 		let bandPassWindow = this.bandPassWindow(freqStart,freqEnd,sps);

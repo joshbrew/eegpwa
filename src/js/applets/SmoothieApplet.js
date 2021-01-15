@@ -5,7 +5,7 @@ import {DOMFragment} from '../frontend/DOMFragment'
 
 //You can extend or call this class and set renderProps and these functions
 export class SmoothieApplet {
-    constructor (parentNode=document.getElementById("applets")) { // customize the render props in your constructor
+    constructor (parentNode=document.getElementById("applets"),settings=[]) { // customize the render props in your constructor
         this.parentNode = parentNode;
         this.AppletHTML = null;
 
@@ -14,6 +14,9 @@ export class SmoothieApplet {
             height: "300px",
             id: String(Math.floor(Math.random()*1000000))
         }
+
+        this.settings = settings;
+        if(settings.length > 0) { this.configure(settings);}
 
         this.class=null;
         this.mode="smoothie";
@@ -45,7 +48,7 @@ export class SmoothieApplet {
 
     //Setup javascript functions for the new HTML here
     setupHTML() {
-        addChannelOptions(this.renderProps.id+"channel");
+        addChannelOptions(this.renderProps.id+"channel", true);
         
         /*
         document.getElementById(this.renderProps.id+"mode").onchange = () => {
@@ -74,6 +77,14 @@ export class SmoothieApplet {
         document.getElementById("runbutton").addEventListener('click',this.startEvent);
     }
 
+    
+    configure(newsettings=this.settings) { //Expects an array []
+      this.settings=newsettings;
+      settings.forEach((cmd,i) => {
+          //if(cmd === 'x'){//doSomething;}
+      });
+    }
+
     //Destroy applet. Keep this one line
     deInit() {
         this.class.deInit();
@@ -97,12 +108,14 @@ export class SmoothieApplet {
       if((graphmode === "alpha") || (graphmode === "bandpowers")) {
         if(graphmode === "alpha"){
             ATLAS.channelTags.forEach((row,i) => {
-            var coord = {};
-            coord = ATLAS.getAtlasCoordByTag(row.tag);
+              if(row.tag !== null && row.tag !== 'other'){
+                var coord = {};
+                coord = ATLAS.getAtlasCoordByTag(row.tag);
 
-            if(i < this.class.series.length - 1){
-              this.class.series[i].append(Date.now(), Math.max(...coord.data.slices.alpha1[coord.data.slices.alpha1.length-1]));
-            }
+                if(i < this.class.series.length - 1){
+                  this.class.series[i].append(Date.now(), Math.max(...coord.data.slices.alpha1[coord.data.slices.alpha1.length-1]));
+                }
+              }
           });
         }
         else if(graphmode === "bandpowers") {

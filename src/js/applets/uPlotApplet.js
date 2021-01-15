@@ -10,7 +10,7 @@ Custom plot legend, still clickable but much more compact.
 
 //You can extend or call this class and set renderProps and these functions
 export class uPlotApplet {
-    constructor (parentNode=document.getElementById("applets")) { // customize the render props in your constructor
+    constructor (parentNode=document.getElementById("applets"),settings=[]) { // customize the render props in your constructor
         this.parentNode = parentNode;
         this.AppletHTML = null;
 
@@ -19,6 +19,9 @@ export class uPlotApplet {
             height: "100px",
             id: String(Math.floor(Math.random()*1000000))
         }
+
+        this.settings = settings;
+        if(settings.length > 0) { this.configure(settings);}
 
         this.class = null;
         this.mode = "uplot";
@@ -107,6 +110,14 @@ export class uPlotApplet {
         this.sub = State.subscribe('FFTResult',()=>{try{this.onUpdate();}catch(e){console.error(e);}});
     }
 
+    
+    configure(newsettings=this.settings) { //Expects an array []
+      this.settings=newsettings;
+      settings.forEach((cmd,i) => {
+          //if(cmd === 'x'){//doSomething;}
+      });
+    }
+
     //Destroy applet. Keep this one line
     deInit() {
         State.unsubscribe('FFTResult',this.sub);
@@ -147,7 +158,7 @@ export class uPlotApplet {
           ];
 
           ATLAS.channelTags.forEach((row,i) => {
-              if(row.viewing === true) {
+              if(row.viewing === true && (State.data.fdBackMode !== "coherence" || (State.data.fdBackMode === "coherence" && (row.tag !== 'other' && row.tag !== null)))) {
                 this.class.uPlotData.push([...State.data.FFTResult[i]]);
               }
           });
@@ -255,7 +266,7 @@ export class uPlotApplet {
                 //console.log(posFFTList);
                 ATLAS.channelTags.forEach((row,i) => {
                   if(i < State.data.FFTResult.length){
-                    if(row.viewing === true) {
+                    if((row.viewing === true) && (State.data.fdBackMode !== "coherence" || (State.data.fdBackMode === "coherence" && (row.tag !== 'other' && row.tag !== null)))) {
                       this.class.uPlotData.push([...State.data.FFTResult[i]]);
                     }
                   }

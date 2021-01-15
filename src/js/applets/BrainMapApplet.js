@@ -5,7 +5,7 @@ import {DOMFragment} from '../frontend/DOMFragment'
 
 //You can extend or call this class and set renderProps and these functions
 export class BrainMapApplet {
-    constructor (parentNode=document.getElementById("applets")) { // customize the render props in your constructor
+    constructor (parentNode=document.getElementById("applets"),settings=[]) { // customize the render props in your constructor
         this.parentNode = parentNode;
         this.AppletHTML = null;
 
@@ -14,6 +14,9 @@ export class BrainMapApplet {
             height: "300px",
             id: String(Math.floor(Math.random()*1000000))
         }
+
+        this.settings = settings;
+        if(settings.length > 0) { this.configure(settings);}
 
         this.class = null;
         this.mode = "brainmap";
@@ -62,6 +65,14 @@ export class BrainMapApplet {
         this.class.updatePointsFromAtlas(ATLAS.fftMap,ATLAS.channelTags);
         
         this.sub = State.subscribe('FFTResult', ()=>{try{this.onUpdate();}catch(e){console.error(e);}});
+    }
+
+    
+    configure(newsettings=this.settings) { //Expects an array []
+        this.settings=newsettings;
+        settings.forEach((cmd,i) => {
+            //if(cmd === 'x'){//doSomething;}
+        });
     }
 
     //Destroy applet. Keep this one line

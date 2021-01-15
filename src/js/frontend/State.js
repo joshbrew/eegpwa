@@ -1,13 +1,17 @@
 import {StateManager} from './StateManager'
 
+
+
 //Initial state values
 export const State = new StateManager(
     {
         applets:[],
+        appletConfigs:[],
         appletsSpawned:0,
         maxApplets:4,
         appletClasses:[],
         
+        counter:0,
         lastPostTime:0,
         FFTResult:[],
         coherenceResult:[],
@@ -16,6 +20,7 @@ export const State = new StateManager(
         nSec:1,
         nSecAdcGraph:10,
         fdBackMode: 'coherence',
+        sessionName: '',
 
         connected:false,
         analyze:false,

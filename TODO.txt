@@ -38,7 +38,7 @@ Visuals:
 Performance:
 - I could definitely optimize most of the math but if it ain't broke don't fix it.. yet.. 
 - Optimize correlograms function, do a bulk gpu dispatch for getting all correlograms
-- DFTs -> FFTS:
+- DFTs -> FFTS for the multi dft:
    How to optimize: Only use required nyquist sampling for lower frequencies (sps/4): e.g. 512sps = 256Hz nyquist resolution. 256sps = 128Hz nyquist resolution, so I only need a maximum of 256 samples for <128 Hz, 128 samples for <64Hz and so on which reduces the number of computations significantly.
 - Test iDFT finally once FFT implementation is done, will make for instant digital waveform visualization with basic bandpass filtered noise cancellation.    
 

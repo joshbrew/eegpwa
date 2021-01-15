@@ -5,7 +5,7 @@ import { mirrorBarChart } from '../utils/eegvisuals';
 
 //You can extend or call this class and set renderProps and these functions
 export class MirrorBarsApplet {
-    constructor (parentNode=document.getElementById("applets")) { // customize the render props in your constructor
+    constructor (parentNode=document.getElementById("applets"),settings=[]) { // customize the render props in your constructor
         this.parentNode = parentNode;
         this.AppletHTML = null;
 
@@ -14,6 +14,9 @@ export class MirrorBarsApplet {
             height: "100px",
             id: String(Math.floor(Math.random()*1000000))
         }
+
+        this.settings = settings;
+        if(settings.length > 0) { this.configure(settings);}
 
         this.class = null;
         this.mode = "mirroredbars";
@@ -77,6 +80,13 @@ export class MirrorBarsApplet {
         this.class.init();
 
         this.sub = State.subscribe('FFTResult',()=>{try{this.onUpdate()}catch(e){console.error(e);}});
+    }
+    
+    configure(newsettings=this.settings) { //Expects an array []
+        this.settings=newsettings;
+        settings.forEach((cmd,i) => {
+            //if(cmd === 'x'){//doSomething;}
+        });
     }
 
     //Destroy applet. Keep this one line

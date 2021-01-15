@@ -5,7 +5,7 @@ import { TimeChartMaker } from '../utils/eegvisuals';
 
 //You can extend or call this class and set renderProps and these functions
 export class TimeChartsApplet {
-    constructor (parentNode=document.getElementById("applets")) { // customize the render props in your constructor
+    constructor (parentNode=document.getElementById("applets"),settings=[]) { // customize the render props in your constructor
         this.parentNode = parentNode;
         this.AppletHTML = null;
 
@@ -14,6 +14,9 @@ export class TimeChartsApplet {
             height: "100px",
             id: String(Math.floor(Math.random()*1000000))
         }
+
+        this.settings = settings;
+        if(settings.length > 0) { this.configure(settings);}
 
         this.class = null;
         this.mode = "timechart";
@@ -48,6 +51,14 @@ export class TimeChartsApplet {
         this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML()}); //Changes to this.props will automatically update the html template
         this.class = new TimeChartMaker(this.renderProps.id+'charts', 30000);
         this.class.setEEGTimeCharts(EEG, ATLAS, State.data.nSecAdcGraph);
+    }
+
+    
+    configure(newsettings=this.settings) { //Expects an array []
+        this.settings=newsettings;
+        settings.forEach((cmd,i) => {
+            //if(cmd === 'x'){//doSomething;}
+        });
     }
 
     //Destroy applet. Keep this one line

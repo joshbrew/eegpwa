@@ -3,7 +3,7 @@ import {DOMFragment} from '../frontend/DOMFragment'
 //import {Applet} from './Applet'
 
 export class YoutubeApplet { //Filled in Applet class: copy this file (instead of extending this class, so you need less javascript knowledge)
-    constructor(parentNode=document.getElementById("applets")) {
+    constructor(parentNode=document.getElementById("applets"),settings=[]) {
         this.parentNode = parentNode;
         this.AppletHTML = null;
 
@@ -12,6 +12,9 @@ export class YoutubeApplet { //Filled in Applet class: copy this file (instead o
             height: "100px",
             id: String(Math.floor(Math.random()*1000000))
         };
+
+        this.settings = settings;
+        if(settings.length > 0) { this.configure(settings);}
 
         State.data.x = 0;
         this.subscription = State.subscribe('x',this.doSomething);
@@ -38,6 +41,13 @@ export class YoutubeApplet { //Filled in Applet class: copy this file (instead o
 
     init() {
         this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML();},undefined,"NEVER"); //Changes to this.props will automatically update the html template
+    }
+
+    configure(newsettings=this.settings) { //Expects an array []
+        this.settings=newsettings;
+        settings.forEach((cmd,i) => {
+            //if(cmd === 'x'){//doSomething;}
+        });
     }
 
     deInit() {
