@@ -109,19 +109,19 @@ function initEEGui() {
         State.data.useFilters = document.getElementById("useFilters").checked;
     });
     document.getElementById("notch50").addEventListener('change',() => {
-        State.data.useFilters = document.getElementById("notch50").checked;
+        State.data.notch50 = document.getElementById("notch50").checked;
     });
     document.getElementById("notch60").addEventListener('change',() => {
-        State.data.useFilters = document.getElementById("notch60").checked;
+        State.data.notch60 = document.getElementById("notch60").checked;
     });
     document.getElementById("lp50").addEventListener('change',() => {
-        State.data.useFilters = document.getElementById("lp50").checked;
+        State.data.lowpass50 = document.getElementById("lp50").checked;
     });
     document.getElementById("dcb").addEventListener('change',() => {
-        State.data.useFilters = document.getElementById("dcb").checked;
+        State.data.dcblocker = document.getElementById("dcb").checked;
     });
     document.getElementById("sma4").addEventListener('change',() => {
-        State.data.useFilters = document.getElementById("sma4").checked;
+        State.data.sma4 = document.getElementById("sma4").checked;
     });
 
     document.getElementById("connectbutton").addEventListener('click',() => {

@@ -32,7 +32,7 @@ export const State = new StateManager(
         notch50:true,
         notch60:true,
         lowpass50:true,
-        dcblocker:false,
+        dcblocker:true,
         sma4:true,
         filtered:{},
 
