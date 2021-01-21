@@ -48,7 +48,11 @@ export class SpectrogramApplet {
     //Setup javascript functions for the new HTML here
     setupHTML() {
         addChannelOptions(this.renderProps.id+'channel');
+        document.getElementById(this.renderProps.id+'channel').onchange = () => {
+          this.class.clear();
+        }
         document.getElementById(this.renderProps.id+"mode").onchange = () => {
+            this.class.clear();
             if(document.getElementById(this.renderProps.id+"mode").value === "FFT"){
               addChannelOptions(this.renderProps.id+"channel");
             }

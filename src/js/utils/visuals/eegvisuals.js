@@ -932,6 +932,11 @@ export class Spectrogram {
 		cancelAnimationFrame(this.anim);
 	}
 
+	clear() {
+		this.ctx.fillStyle = "black";
+		this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
+	}
+
 	init() {
 		this.offscreen = new OffscreenCanvas(this.canvas.width,this.canvas.height);
 		this.offscreenctx = this.offscreen.getContext("2d");
