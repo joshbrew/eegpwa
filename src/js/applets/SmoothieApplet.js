@@ -33,13 +33,13 @@ export class SmoothieApplet {
             <div id='`+props.id+`menu' style='position:absolute; z-index:4; color:white;'>
                 Mode:
                 <select id='`+props.id+`mode'>
-                <option value="alpha" selected="selected">Alpha1 Bandpowers</option>
-                <option value="coherence">Alpha1 Coherence</option>
-                <option value="bandpowers">1Ch All Bandpowers</option>
+                  <option value="alpha" selected="selected">Alpha1 Bandpowers</option>
+                  <option value="coherence">Alpha1 Coherence</option>
+                  <option value="bandpowers">1Ch All Bandpowers</option>
                 </select>
                 Channel:
                 <select id='`+props.id+`channel'>
-                <option value="0">0</option>
+                  <option value="0">0</option>
                 </select>
             </div>
         </div>
@@ -50,18 +50,29 @@ export class SmoothieApplet {
     setupHTML() {
         addChannelOptions(this.renderProps.id+"channel", true);
         
-        /*
+        document.getElementById(this.renderProps.id+"channel").style.display = "none";
+        
         document.getElementById(this.renderProps.id+"mode").onchange = () => {
-            if(document.getElementById(this.renderProps.id+"mode").value === "coherence"){
-                State.unsubscribe('FFTResult',this.sub);
-                this.sub = State.subscribe('coherenceResult',this.onUpdate);
+            this.class.series.forEach((series,i)=> {
+              series.clear();
+            });
+            let val = document.getElementById(this.renderProps.id+"mode").value;
+            if(val === "alpha" || val === "coherence"){
+              document.getElementById(this.renderProps.id+"channel").style.display = "none";
             }
-            else{
-                State.unsubscribe('coherenceResult',this.sub);
-                this.sub = State.subscribe('FFTResult',this.onUpdate);
+            else if (val === "bandpowers") {
+              document.getElementById(this.renderProps.id+"channel").style.display = "";
             }
+            //if(document.getElementById(this.renderProps.id+"mode").value === "coherence"){
+            //    State.unsubscribe('FFTResult',this.sub);
+            //    this.sub = State.subscribe('coherenceResult',this.onUpdate);
+            //}
+            //else{
+            //    State.unsubscribe('coherenceResult',this.sub);
+            //    this.sub = State.subscribe('FFTResult',this.onUpdate);
+            //}
         }
-        */
+        
     }
 
     //Initialize the applet. Keep the first line.
