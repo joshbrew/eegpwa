@@ -3,7 +3,7 @@ import menuxsvg from '../../assets/menuX.svg'
 import logo from '../../public/logo512.png'
 export function menu_template(props={}) {
     return `
-    <img id="logo" src=`+logo+` style="position:absolute; height:50px; left:50%; margin-left:-25px; width:50px; top:17px; z-index:2; pointer-events:none;"/>  
+    <img id="logo" src=`+logo+` style="position:absolute; height:50px; left:50%; margin-left:-25px; width:50px; top:17px; z-index:9999; pointer-events:none;"/>  
     <table id="UI" style="width:100%; left:0px; top:0px; position:absolute; z-index:1;">
         <tr id="menu_header" style="height:80px; text-align:center;">
         </tr>
