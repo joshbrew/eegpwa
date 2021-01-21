@@ -2,6 +2,8 @@ import {State} from '../frontend/State'
 import {DOMFragment} from '../frontend/DOMFragment'
 //import {Applet} from './Applet'
 
+//Surf n turf
+
 export class YoutubeApplet { //Filled in Applet class: copy this file (instead of extending this class, so you need less javascript knowledge)
     constructor(parentNode=document.getElementById("applets"),settings=[]) {
         this.parentNode = parentNode;

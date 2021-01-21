@@ -30,8 +30,8 @@ export class SpectrogramApplet {
         return `
         <div id='`+props.id+`'>
             <canvas id='`+props.id+`canvas' height='`+props.height+`' width='`+props.width+`' style='position:absolute; z-index:3;  width:`+props.width+`px; height:`+props.height+`px;'></canvas>
-            <div id='`+props.id+`menu' style='position:absolute; z-index:4; color: white;'>
-                Mode
+            <div id='`+props.id+`menu' style='position:absolute; z-index:4; color: white;'> 
+            Mode
                 <select id='`+props.id+`mode'>
                     <option value="FFT" selected="selected">FFT</option>
                     <option value="Coherence">Coherence</option>

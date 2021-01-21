@@ -30,18 +30,23 @@ export class SmoothieApplet {
         return `
         <div id='`+props.id+`'>
             <canvas id='`+props.id+`canvas' width=`+props.width+` height=`+props.height+` style='z-index:3; position:absolute; width:`+props.width+`; height:`+props.height+`;'></canvas>
-            <div id='`+props.id+`menu' style='position:absolute; z-index:4; color:white;'>
+            <table id='`+props.id+`menu' style='position:absolute; z-index:4; color:white;'>
+            <tr>
+              <td>
                 Mode:
                 <select id='`+props.id+`mode'>
                   <option value="alpha" selected="selected">Alpha1 Bandpowers</option>
                   <option value="coherence">Alpha1 Coherence</option>
                   <option value="bandpowers">1Ch All Bandpowers</option>
                 </select>
+              </td><td id='`+props.id+`channelmenu'>  
                 Channel:
                 <select id='`+props.id+`channel'>
                   <option value="0">0</option>
                 </select>
-            </div>
+              </td>
+                </tr>
+            </table>
         </div>
         `;
     }
@@ -50,7 +55,7 @@ export class SmoothieApplet {
     setupHTML() {
         addChannelOptions(this.renderProps.id+"channel", true);
         
-        document.getElementById(this.renderProps.id+"channel").style.display = "none";
+        document.getElementById(this.renderProps.id+"channelmenu").style.display = "none";
         
         document.getElementById(this.renderProps.id+"mode").onchange = () => {
             this.class.series.forEach((series,i)=> {
@@ -58,10 +63,10 @@ export class SmoothieApplet {
             });
             let val = document.getElementById(this.renderProps.id+"mode").value;
             if(val === "alpha" || val === "coherence"){
-              document.getElementById(this.renderProps.id+"channel").style.display = "none";
+              document.getElementById(this.renderProps.id+"channelmenu").style.display = "none";
             }
             else if (val === "bandpowers") {
-              document.getElementById(this.renderProps.id+"channel").style.display = "";
+              document.getElementById(this.renderProps.id+"channelmenu").style.display = "";
             }
             //if(document.getElementById(this.renderProps.id+"mode").value === "coherence"){
             //    State.unsubscribe('FFTResult',this.sub);

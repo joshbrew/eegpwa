@@ -140,10 +140,31 @@ export const EEGInterfaceSetup = () => {
             ATLAS.channelTags.forEach((row, i) => {
                 if(row.tag !== null && i < EEG.nChannels){
                     //console.log(tag);
+                    if(row.data.count > EEG.maxBufferedSamples) {
+                        row.data.times.shift();
+                        row.data.amplitudes.shift();
+                        for(const prop in row.data.slices){
+                            row.data.slices[prop].shift();
+                            row.data.means[prop].shift();
+                        }
+                        row.data.count-=1;
+                    }
                     ATLAS.mapFFTData(ffts, State.data.lastPostTime, i, row.tag);
                 }
             });
-        
+            
+            ATLAS.coherenceMap.map.forEach((row,i) => {
+                if(row.data.count > EEG.maxBufferedSamples) {
+                    row.data.times.shift();
+                    row.data.amplitudes.shift();
+                    for(const prop in row.data.slices){
+                        row.data.slices[prop].shift();
+                        row.data.means[prop].shift();
+                    }
+                    row.data.count-=1;
+                }
+            });
+            
             ATLAS.mapCoherenceData(coher, State.data.lastPostTime);
 
             State.setState({FFTResult:ffts,coherenceResult:coher});
