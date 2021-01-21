@@ -14,6 +14,7 @@ DONE:
 - Web workers for multithreading and smooth UI
 - Nodejs pwa implementation for better worker functionality and web-hostability. This can bleed into a desktop or even mobile application
 - Responsive layouts, modular EVERYTHING and state system with object listeners for easy development.
+- IIR filters, DC blocker filter, SMA filter.
 
 
 TODO:
