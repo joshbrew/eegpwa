@@ -213,7 +213,7 @@ export class uPlotApplet {
         var count = ATLAS.coherenceMap.map[0].data.count-1;
         //console.log(ATLAS.coherenceMap.map[0].data.times[count-1])
         //console.log(State.data.nSecAdcGraph)
-        if(this.class.uPlotData[i+1].length > EEG.sps*State.data.nSecAdcGraph) {
+        if(this.class.uPlotData[0].length > EEG.sps*State.data.nSecAdcGraph) {
           this.class.uPlotData[0].shift();
         }
         this.class.uPlotData[0].push(ATLAS.coherenceMap.map[0].data.times[count])// = [ATLAS.coherenceMap.map[0].data.times.slice(count, ATLAS.coherenceMap.map[0].data.count)];
