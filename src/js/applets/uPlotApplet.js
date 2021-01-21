@@ -75,10 +75,10 @@ export class uPlotApplet {
         document.getElementById(this.renderProps.id+'mode').onchange = () => {
           
           if(document.getElementById(this.renderProps.id+'mode').value === "CoherenceTimeSeries" || document.getElementById(this.renderProps.id+'mode').value === "Coherence"){
-            addCoherenceOptions(this.renderProps.id+'channel',['All']);
+            addCoherenceOptions(this.renderProps.id+'channel',true,['All']);
           }
           else{
-            addChannelOptions(this.renderProps.id+'channel',['All']);
+            addChannelOptions(this.renderProps.id+'channel',true,['All']);
           }
           if (document.getElementById(this.renderProps.id+'mode').value === "CoherenceTimeSeries") {
             document.getElementById(this.renderProps.id+"bandview").style.display="";
@@ -113,7 +113,7 @@ export class uPlotApplet {
           this.setuPlot();
         }
 
-        addChannelOptions(this.renderProps.id+'channel',true,['All'])
+        addChannelOptions(this.renderProps.id+'channel',true,['All']);
         
     }   
 
