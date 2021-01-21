@@ -10,6 +10,8 @@ then
 
 `npm start`
 
+Follow the prompt to find where the app is on your localhost server.
+
 ## Purpose
 
 To make a cross-platform, plug and play progressive web app interface for EEG interaction. This will later merge with my FNIRS work to make a full "Web BCI" platform. Everything is kept as modular as possible so new hardware support or interesting software features become as trivial to add as possible and without breaking anything else. 
