@@ -150,8 +150,9 @@ export const EEGInterfaceSetup = () => {
                                 }
                                 o.data.count-=1;
                             }
+                            return true;
                         }
-                    })
+                    });
                     
                     ATLAS.mapFFTData(ffts, State.data.lastPostTime, i, row.tag);
                 }
