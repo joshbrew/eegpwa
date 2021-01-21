@@ -13,7 +13,7 @@ DONE:
 - Spectrogram with auto interpolation to fit arrays to canvas
 - Web workers for multithreading and smooth UI
 - Nodejs pwa implementation for better worker functionality and web-hostability. This can bleed into a desktop or even mobile application
-
+- Responsive layouts, modular EVERYTHING and state system with object listeners for easy development.
 
 
 TODO:
@@ -28,19 +28,14 @@ Data:
 
 
 Visuals: 
-- Nice UI layout and CSS - block out feature areas: Menu, main chart, visual containers.
-- Toggling for different visuals inside their own containers
 - Tune the Brain Map with real data
-- Fix stacked charts (would be best to simply assign it to a different canvas).
+- Fix Timecharts (stacked chart replacement), bar charts
 - new uplot legend: more compact
-- Add simple moving average (actually do a normalized product-whatever that is supposed to be) and other filtering methods
 
 Performance:
 - I could definitely optimize most of the math but if it ain't broke don't fix it.. yet.. 
-- Optimize correlograms function, do a bulk gpu dispatch for getting all correlograms
-- DFTs -> FFTS for the multi dft:
-   How to optimize: Only use required nyquist sampling for lower frequencies (sps/4): e.g. 512sps = 256Hz nyquist resolution. 256sps = 128Hz nyquist resolution, so I only need a maximum of 256 samples for <128 Hz, 128 samples for <64Hz and so on which reduces the number of computations significantly.
-- Test iDFT finally once FFT implementation is done, will make for instant digital waveform visualization with basic bandpass filtered noise cancellation.    
+- Optimize correlograms function, do a bulk gpu dispatch for getting all correlograms to make 19channels+ viable in realtime
+- DFTs -> FFTS for the gpu multi dft
 
 Use cases:
 - Finish Alpha Coherence
@@ -54,6 +49,9 @@ Compatibility:
 Benchmarking:
 - 19 channel coherence performance benchmark after improving eegmath.correlograms or if the gpujs conversion fares better
 
+Hardware:
+- Any others I should add?
+- Finish porting HEG features
 
 
 Known bugs:

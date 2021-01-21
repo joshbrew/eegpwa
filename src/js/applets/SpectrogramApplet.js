@@ -102,7 +102,8 @@ export class SpectrogramApplet {
 
     onUpdate = () => {
         var graphmode = document.getElementById(this.renderProps.id+"mode").value;
-        var ch = parseInt(document.getElementById(this.renderProps.id+"channel").value);
+        var view = document.getElementById(this.renderProps.id+"channel").value
+        var ch = parseInt(view);
         if(graphmode === "FFT"){
           var tag = null;
           ATLAS.channelTags.find((o,i) => {
@@ -120,7 +121,7 @@ export class SpectrogramApplet {
         else if(graphmode === "Coherence"){
           var coord = null;
           ATLAS.coherenceMap.map.find((o,i) => {
-            if(o.tag === ch){
+            if(o.tag === view){
               coord = o;
               return true;
             }
