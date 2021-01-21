@@ -66,7 +66,7 @@ export function menudropdown_template(props={}) { //<tr><td>Set Channel View</td
             <tr><td>Set Band View</td><td><input type="text" style="width:95%;" id="freqStart" placeholder="0 (Hz)"></td><td>to</td><td><input type="text" style="width:100%;" id="freqEnd" placeholder="128 (Hz)"></td><td><button id="setBandpass">Set</button></td></tr>
             <tr><td>Set Tags</td><td colspan=3><input type="text" style="width:100%;" id="Tags" placeholder="Format: 0:Fp1 or 2:Fz or 6:P6:0,1,2 or 6:delete"></input></td><td><button id="setTags">Set</button></td></tr>
             <tr><td>Set Time Series View</td><td colspan=2><input type="text" style="width:100%;" id="GraphTime" placeholder="10 (seconds)"></input></td><td><button id="setTimeSpan">Set</button></td></tr>
-            <tr><td>Filters:</td><td>Use filters<input id="useFilters" type="checkbox" checked> Notch 50Hz<input id="notch50" type="checkbox" checked> Notch 60Hz<input id="notch60" type="checkbox" checked> Low Pass 50Hz<input id="lp50" type="checkbox" checked> SMA4<input id="sma4" type="checkbox" checked> DC Blocker<input id="dcb" type="checkbox"></td>
+            <tr><td>Filters:</td><td colSpan="3">Use filters<input id="useFilters" type="checkbox" checked> Notch 50Hz<input id="notch50" type="checkbox" checked> Notch 60Hz<input id="notch60" type="checkbox" checked> Low Pass 50Hz<input id="lp50" type="checkbox" checked> SMA4<input id="sma4" type="checkbox" checked> DC Blocker<input id="dcb" type="checkbox"></td>
         </table>
      </td>`;
 }
