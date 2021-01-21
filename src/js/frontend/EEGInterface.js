@@ -139,16 +139,20 @@ export const EEGInterfaceSetup = () => {
 
             ATLAS.channelTags.forEach((row, i) => {
                 if(row.tag !== null && i < EEG.nChannels){
-                    //console.log(tag);
-                    if(row.data.count > EEG.maxBufferedSamples) {
-                        row.data.times.shift();
-                        row.data.amplitudes.shift();
-                        for(const prop in row.data.slices){
-                            row.data.slices[prop].shift();
-                            row.data.means[prop].shift();
+                    ATLAS.fftMap.map.find((o,i) => {
+                        if(o.tag === row.tag){
+                            if(o.data.count > EEG.maxBufferedSamples) {
+                                o.data.times.shift();
+                                o.data.amplitudes.shift();
+                                for(const prop in o.data.slices){
+                                    o.data.slices[prop].shift();
+                                    o.data.means[prop].shift();
+                                }
+                                o.data.count-=1;
+                            }
                         }
-                        row.data.count-=1;
-                    }
+                    })
+                    
                     ATLAS.mapFFTData(ffts, State.data.lastPostTime, i, row.tag);
                 }
             });
