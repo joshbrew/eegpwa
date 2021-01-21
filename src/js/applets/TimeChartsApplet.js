@@ -1,7 +1,7 @@
 import {State} from '../frontend/State'
 import {EEG, ATLAS} from '../frontend/EEGInterface'
 import {DOMFragment} from '../frontend/DOMFragment'
-import { TimeChartMaker } from '../utils/eegvisuals';
+import { TimeChartMaker } from '../utils/visuals/eegvisuals';
 
 //You can extend or call this class and set renderProps and these functions
 export class TimeChartsApplet {

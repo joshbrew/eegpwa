@@ -61,7 +61,7 @@ State.data.appletClasses.push(
 //UI switching (for HEG inclusion)
 */
 
-
+//debugger;
 //import fs from 'fs'
 import * as BrowserFS from 'browserfs'
 const fs = BrowserFS.BFSRequire('fs')
@@ -104,6 +104,26 @@ function initEEGui() {
     State.data.appletbox = new DOMFragment(appletbox_template, document.body);
     menu_setup();
 
+    
+    document.getElementById("useFilters").addEventListener('change',() => {
+        State.data.useFilters = document.getElementById("useFilters").checked;
+    });
+    document.getElementById("notch50").addEventListener('change',() => {
+        State.data.useFilters = document.getElementById("notch50").checked;
+    });
+    document.getElementById("notch60").addEventListener('change',() => {
+        State.data.useFilters = document.getElementById("notch60").checked;
+    });
+    document.getElementById("lp50").addEventListener('change',() => {
+        State.data.useFilters = document.getElementById("lp50").checked;
+    });
+    document.getElementById("dcb").addEventListener('change',() => {
+        State.data.useFilters = document.getElementById("dcb").checked;
+    });
+    document.getElementById("sma4").addEventListener('change',() => {
+        State.data.useFilters = document.getElementById("sma4").checked;
+    });
+
     document.getElementById("connectbutton").addEventListener('click',() => {
         //console.log(State.data.connected);
         if(State.data.connected === true) {EEG.closePort();} 
@@ -139,20 +159,33 @@ function initEEGui() {
     });
 
     document.getElementById("setBandpass").addEventListener('click',() => {
-      var freq0 = parseFloat(document.getElementById("freqStart").value);
+      var freq0 = parseFloat(document.getElementById("freqStart").value); 
+      if(isNaN(freq0)) { freq0 = State.data.freqStart; } console.log(freq0)
       var freq1 = parseFloat(document.getElementById("freqEnd").value);
-      if(typeof freq0 === 'number' && typeof freq1 === 'number'){
-        State.data.freqStart = freq0; State.data.freqEnd = freq1;
-        updateBandPass(freq0,freq1);
-      }
+      if(isNaN(freq1)) { freq1 = State.data.freqEnd; }
+      
+        //State.data.freqStart = freq0; State.data.freqEnd = freq1;
+        //updateBandPass(freq0,freq1);
+        let start = null, end = null;
+        ATLAS.fftMap.shared.bandPassWindow.forEach((freq,i) => {
+            if(start === null && (freq0 >= freq || i === ATLAS.fftMap.shared.bandPassWindow.length-3)) start = i;
+            if(end === null && (freq1 <= freq || i === ATLAS.fftMap.shared.bandPassWindow.length-1)) end = i+1;
+        });
+        State.data.fftViewStart = start;
+        State.data.fftViewEnd = end;
+        
+        console.log(start, end)
+        
+        if(State.data.analyze === false) UI.reInitApplets();
+      
     });
-
+    /*
     document.getElementById("setView").addEventListener('click',() => {
         var settings = document.getElementById("View").value;
         updateChannelView(settings);
         UI.reInitApplets();
     });
-
+    */
     document.getElementById("setTags").addEventListener('click',() => {
         var settings = document.getElementById("Tags").value;
         updateChannelTags(settings);
@@ -273,7 +306,7 @@ const initSystem = () => {
 
 
 var configs = getConfigsFromHashes(); 
-console.log(configs)
+//console.log(configs)
 
 
 const UI = new UIManager(initEEGui, deInitEEGui, configs);

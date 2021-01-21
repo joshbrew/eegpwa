@@ -1,7 +1,7 @@
 import { addChannelOptions, addCoherenceOptions, ATLAS } from '../frontend/EEGInterface';
 import {State} from '../frontend/State'
 import {DOMFragment} from '../frontend/DOMFragment'
-import { mirrorBarChart } from '../utils/eegvisuals';
+import { mirrorBarChart } from '../utils/visuals/eegvisuals';
 
 //You can extend or call this class and set renderProps and these functions
 export class MirrorBarsApplet {

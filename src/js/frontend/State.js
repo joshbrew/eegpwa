@@ -15,8 +15,10 @@ export const State = new StateManager(
         lastPostTime:0,
         FFTResult:[],
         coherenceResult:[],
-        freqStart:0,
-        freqEnd:100,
+        freqStart:1, //FFT constraints
+        freqEnd:128,
+        fftViewStart:0, //FFT indices to grab from
+        fftViewEnd:255,
         nSec:1,
         nSecAdcGraph:10,
         fdBackMode: 'coherence',
@@ -25,6 +27,14 @@ export const State = new StateManager(
         connected:false,
         analyze:false,
         rawFeed:false,
+        
+        useFilters:true,
+        notch50:true,
+        notch60:true,
+        lowpass50:true,
+        dcblocker:false,
+        sma4:true,
+        filtered:{},
 
         workerMaxSpeed: 50
     }

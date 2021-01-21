@@ -130,7 +130,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			
 			for(var i = 3; i < 99; i+=3) {
 				var channel = "A"+(i-3)/3;
-				if(this.data[channel][this.data[channel].length-1] !== 0) { 
+				if(this.data.counter === this.maxBufferedSamples) { 
 					this.data[channel].shift();
 					this.data[channel].push(this.bytesToInt24(line[i],line[i+1],line[i+2]));
 				}
@@ -153,8 +153,8 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	}
 
 	//Callbacks
-	onDecodedCallback(){
-		//console.log("new data!");
+	onDecodedCallback(newLinesInt){
+		//console.log("new samples:", newLinesInt);
 	}
 
 	onConnectedCallback() {
@@ -168,11 +168,13 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	onReceive(value){
 		this.buffer.push(...value);
 
+		let newLines = 0;
 		while (this.buffer.length > 209) {
 			//console.log("decoding... ", this.buffer.length)
 			this.decode(this.buffer);
+			newLines++
 		}
-		this.onDecodedCallback();
+		this.onDecodedCallback(newLines);
 	}
 
 	async onPortSelected(port,baud=this.baudrate) {

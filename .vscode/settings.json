@@ -4,5 +4,6 @@
         "idft",
         "krnl",
         "listdft"
-    ]
+    ],
+    "python.pythonPath": "C:\\Python39\\python.exe"
 }

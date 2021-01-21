@@ -1,7 +1,8 @@
 import {State} from '../frontend/State'
-import {EEG, ATLAS, genBandviewSelect} from '../frontend/EEGInterface'
+import {EEG, ATLAS, genBandviewSelect, addChannelOptions, addCoherenceOptions} from '../frontend/EEGInterface'
 import {DOMFragment} from '../frontend/DOMFragment'
-import {uPlotMaker} from '../utils/eegvisuals'
+import {uPlotMaker} from '../utils/visuals/eegvisuals'
+import {eegmath} from '../utils/eeg32'
 
 /*
 TODO:
@@ -50,7 +51,10 @@ export class uPlotApplet {
                   <option value="Coherence">Coherence</option>
                   <option value="CoherenceTimeSeries">Coherence Time Series</option>
                   <option value="TimeSeries">Raw</option>
-                  </select>
+                </select>
+                </td>
+                <td>
+                <select id="`+props.id+`channel"></select>
                 </td>
                 <td>
                 `+genBandviewSelect(props.id+'bandview')+`
@@ -69,26 +73,35 @@ export class uPlotApplet {
     setupHTML() {
         document.getElementById(this.renderProps.id+"bandview").style.display="none"
         document.getElementById(this.renderProps.id+'mode').onchange = () => {
-            this.setuPlot();
-            if(document.getElementById(this.renderProps.id+'mode').value==="TimeSeries") {
-                if(this.sub !== null){
-                    State.unsubscribe('FFTResult',this.sub);
-                    this.sub = null;
-                    this.updateLoop();
-                }
-            }
-            else { 
-                if(this.sub === null) {
-                    cancelAnimationFrame(this.loop);
-                    this.sub = State.subscribe('FFTResult',this.onUpdate);
-                }
-            }
-            if (document.getElementById(this.renderProps.id+'mode').value === "CoherenceTimeSeries") {
-              document.getElementById(this.renderProps.id+"bandview").style.display="";
-            }
-            else {
-              document.getElementById(this.renderProps.id+"bandview").style.display="none";
-            }
+          
+          if(document.getElementById(this.renderProps.id+'mode').value === "CoherenceTimeSeries" || document.getElementById(this.renderProps.id+'mode').value === "Coherence"){
+            addCoherenceOptions(this.renderProps.id+'channel',['All']);
+          }
+          else{
+            addChannelOptions(this.renderProps.id+'channel',['All']);
+          }
+          if (document.getElementById(this.renderProps.id+'mode').value === "CoherenceTimeSeries") {
+            document.getElementById(this.renderProps.id+"bandview").style.display="";
+          }
+          else {
+            document.getElementById(this.renderProps.id+"bandview").style.display="none";
+          }
+          
+          this.setuPlot();
+          if(document.getElementById(this.renderProps.id+'mode').value==="TimeSeries") {
+              if(this.sub !== null){
+                  State.unsubscribe('FFTResult',this.sub);
+                  this.sub = null;
+                  this.updateLoop();
+              }
+          }
+          else { 
+              if(this.sub === null) {
+                  cancelAnimationFrame(this.loop);
+                  this.sub = State.subscribe('FFTResult',this.onUpdate);
+              }
+          }
+            
 
         }
         document.getElementById(this.renderProps.id+'bandview').onchange = () => {
@@ -96,6 +109,11 @@ export class uPlotApplet {
                 this.setuPlot();
             }
         }
+        document.getElementById(this.renderProps.id+'channel').onchange = () => {
+          this.setuPlot();
+        }
+
+        addChannelOptions(this.renderProps.id+'channel',true,['All'])
         
     }   
 
@@ -151,20 +169,42 @@ export class uPlotApplet {
 
     onUpdate = () => {
       var graphmode = document.getElementById(this.renderProps.id+"mode").value;
+      var view = document.getElementById(this.renderProps.id+"channel").value;
+      let ch = null; 
+        if (view !== "All") {
+          ch = parseInt(view);
+        }
       if(graphmode === "FFT"){
           //Animate plot(s)
           this.class.uPlotData = [
-              [...ATLAS.fftMap.shared.bandPassWindow]
+              ATLAS.fftMap.shared.bandPassWindow.slice(State.data.fftViewStart,State.data.fftViewEnd)
           ];
-
-          ATLAS.channelTags.forEach((row,i) => {
+            ATLAS.channelTags.forEach((row,i) => {
               if(row.viewing === true && (State.data.fdBackMode !== "coherence" || (State.data.fdBackMode === "coherence" && (row.tag !== 'other' && row.tag !== null)))) {
-                this.class.uPlotData.push([...State.data.FFTResult[i]]);
+                if(view === 'All' || row.ch === ch) {
+                  this.class.uPlotData.push(State.data.FFTResult[i].slice(State.data.fftViewStart,State.data.fftViewEnd));
+                }
               }
-          });
+            });
+          
       }
       else if (graphmode === "Coherence") {
-        this.class.uPlotData = [[...ATLAS.coherenceMap.shared.bandPassWindow],...State.data.coherenceResult];
+        if(view === 'All') {
+          this.class.uPlotData = [ATLAS.coherenceMap.shared.bandPassWindow.slice(State.data.fftViewStart,State.data.fftViewEnd)];
+          console.log(State.data.coherenceResult)
+          State.data.coherenceResult.forEach((result,i) => {
+            this.class.uPlotData.push(result.slice(State.data.fftViewStart,State.data.fftViewEnd));
+          })
+        }
+        else{
+          ATLAS.coherenceMap.map.find((o,i) => {
+            console.log(o)
+            if(o.tag === view) {
+              this.class.uPlotData = [ATLAS.fftMap.shared.bandPassWindow.slice(State.data.fftViewStart,State.data.fftViewEnd),o.data.amplitudes[o.data.count-1].slice(State.data.fftViewStart,State.data.fftViewEnd)];
+              return true;
+            }
+          });
+        }
         //console.log(this.class.uPlotData);
       }
       else if (graphmode === "CoherenceTimeSeries") {
@@ -172,19 +212,26 @@ export class uPlotApplet {
         
         var count = ATLAS.coherenceMap.map[0].data.count-1;
         //console.log(ATLAS.coherenceMap.map[0].data.times[count-1])
-        while(ATLAS.coherenceMap.map[0].data.times[ATLAS.coherenceMap.map[0].data.count-1]-ATLAS.coherenceMap.map[0].data.times[count-1] < State.data.nSecAdcGraph*1000 && count > 0) {
-          count-=1;
-        }
         //console.log(State.data.nSecAdcGraph)
-
-        this.class.uPlotData = [ATLAS.coherenceMap.map[0].data.times.slice(count, ATLAS.coherenceMap.map[0].data.count)];
-        ATLAS.coherenceMap.map.forEach((row,i) => {
-            this.class.uPlotData.push(row.data.means[band].slice(count, ATLAS.coherenceMap.map[0].data.count));
-        });
+        this.class.uPlotData[0].shift();
+        this.class.uPlotData[0].push(ATLAS.coherenceMap.map[0].data.times[count])// = [ATLAS.coherenceMap.map[0].data.times.slice(count, ATLAS.coherenceMap.map[0].data.count)];
+        
+          ATLAS.coherenceMap.map.forEach((row,i) => {
+            if(view === 'All') {
+              this.class.uPlotData[i+1].shift();
+              this.class.uPlotData[i+1].push(eegmath.sma(row.data.means[band].slice(count-10, ATLAS.coherenceMap.map[0].data.count),10)[9]);
+            } else if (row.tag === view) {
+              this.class.uPlotData[i+1].shift();
+              this.class.uPlotData[i+1].push(eegmath.sma(row.data.means[band].slice(count-10, ATLAS.coherenceMap.map[0].data.count),10)[9]);
+            }
+          });
+        
+        
+        //Do a push and pop and get the moving average instead
       }
       else {
         var nsamples = Math.floor(EEG.sps*State.data.nSecAdcGraph);
-        if(nsamples > EEG.data.ms.length) {nsamples = EEG.data.ms.length-1}
+        if(nsamples > EEG.data.counter) {nsamples = EEG.data.counter-1}
 
         if ((graphmode === "TimeSeries") || (graphmode === "Stacked")) {
             var nsamples = Math.floor(EEG.sps*State.data.nSecAdcGraph);
@@ -192,14 +239,19 @@ export class uPlotApplet {
             this.class.uPlotData = [
                 EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
             ];
-
-            ATLAS.channelTags.forEach((row,i) => {
+              ATLAS.channelTags.forEach((row,i) => {
                 if(row.viewing === true) {
-                this.class.uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
-                }
-            });
-
-        }
+                  if(view === 'All' || row.ch === ch) {  
+                    if(State.data.useFilters === true) {
+                      this.class.uPlotData.push(State.data.filtered["A"+row.ch].slice(State.data.counter - nsamples, State.data.counter));
+                    } else {
+                      this.class.uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
+                    }
+                  } 
+                } 
+                
+              });
+          }
       }
 
       //console.log(uPlotData)
@@ -220,7 +272,12 @@ export class uPlotApplet {
     setuPlot = () => {
       
         var gmode = document.getElementById(this.renderProps.id+"mode").value;
-      
+        var view = document.getElementById(this.renderProps.id+"channel").value;
+        let newSeries = [{}];
+        let ch = null; 
+        if (view !== "All") {
+          ch = parseInt(view);
+        }
         if(gmode === "TimeSeries"){
           document.getElementById(this.renderProps.id+"title").innerHTML = "ADC signals";
       
@@ -231,22 +288,33 @@ export class uPlotApplet {
             this.class.uPlotData = [
                 EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
             ];
-      
-            ATLAS.channelTags.forEach((row,i) => {
-                if(row.viewing === true) {
-                  this.class.uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
-                }
-            });
+              ATLAS.channelTags.forEach((row,i) => {
+                  if(row.viewing === true) {
+                    if(view === 'All' || row.ch === ch) {
+                      if(State.data.useFilters === true) {
+                        this.class.uPlotData.push(State.data.filtered["A"+row.ch].slice(State.data.counter - nsamples, State.data.counter));
+                      } else {
+                        this.class.uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
+                      }
+                    }
+                  }
+              });
+            
             }
           else {
             this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow]];
-            ATLAS.channelTags.forEach((row,i) => {
-              this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
-            });
+              ATLAS.channelTags.forEach((row,i) => {  
+                if(view === 'All' || row.ch === ch) {
+                  this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
+                }
+              });
+            
           }
-      
+
+          if(view !== "All") {newSeries = this.class.makeSeriesFromChannelTags(ATLAS.channelTags,true,ch);}
+          else {newSeries = this.class.makeSeriesFromChannelTags(ATLAS.channelTags,true);}
           this.class.makeuPlot(
-              this.class.makeSeriesFromChannelTags(ATLAS.channelTags), 
+              newSeries, 
               this.class.uPlotData, 
               this.plotWidth, 
               this.plotHeight
@@ -260,28 +328,42 @@ export class uPlotApplet {
                 //Animate plot(s)
                
               this.class.uPlotData = [
-                [...ATLAS.fftMap.shared.bandPassWindow]
+                ATLAS.fftMap.shared.bandPassWindow.slice(State.data.fftViewStart,State.data.fftViewEnd)
               ];
               if((State.data.FFTResult.length > 0) && (State.data.FFTResult.length <= ATLAS.channelTags.length)) {
                 //console.log(posFFTList);
-                ATLAS.channelTags.forEach((row,i) => {
-                  if(i < State.data.FFTResult.length){
-                    if((row.viewing === true) && (State.data.fdBackMode !== "coherence" || (State.data.fdBackMode === "coherence" && (row.tag !== 'other' && row.tag !== null)))) {
-                      this.class.uPlotData.push([...State.data.FFTResult[i]]);
+                  ATLAS.channelTags.forEach((row,i) => {
+                    if(i < State.data.FFTResult.length){
+                      if(row.viewing === true && (State.data.fdBackMode !== "coherence" || (State.data.fdBackMode === "coherence" && (row.tag !== 'other' && row.tag !== null)))) {
+                        if(view === 'All' || row.ch === ch) {
+                          this.class.uPlotData.push(State.data.FFTResult[i].slice(State.data.fftViewStart,State.data.fftViewEnd));
+                        }
+                      }
                     }
-                  }
-                  else{
-                    this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]); // Placeholder for unprocessed channel data.
-                  }
-                });
+                    else {
+                      if(view === 'All' || row.ch === ch) {
+                        this.class.uPlotData.push(ATLAS.fftMap.shared.bandPassWindow.slice(State.data.fftViewStart,State.data.fftViewEnd)); // Placeholder for unprocessed channel data.
+                      }
+                    }
+                  });
+                
               }
               else {
-                ATLAS.channelTags.forEach((row,i) => {
-                  this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
+                ATLAS.channelTags.forEach((row,i) => {   
+                  if(view === 'All' || row.ch === ch) {
+                    this.class.uPlotData.push(ATLAS.fftMap.shared.bandPassWindow.slice(State.data.fftViewStart,State.data.fftViewEnd));
+                  }
                 });
               }
+
+              if(view !== "All") {newSeries = this.class.makeSeriesFromChannelTags(ATLAS.channelTags,true,ch);}
+              else {newSeries = this.class.makeSeriesFromChannelTags(ATLAS.channelTags,true);}
+
+              //console.log(newSeries);
+              //console.log(this.class.uPlotData);
+              //console.log(newSeries)
               this.class.makeuPlot(
-                  this.class.makeSeriesFromChannelTags(ATLAS.channelTags), 
+                  newSeries, 
                   this.class.uPlotData, 
                   this.plotWidth, 
                   this.plotHeight
@@ -291,22 +373,29 @@ export class uPlotApplet {
       
           if(EEG.data["A0"].length > 1){
           var nsamples = Math.floor(EEG.sps*State.data.nSecAdcGraph);
-          if(nsamples > EEG.data.ms.length) {nsamples = EEG.data.ms.length-1}
+          if(nsamples > EEG.data.counter) {nsamples = EEG.data.counter-1}
       
             this.class.uPlotData = [
                 EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
             ];
-      
-            ATLAS.channelTags.forEach((row,i) => {
-                if(row.viewing === true) {
-                  this.class.uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
+              ATLAS.channelTags.forEach((row,i) => {
+                if(row.viewing === true) { 
+                  if(view === 'All' || row.ch === ch) {
+                    if(State.data.useFilters === true) {
+                      this.class.uPlotData.push(State.data.filtered["A"+row.ch].slice(State.data.counter - nsamples, State.data.counter));
+                    } else {
+                      this.class.uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
+                    }
+                  }
                 }
-            });
+              });
           }
           else {
             this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow]];
             ATLAS.channelTags.forEach((row,i) => {
-              this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
+              if(view === 'All' || row.ch === ch) {
+                this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
+              }
             });
           }
       
@@ -316,7 +405,8 @@ export class uPlotApplet {
           this.class.makeStackeduPlot(
               undefined, 
               this.class.uPlotData,
-              undefined, ATLAS.channelTags,
+              undefined, 
+              ATLAS.channelTags,
               this.plotWidth, 
               this.plotHeight
             );
@@ -324,32 +414,47 @@ export class uPlotApplet {
       
         }
         else if (gmode === "Coherence") {
-          var newSeries = [{}];
-      
           ATLAS.coherenceMap.map.forEach((row,i) => {
-            newSeries.push({
-              label:row.tag,
-              value: (u, v) => v == null ? "-" : v.toFixed(1),
-              stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
-            });
+            if(view === 'All' || row.tag === view) {
+              newSeries.push({
+                label:row.tag,
+                value: (u, v) => v == null ? "-" : v.toFixed(1),
+                stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
+              });
+            }
           });
 
           if((State.data.coherenceResult.length > 0) && (State.data.coherenceResult.length <= ATLAS.coherenceMap.map.length)){
-            this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow],...State.data.coherenceResult];
-            if(this.class.uPlotData.length < ATLAS.coherenceMap.map.length+1) {
-              for(var i = this.class.uPlotData.length; i < ATLAS.coherenceMap.map.length+1; i++){
-                this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
+            if(view === 'All') {
+              this.class.uPlotData = [ATLAS.coherenceMap.shared.bandPassWindow.slice(State.data.fftViewStart,State.data.fftViewEnd)];
+              State.data.coherenceResult.forEach((result,i) => {
+                this.class.uPlotData.push(result.slice(State.data.fftViewStart,State.data.fftViewEnd));
+              });
+              if(this.class.uPlotData.length < ATLAS.coherenceMap.map.length+1) {
+                for(var i = this.class.uPlotData.length; i < ATLAS.coherenceMap.map.length+1; i++){
+                  this.class.uPlotData.push(ATLAS.coherenceMap.shared.bandPassWindow.slice(State.data.fftViewStart,State.data.fftViewEnd));
+                }
               }
+            }
+            else{
+              ATLAS.coherenceMap.map.find((o,i) => {
+                if(o.tag === view) {
+                  this.class.uPlotData = [ATLAS.coherenceMap.shared.bandPassWindow.slice(State.data.fftViewStart,State.data.fftViewEnd),o.data.amplitudes[o.data.count-1].slice(State.data.fftViewStart,State.data.fftViewEnd)];
+                  return true;
+                }
+              });
             }
           }
           else {
-            this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow]];
-            ATLAS.channelTags.forEach((row,i) => {
-              this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
+            this.class.uPlotData = [ATLAS.coherenceMap.shared.bandPassWindow.slice(State.data.fftViewStart,State.data.fftViewEnd)];
+            ATLAS.coherenceMap.map.forEach((row,i) => {
+              if(view === 'All' || row.tag === view) {
+                this.class.uPlotData.push(ATLAS.coherenceMap.shared.bandPassWindow.slice(State.data.fftViewStart,State.data.fftViewEnd));
+              }
             });
           }
           //console.log(newSeries);
-          //console.log(uPlotData.length);
+          console.log(this.class.uPlotData);
           this.class.makeuPlot(
               newSeries, 
               this.class.uPlotData, 
@@ -363,20 +468,21 @@ export class uPlotApplet {
           
           var count = ATLAS.coherenceMap.map[0].data.count-1;
           //console.log(ATLAS.coherenceMap.map[0].data.times[count-1])
-          while(ATLAS.coherenceMap.map[0].data.times[ATLAS.coherenceMap.map[0].data.count-1]-ATLAS.coherenceMap.map[0].data.times[count-1] < State.data.nSecAdcGraph*1000 && count > 1) {
+          while(ATLAS.coherenceMap.map[0].data.times[ATLAS.coherenceMap.map[0].data.count-1]-ATLAS.coherenceMap.map[0].data.times[count-1] < State.data.nSecAdcGraph*1000 && count > 0) {
             count-=1;
           }
 
           this.class.uPlotData = [ATLAS.coherenceMap.map[0].data.times.slice(count, ATLAS.coherenceMap.map[0].data.count)];
 
-          var newSeries = [{}];
           ATLAS.coherenceMap.map.forEach((row,i) => {
-            newSeries.push({
-              label:row.tag,
-              value: (u, v) => v == null ? "-" : v.toFixed(1),
-              stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
-            });
-            this.class.uPlotData.push(row.data.means[band].slice(count, ATLAS.coherenceMap.map[0].data.count));
+            if(view === 'All' || row.tag === view) {
+              newSeries.push({
+                label:row.tag,
+                value: (u, v) => v == null ? "-" : v.toFixed(1),
+                stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
+              });
+              this.class.uPlotData.push(eegmath.sma(row.data.means[band].slice(count, ATLAS.coherenceMap.map[0].data.count),5));
+            }
           });
           //console.log(this.class.uPlotData)
           this.class.makeuPlot(
@@ -386,7 +492,7 @@ export class uPlotApplet {
               this.plotHeight
             );
           document.getElementById(this.renderProps.id+"title").innerHTML = "Mean Coherence over time";
-          this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001).toFixed(2) + "s");
+          this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001-ATLAS.coherenceMap.map[0].data.times[0]).toFixed(2) + "s");
         }
         //else if(graphmode === "StackedRaw") { graphmode = "StackedFFT" }//Stacked Coherence
       }

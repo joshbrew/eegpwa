@@ -1,7 +1,7 @@
 import uPlot from 'uplot';
 import { SmoothieChart, TimeSeries } from "smoothie";
 import './webgl-heatmap'
-import TimeChart from './timechart/dist/timechart.module';
+import TimeChart from '../timechart/dist/timechart.module';
 
 //---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
@@ -160,24 +160,27 @@ export class uPlotMaker {
 	}
 
 	//Pass this the channelTags object from your eeg32 instance.
-	makeSeriesFromChannelTags(channelTags, taggedOnly=true) {
+	makeSeriesFromChannelTags(channelTags, taggedOnly=true, ch=null) {
 		var newSeries = [{}];
+
 		channelTags.forEach((row,i) => {
 			if(row.viewing === true) {
 				if (taggedOnly === true){
 					if(row.tag !== null && row.tag !== 'other') {
-						newSeries.push({
-							label:"A"+row.ch + ", Tag: "+row.tag,
-							value: (u, v) => v == null ? "-" : v.toFixed(2),
-							stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
-						});
+						if(ch===null || row.ch === ch) {
+							newSeries.push({
+								label:"A"+row.ch + ", Tag: "+row.tag,
+								value: (u, v) => v == null ? "-" : v.toFixed(2),
+								stroke: "rgb("+Math.random()*128+","+Math.random()*128+","+Math.random()*128+")"
+							});
+						}
 					}
 				}
 				else{
 					newSeries.push({
 						label:"A"+row.ch + ", Tag: "+row.tag,
 						value: (u, v) => v == null ? "-" : v.toFixed(2),
-						stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
+						stroke: "rgb("+Math.random()*128+","+Math.random()*128+","+Math.random()*128+")"
 					});
 				}
 			}
@@ -254,7 +257,7 @@ export class uPlotMaker {
 			channelTags.forEach((row,i) => {
 				if(row.viewing === true) {
 
-				var r = Math.random()*255; var g = Math.random()*255; var b = Math.random()*255;
+				var r = Math.random()*128; var g = Math.random()*128; var b = Math.random()*128;
 				var newLineColor = "rgb("+r+","+g+","+b+")";
 				var newFillColor = "rgba("+r+","+g+","+b+",0.1)"
 

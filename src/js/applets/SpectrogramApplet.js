@@ -1,7 +1,7 @@
 import {State} from '../frontend/State'
 import {DOMFragment} from '../frontend/DOMFragment'
 import {EEG, ATLAS, addChannelOptions, addCoherenceOptions} from '../frontend/EEGInterface'
-import {Spectrogram} from '../utils/eegvisuals'
+import {Spectrogram} from '../utils/visuals/eegvisuals'
 
 //You can extend or call this class and set renderProps and these functions
 export class SpectrogramApplet {
@@ -109,7 +109,7 @@ export class SpectrogramApplet {
           });
           if(tag !== null){
             var coord = ATLAS.getAtlasCoordByTag(tag);
-            this.class.latestData = coord.data.amplitudes[coord.data.amplitudes.length-1];
+            this.class.latestData = coord.data.amplitudes[coord.data.amplitudes.length-1].slice(State.data.fftViewStart,State.data.fftViewEnd);
             this.class.draw();
           }
         }
@@ -118,9 +118,10 @@ export class SpectrogramApplet {
           ATLAS.coherenceMap.map.find((o,i) => {
             if(o.tag === ch){
               coord = o;
+              return true;
             }
           });
-          this.class.latestData = coord.data.amplitudes[coord.data.amplitudes.length - 1];
+          this.class.latestData = coord.data.amplitudes[coord.data.amplitudes.length - 1].slice(State.data.fftViewStart,State.data.fftViewEnd);
           this.class.draw();
         }
     }

@@ -1,5 +1,7 @@
 import {State} from './State'
-import {eeg32, eegAtlas} from '../utils/eeg32'
+import {eeg32, eegAtlas, eegmath} from '../utils/eeg32'
+import {applyFilter, IIRNotchFilter, IIRLowPassFilter, DCBlocker} from '../utils/signal_analysis/IIRFilter'
+
 
 let defaultTags = [
     {ch: 4, tag: "Fp2", viewing: true},
@@ -7,13 +9,111 @@ let defaultTags = [
 ];
 
 
+class channelFilterer { //Feed-forward IIR filters
+    constructor(channel="A0",sps=512) {
+        this.channel=channel; this.idx = 0; this.sps = sps;
+
+        State.data.filtered[this.channel] = [];//Add placeholder to state
+
+        this.notch50 = new IIRNotchFilter(sps,50,0.5);
+        this.notch50_2 = new IIRNotchFilter(sps,50,0.5);
+        this.notch50_3 = new IIRNotchFilter(sps,50,0.5);
+        this.notch60 = new IIRNotchFilter(sps,60,0.5);
+        this.notch60_2 = new IIRNotchFilter(sps,60,0.5);
+        this.notch60_3 = new IIRNotchFilter(sps,60,0.5);
+        this.lp1 = new IIRLowPassFilter(sps,50);
+        this.lp2 = new IIRLowPassFilter(sps,50);
+        this.lp3 = new IIRLowPassFilter(sps,50);
+        this.dcb = new DCBlocker(0.995);
+    }
+
+    reset(sps=this.sps) {
+        this.notch50 = new IIRNotchFilter(sps,50,0.5);
+        this.notch50_2 = new IIRNotchFilter(sps,50,0.5);
+        this.notch50_3 = new IIRNotchFilter(sps,50,0.5);
+        this.notch60 = new IIRNotchFilter(sps,60,0.5);
+        this.notch60_2 = new IIRNotchFilter(sps,60,0.5);
+        this.notch60_3 = new IIRNotchFilter(sps,60,0.5);
+        this.lp1 = new IIRLowPassFilter(sps,50);
+        this.lp2 = new IIRLowPassFilter(sps,50);
+        this.lp3 = new IIRLowPassFilter(sps,50);
+        this.dcb = new DCBlocker(0.995);
+    }
+
+    apply(idx=this.lastidx+1) {
+        let out=EEG.data[this.channel][idx]; 
+        if(State.data.sma4 === true) {
+            if(State.data.counter >= 4) { //Apply a 4-sample moving average
+                out = (State.data.filtered[this.channel][idx-3] + State.data.filtered[this.channel][idx-2] + State.data.filtered[this.channel][idx-1] + out)*.25;
+            }
+            else if(EEG.data.counter >= 4){
+                out = (EEG.data[this.channel][0] + EEG.data[this.channel][1] + EEG.data[this.channel][2] + out)*.25;
+            }
+        }
+        if(State.data.dcblocker === true) { //Apply a DC blocking filter
+            out = this.dcb.step(out);
+        }
+        if(State.data.notch50 === true) { //Apply a 50hz notch filter
+            out = applyFilter(out,this.notch50);
+            out = applyFilter(out,this.notch50_2);
+            out = applyFilter(out,this.notch50_3);
+        }
+        if(State.data.notch60 === true) { //Apply a 60hz notch filter
+            out = applyFilter(out,this.notch60);
+            out = applyFilter(out,this.notch60_2);
+            out = applyFilter(out,this.notch60_3);
+        }
+        if(State.data.lowpass50 === true) { //Apply 3 50Hz lowpass filters
+            out = applyFilter(out,this.lp1);
+            out = applyFilter(out,this.lp2);
+            out = applyFilter(out,this.lp3);
+        }
+        this.lastidx=idx;
+        return out;
+    }
+    
+}
+
+State.data.filterers = [];
+
+defaultTags.forEach((row,i) => {
+    State.data.filterers.push(new channelFilterer("A"+row.ch));
+});
+
+
+
+
+
+
 export const ATLAS = new eegAtlas(defaultTags);
 export const EEG = new eeg32(
-() => { 
-    State.data.counter = EEG.data.counter;
-}, () => {
+(newLinesInt) => { //on decoded
+    if(State.data.useFilters === true) {
+        if(EEG.data.counter !== EEG.maxBufferedSamples) {
+            while(State.data.counter < EEG.data.counter){
+                State.data.filterers.forEach((filterer,i) => {
+                    let out = filterer.apply(State.data.counter);
+                    State.data.filtered[filterer.channel].push(out);
+                });
+                State.data.counter++;
+            }
+        }
+        else {
+            for(let i = newLinesInt+1; i>1; i--){
+                State.data.filterers.forEach((filterer,i) =>{
+                    State.data.filtered[filterer.channel].shift();
+                    let out = filterer.apply(State.data.counter-i);
+                    State.data.filtered[filterer.channel].push(out);
+                })
+            }
+        }
+    }
+    else {
+        State.data.counter = EEG.data.counter;
+    }
+}, () => { //on connected
     State.setState({connected:true, rawFeed:true});
-}, () => {
+}, () => { //on disconnected
     State.setState({connected:false,rawFeed:false,analyze:false});
 }); //onConnected callback to set state on front end.
 
@@ -60,21 +160,22 @@ export const EEGInterfaceSetup = () => {
 
 export const bufferEEGData = (taggedOnly=true) => {
     var buffer = [];
+    var dat;
     for(var i = 0; i < ATLAS.channelTags.length; i++){
         if(i < EEG.nChannels) {
-            if(taggedOnly===true ) {
+            if(taggedOnly===true) {
                 if(ATLAS.channelTags[i].tag !== null && ATLAS.channelTags[i].tag !== 'other') {
-                    var channel = "A"+ATLAS.channelTags[i].ch;
-                    var dat = EEG.data[channel].slice(EEG.data.counter - EEG.sps, EEG.data.counter);
+                    var channel = "A"+ATLAS.channelTags[i].ch;       
+                    if(State.data.useFilters === true) { dat = State.data.filtered[channel].slice(State.data.counter - EEG.sps, State.data.counter); }
+                    else{ dat = EEG.data[channel].slice(EEG.data.counter - EEG.sps, EEG.data.counter); }
                     //console.log(channel);
                     buffer.push(dat);
-                    console.log(buffer)
-                    console.log
                 }
             }
             else{
                 var channel = "A"+ATLAS.channelTags[i].ch;
-                var dat = EEG.data[channel].slice(EEG.data.counter - EEG.sps, EEG.data.counter);
+                if(State.data.useFilters === true) { dat = EEG.data[channel].slice(State.data.counter - EEG.sps, State.data.counter); }
+                else{ dat = EEG.data[channel].slice(EEG.data.counter - EEG.sps, EEG.data.counter); }
                 //console.log(channel);
                 buffer.push(dat);
             }
@@ -179,7 +280,7 @@ export const updateChannelView = (input) => {
 
 
         if (found === false){ //add tag
-            if(parseInt(item) !== NaN){
+            if(!isNaN(parseInt(item))){
                 ATLAS.channelTags.push({ch:parseInt(item), tag: null, viewing:true});
             }
             else {
@@ -269,7 +370,7 @@ export function updateChannelTags (input) {
         });
         if (found === false){
         var ch = parseInt(dict[0]);
-        if(ch !== NaN) {
+        if(!isNaN(ch)) {
             if((ch >= 0) && (ch < EEG.nChannels)){
                 ATLAS.channelTags.push({ch:parseInt(ch), tag: dict[1], viewing: true});
 
@@ -302,7 +403,7 @@ export function updateChannelTags (input) {
 }
 
 
-export const addChannelOptions = (selectId, taggedOnly=true) => {
+export const addChannelOptions = (selectId, taggedOnly=true, additionalOptions=[]) => {
     var select = document.getElementById(selectId);
     select.innerHTML = "";
     var opts = ``;
@@ -310,10 +411,10 @@ export const addChannelOptions = (selectId, taggedOnly=true) => {
     if(taggedOnly === true){
         if(row.tag !== null && row.tag !== 'other') {
             if(i === 0) {
-                opts += `<option value='`+row.ch+`' selected='selected'>`+row.ch+`</option>`
+                opts += `<option value='`+row.ch+`' selected='selected'>`+row.tag+`</option>`
               }
               else {
-                opts += `<option value='`+row.ch+`'>`+row.ch+`</option>`
+                opts += `<option value='`+row.ch+`'>`+row.tag+`</option>`
               }
         }
     }
@@ -326,22 +427,33 @@ export const addChannelOptions = (selectId, taggedOnly=true) => {
       }
     }
     });
+    if(additionalOptions.length > 0) {
+        additionalOptions.forEach((option,i) => {
+            opts+=`<option value='`+option+`'>`+option+`</option>`
+        });
+    }
     select.innerHTML = opts;
   }
 
-export const addCoherenceOptions = (selectId) => {
+export const addCoherenceOptions = (selectId, additionalOptions=[]) => {
     var select = document.getElementById(selectId);
     select.innerHTML = "";
-    var newhtml = ``;
+    var opts = ``;
     ATLAS.coherenceMap.map.forEach((row,i) => {
       if(i===0) {
-        newhtml += `<option value='`+row.tag+`' selected="selected">`+row.tag+`</option>`;
+        opts += `<option value='`+row.tag+`' selected="selected">`+row.tag+`</option>`;
       }
       else{
-        newhtml += `<option value='`+row.tag+`'>`+row.tag+`</option>`;
+        opts += `<option value='`+row.tag+`'>`+row.tag+`</option>`;
       }
     });
-    select.innerHTML = newhtml;
+    if(additionalOptions.length > 0) {
+        additionalOptions.forEach((option,i) => {
+            opts+=`<option value='`+option+`'>`+option+`</option>`
+        });
+    }
+    select.innerHTML = opts;
+
   }
 
 export function genBandviewSelect(id){

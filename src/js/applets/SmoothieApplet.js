@@ -1,6 +1,6 @@
 import {State} from '../frontend/State'
 import {EEG, ATLAS, addChannelOptions, addCoherenceOptions} from '../frontend/EEGInterface'
-import { SmoothieChartMaker } from '../utils/eegvisuals';
+import { SmoothieChartMaker } from '../utils/visuals/eegvisuals';
 import {DOMFragment} from '../frontend/DOMFragment'
 
 //You can extend or call this class and set renderProps and these functions
