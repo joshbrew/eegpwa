@@ -213,15 +213,18 @@ export class uPlotApplet {
         var count = ATLAS.coherenceMap.map[0].data.count-1;
         //console.log(ATLAS.coherenceMap.map[0].data.times[count-1])
         //console.log(State.data.nSecAdcGraph)
-        this.class.uPlotData[0].shift();
+        if(this.class.uPlotData[i+1].length > EEG.sps*State.data.nSecAdcGraph) {
+          this.class.uPlotData[0].shift();
+        }
         this.class.uPlotData[0].push(ATLAS.coherenceMap.map[0].data.times[count])// = [ATLAS.coherenceMap.map[0].data.times.slice(count, ATLAS.coherenceMap.map[0].data.count)];
         
           ATLAS.coherenceMap.map.forEach((row,i) => {
-            if(view === 'All') {
+            if(this.class.uPlotData[i+1].length > EEG.sps*State.data.nSecAdcGraph) {
               this.class.uPlotData[i+1].shift();
+            }
+            if(view === 'All') {
               this.class.uPlotData[i+1].push(eegmath.sma(row.data.means[band].slice(count-10, ATLAS.coherenceMap.map[0].data.count),10)[9]);
             } else if (row.tag === view) {
-              this.class.uPlotData[i+1].shift();
               this.class.uPlotData[i+1].push(eegmath.sma(row.data.means[band].slice(count-10, ATLAS.coherenceMap.map[0].data.count),10)[9]);
             }
           });
