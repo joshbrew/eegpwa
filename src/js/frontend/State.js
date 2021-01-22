@@ -18,7 +18,7 @@ export const State = new StateManager(
         freqStart:1, //FFT constraints
         freqEnd:128,
         fftViewStart:0, //FFT indices to grab from
-        fftViewEnd:255,
+        fftViewEnd:127,
         nSec:1,
         nSecAdcGraph:10,
         fdBackMode: 'coherence',

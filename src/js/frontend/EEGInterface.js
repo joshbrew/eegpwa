@@ -42,6 +42,9 @@ class channelFilterer { //Feed-forward IIR filters
 
     apply(idx=this.lastidx+1) {
         let out=EEG.data[this.channel][idx]; 
+        if(State.data.dcblocker === true) { //Apply a DC blocking filter
+            out = this.dcb.step(out);
+        }
         if(State.data.sma4 === true) {
             if(State.data.counter >= 4) { //Apply a 4-sample moving average
                 out = (State.data.filtered[this.channel][idx-3] + State.data.filtered[this.channel][idx-2] + State.data.filtered[this.channel][idx-1] + out)*.25;
@@ -49,9 +52,6 @@ class channelFilterer { //Feed-forward IIR filters
             else if(EEG.data.counter >= 4){
                 out = (EEG.data[this.channel][0] + EEG.data[this.channel][1] + EEG.data[this.channel][2] + out)*.25;
             }
-        }
-        if(State.data.dcblocker === true) { //Apply a DC blocking filter
-            out = this.dcb.step(out);
         }
         if(State.data.notch50 === true) { //Apply a 50hz notch filter
             out = applyFilter(out,this.notch50);
@@ -99,12 +99,13 @@ export const EEG = new eeg32(
             }
         }
         else {
-            for(let i = newLinesInt+1; i>1; i--){
-                State.data.filterers.forEach((filterer,i) =>{
+            for(let i = newLinesInt; i>1; i--){
+                State.data.filterers.forEach((filterer,j) =>{
                     State.data.filtered[filterer.channel].shift();
                     let out = filterer.apply(State.data.counter-i);
                     State.data.filtered[filterer.channel].push(out);
-                })
+                });
+                //console.log(State.data.filtered)
             }
         }
     }
@@ -136,9 +137,11 @@ export const EEGInterfaceSetup = () => {
         if(msg.foo === "coherence"){
             var ffts = [...msg.output[1]];
             var coher = [...msg.output[2]];
-
+            console.log("out", ffts)
             ATLAS.channelTags.forEach((row, i) => {
                 if(row.tag !== null && i < EEG.nChannels){
+                    
+                    ATLAS.mapFFTData(ffts, State.data.lastPostTime, i, row.tag);
                     ATLAS.fftMap.map.find((o,i) => {
                         if(o.tag === row.tag){
                             if(o.data.count > EEG.maxBufferedSamples) {
@@ -153,11 +156,11 @@ export const EEGInterfaceSetup = () => {
                             return true;
                         }
                     });
-                    
-                    ATLAS.mapFFTData(ffts, State.data.lastPostTime, i, row.tag);
                 }
             });
             
+            ATLAS.mapCoherenceData(coher, State.data.lastPostTime);
+
             ATLAS.coherenceMap.map.forEach((row,i) => {
                 if(row.data.count > EEG.maxBufferedSamples) {
                     row.data.times.shift();
@@ -168,14 +171,12 @@ export const EEGInterfaceSetup = () => {
                     }
                     row.data.count-=1;
                 }
+                
             });
-            
-            ATLAS.mapCoherenceData(coher, State.data.lastPostTime);
-
             State.setState({FFTResult:ffts,coherenceResult:coher});
-
+            
         }
-
+        
         if(State.data.analyze === true) {
             runEEGWorker();
         }
@@ -214,6 +215,7 @@ export const runEEGWorker = () => {
 
     var s = State.data;
     if(EEG.data.ms[EEG.data.counter-1] - s.lastPostTime < s.workerMaxSpeed) {
+        //console.log(EEG.data.ms[EEG.data.counter-1])
         setTimeout(()=>{runEEGWorker();}, s.workerMaxSpeed - (EEG.data.ms[EEG.data.counter-1] - s.lastPostTime) );
     }
     else{
@@ -221,12 +223,12 @@ export const runEEGWorker = () => {
         if(s.fdBackMode === 'coherence') {
             //console.log("post to worker")
             var buf = bufferEEGData(true);
-            var mins = [];
-            buf.forEach((row,i) =>{
-                var min = Math.min(...row) - 100; if (min < 0) { min = 0; }
-                mins.push(min);
-            });
-            window.postToWorker({foo:'coherence', input:[buf, s.nSec, s.freqStart, s.freqEnd, EEG.uVperStep, mins]});
+            //var mins = [];
+            //buf.forEach((row,i) =>{
+            //    var min = Math.min(...row) - 100; if (min < 0) { min = 0; }
+            //    mins.push(min);
+            //});
+            window.postToWorker({foo:'coherence', input:[buf, s.nSec, s.freqStart, s.freqEnd, EEG.uVperStep]});
         }
     }
 }
@@ -236,9 +238,9 @@ export const readyDataForWriting = () => {
     let data = [];
     let mapidx = 0;
     for(let i = 0; i<EEG.data.counter; i++){
+        let line=[];
         line.push(EEG.data.ms[i]);
         ATLAS.channelTags.forEach((tag,j) => {
-            let line=[];
             if(typeof tag.ch === "number"){
                 line.push(EEG.data["A"+tag.ch]);
                 if(i===0) {

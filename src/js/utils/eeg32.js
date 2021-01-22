@@ -39,7 +39,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.uVperStep = 0.000001 / (this.vref*this.stepSize*this.gain); //uV per step.
 		this.scalar = 1/(0.000001 / (this.vref*this.stepSize*this.gain)); //step per uV.
 
-		this.maxBufferedSamples = this.sps*60*10; //max samples in buffer this.sps*60*nMinutes = max minutes of data
+		this.maxBufferedSamples = this.sps*60*5; //max samples in buffer this.sps*60*nMinutes = max minutes of data
 		
 		this.data = { //Data object to keep our head from exploding. Get current data with e.g. this.data.A0[this.data.counter-1]
 			counter: 0,
@@ -119,7 +119,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 
 			if(this.data.counter-1 === 0) {this.data.ms[this.data.counter-1]= Date.now();}
 			else {
-				if(this.data.counter === this.maxBufferedSamples) {
+				if(this.data.counter >= this.maxBufferedSamples && this.data.ms[this.data.counter-1] !== 0 ) {
 					this.data.ms.push(this.data.ms[this.data.counter-1]+this.updateMs);
 					this.data.ms.shift();
 				}
@@ -127,12 +127,12 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 					this.data.ms[this.data.counter-1]=this.data.ms[this.data.counter-2]+this.updateMs;
 				}
 			}//Assume no dropped samples
-			
+		
 			for(var i = 3; i < 99; i+=3) {
 				var channel = "A"+(i-3)/3;
-				if(this.data.counter === this.maxBufferedSamples) { 
-					this.data[channel].shift();
+				if(this.data.counter >= this.maxBufferedSamples) { 
 					this.data[channel].push(this.bytesToInt24(line[i],line[i+1],line[i+2]));
+					this.data[channel].shift();
 				}
 				else{
 					this.data[channel][this.data.counter-1]=this.bytesToInt24(line[i],line[i+1],line[i+2]);
@@ -143,8 +143,6 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			this.data["Ay"][this.data.counter-1]=this.bytesToInt16(line[101],line[102]);
 			this.data["Az"][this.data.counter-1]=this.bytesToInt16(line[103],line[104]);
 			//console.log(this.data)
-
-
 
 			return true;
 			//Continue

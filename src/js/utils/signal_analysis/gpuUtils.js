@@ -216,7 +216,7 @@ export class gpuUtils {
   }
 
   //Input array of array buffers of the same length and the number of seconds recorded
-  MultiChannelDFT(signalBuffer, nSeconds, scalar=1, DCoffset=0, texOut = false) {
+  MultiChannelDFT(signalBuffer, nSeconds, scalar=1, DCoffset=DCoffset=new Array(signalBuffer.length).fill(0), texOut = false) {
     
     var signalBufferProcessed = [];
       
@@ -256,7 +256,7 @@ export class gpuUtils {
 
       
   //Input buffer of signals [[channel 0],[channel 1],...,[channel n]] with the same number of samples for each signal. Returns arrays of the positive DFT results in the given window.
-  MultiChannelDFT_Bandpass(signalBuffer,nSeconds,freqStart,freqEnd, scalar=1, DCoffset=0, texOut = false) {
+  MultiChannelDFT_Bandpass(signalBuffer=[],nSeconds,freqStart,freqEnd, scalar=1, DCoffset=new Array(signalBuffer.length).fill(0), texOut = false) {
 
     var signalBufferProcessed = [];
       
