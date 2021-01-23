@@ -189,7 +189,9 @@ export class SmoothieApplet {
       let htmlToAppend = "";
       if(val === "alpha") {
         ATLAS.channelTags.forEach((row,i) => {
-          htmlToAppend += `<div style='display:table-row; color:`+this.class.seriesColors[i]+`'>`+row.tag+`</div>`;
+          if(row.tag !== null && row.tag !== 'other'){
+            htmlToAppend += `<div style='display:table-row; color:`+this.class.seriesColors[i]+`'>`+row.tag+`</div>`;
+          }
         });
       }
       else if(val === "coherence") {
