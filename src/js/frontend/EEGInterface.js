@@ -1,11 +1,10 @@
 import {State} from './State'
-import {eeg32, eegAtlas, eegmath} from '../utils/eeg32'
 import {applyFilter, IIRNotchFilter, IIRLowPassFilter, DCBlocker} from '../utils/signal_analysis/IIRFilter'
 
 
 let defaultTags = [
     {ch: 4, tag: "Fp2", viewing: true},
-    {ch: 24, tag: "Fp1", viewing: true}
+    {ch: 24, tag: "Fp1", viewing: true},
 ];
 
 
@@ -42,16 +41,17 @@ class channelFilterer { //Feed-forward IIR filters
 
     apply(idx=this.lastidx+1) {
         let out=EEG.data[this.channel][idx]; 
-        if(State.data.dcblocker === true) { //Apply a DC blocking filter
-            out = this.dcb.step(out);
-        }
         if(State.data.sma4 === true) {
             if(State.data.counter >= 4) { //Apply a 4-sample moving average
-                out = (State.data.filtered[this.channel][idx-3] + State.data.filtered[this.channel][idx-2] + State.data.filtered[this.channel][idx-1] + out)*.25;
+                out = (State.data.filtered[this.channel][State.data.filtered[this.channel].length-3] + State.data.filtered[this.channel][State.data.filtered[this.channel].length-2] + State.data.filtered[this.channel][State.data.filtered[this.channel].length-1] + out)*.25;
             }
             else if(EEG.data.counter >= 4){
-                out = (EEG.data[this.channel][0] + EEG.data[this.channel][1] + EEG.data[this.channel][2] + out)*.25;
+                console.log(State.data.counter, State.data.filtered[this.channel].length)
+                out = (EEG.data[this.channel][EEG.data.counter-4] + EEG.data[this.channel][EEG.data.counter-3] + EEG.data[this.channel][EEG.data.counter-2] + out)*.25;
             }
+        }
+        if(State.data.dcblocker === true) { //Apply a DC blocking filter
+            out = this.dcb.step(out);
         }
         if(State.data.notch50 === true) { //Apply a 50hz notch filter
             out = applyFilter(out,this.notch50);
@@ -82,11 +82,12 @@ defaultTags.forEach((row,i) => {
 
 
 
+import {eeg32, eegAtlas} from '../utils/eeg32'
 
-
+import {cyton} from '../utils/hardware_compat/cyton'
 
 export const ATLAS = new eegAtlas(defaultTags);
-export const EEG = new eeg32(
+export var EEG = new eeg32( //cyton(
 (newLinesInt) => { //on decoded
     if(State.data.useFilters === true) {
         if(EEG.data.counter !== EEG.maxBufferedSamples) {
@@ -137,9 +138,9 @@ export const EEGInterfaceSetup = () => {
         if(msg.foo === "coherence"){
             var ffts = [...msg.output[1]];
             var coher = [...msg.output[2]];
-            console.log("out", ffts)
+            //console.log("out", ffts)
             ATLAS.channelTags.forEach((row, i) => {
-                if(row.tag !== null && i < EEG.nChannels){
+                if(row.tag !== null && row.tag !== 'other' && i < EEG.nChannels){
                     
                     ATLAS.mapFFTData(ffts, State.data.lastPostTime, i, row.tag);
                     ATLAS.fftMap.map.find((o,i) => {
@@ -193,8 +194,12 @@ export const bufferEEGData = (taggedOnly=true) => {
             if(taggedOnly===true) {
                 if(ATLAS.channelTags[i].tag !== null && ATLAS.channelTags[i].tag !== 'other') {
                     var channel = "A"+ATLAS.channelTags[i].ch;       
-                    if(State.data.useFilters === true) { dat = State.data.filtered[channel].slice(State.data.counter - EEG.sps, State.data.counter); }
-                    else{ dat = EEG.data[channel].slice(EEG.data.counter - EEG.sps, EEG.data.counter); }
+                    if(State.data.useFilters === true) { 
+                        dat = State.data.filtered[channel].slice(State.data.filtered[channel].length - EEG.sps, State.data.filtered[channel].length);
+                    }
+                    else{ 
+                        dat = EEG.data[channel].slice(EEG.data.counter - EEG.sps, EEG.data.counter); 
+                    }
                     //console.log(channel);
                     buffer.push(dat);
                 }

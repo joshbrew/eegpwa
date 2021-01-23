@@ -53,10 +53,11 @@ export class SmoothieChartMaker {
 			var stroke = ''; //Set the initial stroke and fill styles to be the same each time
 			var fill = '';
 			if(i === 0) { stroke = 'purple'; fill = 'rgba(128,0,128,0.2)'; }
-			if(i === 1) { stroke = 'orange'; fill = 'rgba(255,128,0,0.2)'; }
-			if(i === 2) { stroke = 'green';  fill = 'rgba(0,255,0,0.2)';   }
-			if(i === 3) { stroke = 'blue';   fill = 'rgba(0,0,255,0.2)' ;  }
-			if(i === 4) { stroke = 'red';    fill = 'rgba(255,0,0,0.2)';   }
+			else if(i === 1) { stroke = 'orange'; fill = 'rgba(255,128,0,0.2)'; }
+			else if(i === 2) { stroke = 'green';  fill = 'rgba(0,255,0,0.2)';   }
+			else if(i === 3) { stroke = 'turquoise';fill = 'rgba(0,255,150,0.2)';   }
+			else if(i === 4) { stroke = 'blue';   fill = 'rgba(0,0,255,0.2)' ;  }
+			else if(i === 5) { stroke = 'red';    fill = 'rgba(255,0,0,0.2)';   }
 			else {
 				var r = Math.random()*255, g = Math.random()*255, b = Math.random()*255;
 				stroke = 'rgb('+r+","+g+","+b+")"; fill = 'rgba('+r+','+g+','+b+","+"0.2)";
@@ -120,14 +121,27 @@ export class uPlotMaker {
 
 	}
 
-	makeuPlot(series=[{}], data=[], width=1000, height=400, options = null) {
+	makeuPlot(series=[{}], data=[], width=1000, height=400, options = null, yScale=true) {
 		if(series.length < 2) { console.log("Input valid series"); return false;}
 		var uPlotOptions = {};
+
+		let yOpts = {auto:true};
+		if(yScale === true){
+		}
+		else{
+			yOpts = {auto:false, range:yScale};
+		}
+
+
 		if(options === null){
 			uPlotOptions = {
 				width: width,
 				height: height,
 				series: series,
+				scales: {
+					x:{time:false},
+					y:yOpts,
+				},
 				axes: [
 				{
 				scale: "Hz",

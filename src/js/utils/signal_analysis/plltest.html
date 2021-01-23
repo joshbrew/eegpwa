@@ -8,12 +8,12 @@
     Sine wave in:
     <div id="sinechart"></div>
     <h3 id="string2"></h3>
-    Mixed amplitudes out:
+    dft pll output:
     <div id="mixedchart"></div>
-    Frequency adjustments:
+    dft pll Frequency adjustments:
     <div id="freqchart"></div>
-    Phase adjustments:
-    <div id="phasechart"></div>
+    dpll output:
+    <div id="dpllchart"></div>
     <script>
 
 
@@ -21,14 +21,14 @@
 
     let freq_actual = 1.2;
     let freq_guess_in = 1.5;
-    let α = 0.1; //Phase offset multiplier
-    let ß = 0.5; //Frequency offset multiplier. Beta is multiplied by alpha squared in the algorithm
+    let α = 0.05; //Phase offset multiplier
+    let ß = 0.4; //Frequency offset multiplier. Beta is multiplied by alpha squared in the algorithm
     let fs = 512; //Sample rate (sps)
-    let nSec = 100; //Seconds of sine wave to compute
+    let nSec = 3; //Seconds of sine wave to compute
     
     let nsamples = Math.floor(fs*nSec);
 
-    let wave = genSineWave(freq_actual,1,nSec,fs,7,0.1);
+    let wave = genSineWave(freq_actual,1,nSec,fs);
     let wave_amps = wave[1];
     let wave_t = wave[0];
 
@@ -45,9 +45,9 @@
     console.log(string2);
     console.log("Mixing result: ", dftpll_result.mixed)
 
-    let pll = PLL4thOrder(wave_amps, 1.5, 1);
-    console.log("4th order PLL", pll)
+    let dpll_result = my_dpll(wave_amps,freq_guess_in);
 
+    console.log(dpll_result);
 
 
     let data = [[{
@@ -79,14 +79,15 @@
                 xbins: {  size: 1  }
             }],[{
                 x:wave_t,
-                y:pll.mixed,
+                y:dpll_result.estimated,
                 type: 'line',
                 marker: {
-                    color: "rgba(100,255,255, 1)"
+                    color: "rgba(255,55,125, 1)"
                 },
                 name: 'Mixed',    
                 xbins: {  size: 1  }
-            }]];
+            }]
+          ];
 
     let config = { 
         scrollZoom: true, 
@@ -96,7 +97,7 @@
     Plotly.newPlot("sinechart",data[0],undefined,config);
     Plotly.newPlot("mixedchart",data[1],undefined,config);
     Plotly.newPlot("freqchart",data[2],undefined,config);
-    Plotly.newPlot("phasechart",data[3],undefined,config);
+    Plotly.newPlot("dpllchart",data[3],undefined,config);
 
 
 function genSineWave(freq=20,peakAmp=1,nSec=1,fs=512,freq2=0,peakAmp2=1){
@@ -183,100 +184,40 @@ function DFTpll(signal=genSineWave(3.3,1,1,512)[1], fs=512, len=512, freq_est=3,
 
 }
 
-
-
-//lifted from https://github.com/SukneungBae/SDRAngelCopied/blob/ffa604cecf668e0f349e27aa814643b1c3fa4462/sdrbase/dsp/phaselock.cpp
-function PLL4thOrder(samples, freq_guess, bandwidth) {
-
-  //min/max
-  const TWO_PI = 2*Math.PI;
-  let minfreq = (freq_guess-bandwidth)*TWO_PI;
-  let maxfreq = (freq_guess+bandwidth)*TWO_PI;
-
-  //threshold
-  let psin = 0;
-  let pcos = 1;
-
-  //2nd order filter
-  let p1 = Math.exp(-1.146*bandwidth*TWO_PI);
-  let p2 = Math.exp(-5.331*bandwidth*TWO_PI);
-  let phasor_a1 = -p1 - p2;
-  let phasor_a2 = p1*p2;
-  let phasor_b0 = 1 + phasor_a1 + phasor_a2;
-
-  //loop filter
-  let q1 = Math.exp(-0.1153*bandwidth*TWO_PI);
-  let loop_b0 = 0.62*bandwidth*TWO_PI;
-  let loop_b1 = -loop_b0*q1;
-
-  //init freq and phase
-  let freq = freq_guess*TWO_PI;
-  let phase = 0;
-  let phasor_i1 = 0;
-  let phasor_i2 = 0;
-  let phasor_q1 = 0;
-  let phasor_q2 = 0;
-  let loop_x1 = 0;
-
-
-  let output = new Array(samples.length).fill(0);
-
-  for(let i = 0; i < samples.length; i++) {
-    
-    psin = Math.sin(phase);
-    pcos = Math.cos(phase);
-
-    output[i] = 2*psin*pcos;
-
-    let x = samples[i];
-    let phasor_i = psin*x;
-    let phasor_q = pcos*x;
-
-    //low pass filters for phasors
-    phasor_i = phasor_b0*phasor_i -
-               phasor_a1*phasor_i1 -
-               phasor_a2* phasor_i2;
-
-    phasor_q = phasor_b0*phasor_q -
-               phasor_a1*phasor_q1 -
-               phasor_a2*phasor_q2;
-
-    phasor_i2 = phasor_i1;
-    phasor_i1 = phasor_i;
-    phasor_q2 = phasor_q1;
-    phasor_q1 = phasor_q;
-
-    let phase_err = 0;
-    if(phasor_i > Math.abs(phasor_q)){ 
-      phase_err = phasor_q / phasor_i;
-    }
-    else if (phasor_q > 0) {
-      phase_err = 1;
-    }
-    else {
-      phase_err = -1;
-    }
-
-
-    freq += loop_b0 * phase_err + loop_b1*loop_x1;
-    loop_x1 = phase_err;
-
-    freq = Math.max(minfreq,Math.min(maxfreq,freq));
-    
-    phase += freq;
-    if(phase > TWO_PI) {
-      phase -= TWO_PI;
-    }
-
-
+function my_dpll(signal_in, expectedFreq=4) {
+  let α = 0.05;    //Phase modulation scalar
+  let ß = .01;    //Frequency modulation scalar
+  var phase_out = 0;
+  var freq=expectedFreq,
+      peakAmp=Math.max(...signal_in),
+      floor=Math.min(...signal_in),
+      fs=512;
+  var sineWave = [];
+  var t = 0;
+  var increment = 1/fs; //x-axis time increment based on sample rate
+  let phase_err = 0;
+  var im = 0;
+  for(var i = 0; i < signal_in.length; i++) {
+      t=increment*i;
+      var simulated = Math.sin(2*Math.PI*freq*t + phase_out); //Generate sine amplitude with the modulating parameters
+      mag = Math.sqrt(simulated*simulated + im*im); //; convert re, im to polar (mag, phi)
+      phi = Math.atan2(im, simulated);
+      mag = mag * peakAmp;      //; apply factor `scale` to magnitude
+      im = mag * Math.sin(phi);
+      var cmulr = signal_in[i]*simulated; //throwing out the multiplication of the signal in imaginary number as we set it to 0
+      var cmuli = signal_in[i]*im;
+      if(cmulr === 0) { 
+          phase_err = 0.0;
+      } else { 
+          phase_err = Math.atan(cmuli/cmulr);
+      }
+      phase_out += α*phase_err; //Correct parameters by the error
+      freq += ß*phase_err;
+      //console.log(simulated,phi,im,phase_err,phase_out,freq);
+      sineWave.push(simulated);
   }
-
-  return {mixed:output,freq_guess:freq/TWO_PI, phase:phase};
-
+  return {estimated:sineWave,phase_err:phase_err,freq_est:freq,phase_est:phase_out};
 }
-
-
-
 
     
     </script>

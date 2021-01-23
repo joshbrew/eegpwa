@@ -1,6 +1,7 @@
 import {State} from '../frontend/State'
 import {EEG, ATLAS, addChannelOptions, addCoherenceOptions} from '../frontend/EEGInterface'
 import { SmoothieChartMaker } from '../utils/visuals/eegvisuals';
+import {TimeSeries} from 'smoothie'
 import {DOMFragment} from '../frontend/DOMFragment'
 
 //You can extend or call this class and set renderProps and these functions
@@ -46,6 +47,10 @@ export class SmoothieApplet {
                 </select>
               </td>
                 </tr>
+                <tr>
+                <td colSpan=2 style='display:table-row;' id='`+props.id+`legend'>
+                </td>
+                </tr>
             </table>
         </div>
         `;
@@ -54,7 +59,6 @@ export class SmoothieApplet {
     //Setup javascript functions for the new HTML here
     setupHTML() {
         addChannelOptions(this.renderProps.id+"channel", true);
-        
         document.getElementById(this.renderProps.id+"channelmenu").style.display = "none";
         
         document.getElementById(this.renderProps.id+"mode").onchange = () => {
@@ -67,7 +71,9 @@ export class SmoothieApplet {
             }
             else if (val === "bandpowers") {
               document.getElementById(this.renderProps.id+"channelmenu").style.display = "";
+              document.getElementById(this.renderProps.id+"legend").innerHTML = "";
             }
+            this.setLegend();
             //if(document.getElementById(this.renderProps.id+"mode").value === "coherence"){
             //    State.unsubscribe('FFTResult',this.sub);
             //    this.sub = State.subscribe('coherenceResult',this.onUpdate);
@@ -86,6 +92,8 @@ export class SmoothieApplet {
         
         this.class = new SmoothieChartMaker(8, document.getElementById(this.renderProps.id+"canvas"));
         this.class.init('rgba(0,100,100,0.5)');
+        
+        this.setLegend();
         
         this.sub = State.subscribe('FFTResult', ()=>{try{this.onUpdate()}catch(e){console.error(e);}});
 
@@ -122,6 +130,16 @@ export class SmoothieApplet {
     onUpdate = () => {
       var graphmode = document.getElementById(this.renderProps.id+"mode").value;
       if((graphmode === "alpha") || (graphmode === "bandpowers")) {
+        if(ATLAS.channelTags.length > this.class.series.length) {
+          while(ATLAS.channelTags.length > this.class.series.length) {
+            var newseries = new TimeSeries();
+            this.series.push(newseries);
+            var r = Math.random()*255, g = Math.random()*255, b = Math.random()*255;
+				    stroke = 'rgb('+r+","+g+","+b+")"; fill = 'rgba('+r+','+g+','+b+","+"0.2)";
+            this.seriesColors.push(stroke); // For reference
+            this.chart.addTimeSeries(this.series[this.series.length-1], {strokeStyle: stroke, fillStyle: fill, lineWidth: 2 });
+          }
+        }
         if(graphmode === "alpha"){
             ATLAS.channelTags.forEach((row,i) => {
               if(row.tag !== null && row.tag !== 'other'){
@@ -135,7 +153,7 @@ export class SmoothieApplet {
           });
         }
         else if(graphmode === "bandpowers") {
-          var ch = document.getElementById(this.renderProps.id+"channel").value;
+          var ch = parseInt(document.getElementById(this.renderProps.id+"channel").value);
           var tag = null;
           ATLAS.channelTags.find((o,i) => {
             if(o.ch === ch){
@@ -146,12 +164,12 @@ export class SmoothieApplet {
           if(tag !== null){
             var coord = ATLAS.getAtlasCoordByTag(tag);
             this.class.bulkAppend([
-              Math.max(...coord.data.slices.delta[coord.data.slices.delta.length-1]),
-              Math.max(...coord.data.slices.theta[coord.data.slices.theta.length-1]),
-              Math.max(...coord.data.slices.alpha1[coord.data.slices.alpha1.length-1]),
-              Math.max(...coord.data.slices.alpha2[coord.data.slices.alpha2.length-1]),
-              Math.max(...coord.data.slices.beta[coord.data.slices.beta.length-1]),
-              Math.max(...coord.data.slices.lowgamma[coord.data.slices.lowgamma.length-1])
+              coord.data.means.delta[coord.data.means.delta.length-1],
+              coord.data.means.theta[coord.data.means.theta.length-1],
+              coord.data.means.alpha1[coord.data.means.alpha1.length-1],
+              coord.data.means.alpha2[coord.data.means.alpha2.length-1],
+              coord.data.means.beta[coord.data.means.beta.length-1],
+              coord.data.means.lowgamma[coord.data.means.lowgamma.length-1]
             ]);
           }
         }
@@ -163,6 +181,33 @@ export class SmoothieApplet {
           }
         });
       }
+    }
+
+    setLegend = () => {
+      let val = document.getElementById(this.renderProps.id+"mode").value;
+      document.getElementById(this.renderProps.id+"legend").innerHTML = "";
+      let htmlToAppend = "";
+      if(val === "alpha") {
+        ATLAS.channelTags.forEach((row,i) => {
+          htmlToAppend += `<div style='display:table-row; color:`+this.class.seriesColors[i]+`'>`+row.tag+`</div>`;
+        });
+      }
+      else if(val === "coherence") {
+        ATLAS.coherenceMap.map.forEach((row,i) => {
+          htmlToAppend += `<div style='display:table-row; color:`+this.class.seriesColors[i]+`'>`+row.tag+`</div>`;
+        });
+      }
+      else if (val === "bandpowers") {
+        let i = 0;
+        for(const prop in ATLAS.fftMap.map[0].data.means){
+          if(prop !== 'scp' && prop !== 'highgamma'){
+            htmlToAppend += `<div style='display:table-row; color:`+this.class.seriesColors[i]+`'>`+prop+`</div>`;
+            i++;
+          }
+        }
+      }
+      document.getElementById(this.renderProps.id+"legend").innerHTML = htmlToAppend;
+      
     }
 
     stopEvent = () => {

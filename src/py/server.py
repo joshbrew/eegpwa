@@ -12,6 +12,10 @@ import time
 # Asyncio server sent events for streaming COM data. This is crashy
 # Based on examples from the Quart gitlab. 
 
+
+#NEed to fix: 
+# place the serial stream in a separate thread and make the event stream simply wait for messages. The serial stream blocks the server right now
+
 max_speed = 0.05 #  Max speed(in sec) of the event loop
 byte_count = 2688 # The number of bytes to try to read before timeout
 baud = 115200
@@ -56,15 +60,10 @@ async def sse():
     async def send_events():
         while True:
             try:
-                start = time.time()
-                data = ser.read(2688).decode('utf-8')
                 if(len(data) > 0):
                     print(data)
                     event = ServerSentEvent(data)
-                    yield event.encode()        
-                end = time.time()
-                if (end - start) < max_speed:
-                    time.sleep(max_speed - (end-start))
+                    yield event.encode()    
             except:
                 print(exc_info())
                 #exit()
@@ -111,7 +110,13 @@ def signal_user_input():
     # thread exits here
 
 
-
+def serial_stream():
+    while(ser.connected):
+        start = time.time()
+        data = ser.read(2688).decode('utf-8')     
+        end = time.time()
+        if (end - start) < max_speed:
+            time.sleep(max_speed - (end-start))
 
 
 if __name__ == "__main__":

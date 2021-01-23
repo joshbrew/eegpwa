@@ -2,7 +2,7 @@
 
 See Web BCI test at https://webbci.netlify.app
 
-With node installed, cd to where you extracted this folder from your command prompt then use the command
+With the latest node LTS installed, cd to where you extracted this folder from your command prompt then use the command
 
 `npm install`
 

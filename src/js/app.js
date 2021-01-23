@@ -107,6 +107,8 @@ function initEEGui() {
     
     document.getElementById("useFilters").addEventListener('change',() => {
         State.data.useFilters = document.getElementById("useFilters").checked;
+        if(State.data.useFilters === true) {
+        }
     });
     document.getElementById("notch50").addEventListener('change',() => {
         State.data.notch50 = document.getElementById("notch50").checked;
@@ -192,11 +194,11 @@ function initEEGui() {
         UI.reInitApplets();
     });
 
-    document.getElementById("setTimeSpan").addEventListener('click',() => {
-        var setting = parseFloat(document.getElementById("GraphTime").value); 
-        if(setting === NaN || setting < 1) {setting = 1;}
-        State.setState({nSecAdcGraph: setting});
-    });
+    //document.getElementById("setTimeSpan").addEventListener('click',() => {
+    //    var setting = parseFloat(document.getElementById("GraphTime").value); 
+    //    if(setting === NaN || setting < 1) {setting = 1;}
+    //    State.setState({nSecAdcGraph: setting});
+    //});
 
     State.subscribe('connected', () => {
         if(State.data.connected === true) {document.getElementById("usbico").style.fill = "orange";}

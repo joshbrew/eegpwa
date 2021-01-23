@@ -29,7 +29,10 @@ export class uPlotApplet {
         this.sub = null;
 
         this.loop = null;
-
+        
+        this.timeRange = 10;
+        this.yrange = true;
+        this.xrange = 10;
         this.plotWidth = 500;
         this.plotHeight = 300;
     }
@@ -41,28 +44,38 @@ export class uPlotApplet {
         return `
         <div id='`+props.id+`'>    
             <div id='`+props.id+`canvas' style='position:absolute;z-index:3;'></div>
-            <div id='`+props.id+`menu' style='position:absolute;z-index:4;'>
-              <table>
-              <tr>
-                <td>  
-                Graph:
-                <select id='`+props.id+`mode'>
-                  <option value="FFT" selected="selected">FFTs</option>
-                  <option value="Coherence">Coherence</option>
-                  <option value="CoherenceTimeSeries">Coherence Time Series</option>
-                  <option value="TimeSeries">Raw</option>
-                </select>
-                </td>
-                <td>
-                <select id="`+props.id+`channel"></select>
-                </td>
-                <td>
-                `+genBandviewSelect(props.id+'bandview')+`
-                </td>
-                <td>
-                <div id='`+props.id+`title' style='font-weight:bold;'>Fast Fourier Transforms</div>
-                </td>
-              </tr>
+            <div id='`+props.id+`menu' style='position:absolute; float:right; z-index:4;'>
+              <table style='position:absolute; transform:translateX(40px);'>
+                <tr>
+                  <td>
+                    <select id="`+props.id+`channel"></select>
+                  </td> 
+                  <td>  
+                    Graph:
+                    <select id='`+props.id+`mode' style='width:98px'>
+                      <option value="FFT" selected="selected">FFTs</option>
+                      <option value="Coherence">Coherence</option>
+                      <option value="CoherenceTimeSeries">Mean Coherence</option>
+                      <option value="TimeSeries">Raw</option>
+                    </select>
+                  </td>
+                  <td id='`+props.id+`yrangetd'>
+                    Y scale <button id='`+props.id+`yrangeset' style='position:absolute; transform:translateX(21px); height:13px;'><div style='transform:translateY(-3px);'>Set</div></button><input type='text' id='`+props.id+`yrange' placeholder='0,100 or auto' style='width:90px'>
+                  </td>
+                  <td id='`+props.id+`xrangetd'>
+                    Time: <button id='`+props.id+`xrangeset' style='position:absolute; transform:translateX(30px); height:13px;'><div style='transform:translateY(-3px);'>Set</div></button><input type='text' id='`+props.id+`xrange' placeholder='10 (sec)' style='width:90px'>
+                  </td>
+                  <td>
+                    <div id='`+props.id+`title' style='font-weight:bold; width:200px;'>Fast Fourier Transforms</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>
+                  `+genBandviewSelect(props.id+'bandview')+`
+                  </td>
+                  <td></td>
+                </tr>
               </table>
             </div>
         </div>
@@ -71,9 +84,10 @@ export class uPlotApplet {
 
     //Setup javascript functions for the new HTML here
     setupHTML() {
-        document.getElementById(this.renderProps.id+"bandview").style.display="none"
+        document.getElementById(this.renderProps.id+"bandview").style.display="none";
+        document.getElementById(this.renderProps.id+'xrangetd').style.display = "none";
         document.getElementById(this.renderProps.id+'mode').onchange = () => {
-          
+          this.yrange = true;
           if(document.getElementById(this.renderProps.id+'mode').value === "CoherenceTimeSeries" || document.getElementById(this.renderProps.id+'mode').value === "Coherence"){
             addCoherenceOptions(this.renderProps.id+'channel',true,['All']);
           }
@@ -81,9 +95,15 @@ export class uPlotApplet {
             addChannelOptions(this.renderProps.id+'channel',true,['All']);
           }
           if (document.getElementById(this.renderProps.id+'mode').value === "CoherenceTimeSeries") {
+            document.getElementById(this.renderProps.id+'xrangetd').style.display = "";
             document.getElementById(this.renderProps.id+"bandview").style.display="";
           }
+          else if(document.getElementById(this.renderProps.id+'mode').value==="TimeSeries") { 
+            document.getElementById(this.renderProps.id+'xrangetd').style.display = "";
+            document.getElementById(this.renderProps.id+"bandview").style.display="none";
+          }
           else {
+            document.getElementById(this.renderProps.id+'xrangetd').style.display = "none";
             document.getElementById(this.renderProps.id+"bandview").style.display="none";
           }
           
@@ -104,6 +124,9 @@ export class uPlotApplet {
             
 
         }
+
+        document.getElementById(this.renderProps.id+'bandview').style.width='98px';
+
         document.getElementById(this.renderProps.id+'bandview').onchange = () => {
             if(document.getElementById(this.renderProps.id+'mode').value === "CoherenceTimeSeries"){
                 this.setuPlot();
@@ -114,6 +137,32 @@ export class uPlotApplet {
         }
 
         addChannelOptions(this.renderProps.id+'channel',true,['All']);
+
+        document.getElementById(this.renderProps.id+'xrangeset').onclick = () => {
+          let val = parseInt(document.getElementById(this.renderProps.id+'xrange').value)
+          if(!isNaN(val)){
+            if(val < 1) { val = 1; }
+            if(val > 300) { val = 300; }
+            this.xrange = val;
+          }
+        }
+
+        document.getElementById(this.renderProps.id+'yrangeset').onclick = () => {
+          let val = document.getElementById(this.renderProps.id+'yrange').value;
+          let split = val.split(',')
+          if(split.length === 2){
+            let low = parseInt(split[0]);
+            let high = parseInt(split[1]);
+            if(!isNaN(low) && !isNaN(high)){
+              this.yrange = [low,high];
+              this.setuPlot();
+            }
+          }
+          else if(val === 'auto'){
+            this.yrange = true;
+            this.setuPlot();
+          }
+        }
         
     }   
 
@@ -212,22 +261,22 @@ export class uPlotApplet {
         
         var count = ATLAS.coherenceMap.map[0].data.count-1;
         //console.log(ATLAS.coherenceMap.map[0].data.times[count-1])
-        //console.log(State.data.nSecAdcGraph)
-        if(this.class.uPlotData[0].length > EEG.sps*State.data.nSecAdcGraph*.025) {
+        //console.log(this.xrange)
+        if(this.class.uPlotData[0].length > EEG.sps*this.xrange*.025) {
           this.class.uPlotData[0].shift();
         }
-        console.log(EEG.sps*State.data.nSecAdcGraph)
+        console.log(EEG.sps*this.xrange)
         console.log(this.class.uPlotData[0].length)
         this.class.uPlotData[0].push(ATLAS.coherenceMap.map[0].data.times[count])// = [ATLAS.coherenceMap.map[0].data.times.slice(count, ATLAS.coherenceMap.map[0].data.count)];
         
           ATLAS.coherenceMap.map.forEach((row,i) => {
-            if(this.class.uPlotData[i+1].length > EEG.sps*State.data.nSecAdcGraph*.025) {
+            if(this.class.uPlotData[i+1].length > EEG.sps*this.xrange*.025) {
               this.class.uPlotData[i+1].shift();
             }
             if(view === 'All') {
-              this.class.uPlotData[i+1].push(eegmath.sma(row.data.means[band].slice(count-10, ATLAS.coherenceMap.map[0].data.count),10)[9]);
+              this.class.uPlotData[i+1].push(eegmath.sma(row.data.means[band].slice(count-20, ATLAS.coherenceMap.map[0].data.count),20)[19]);
             } else if (row.tag === view) {
-              this.class.uPlotData[i+1].push(eegmath.sma(row.data.means[band].slice(count-10, ATLAS.coherenceMap.map[0].data.count),10)[9]);
+              this.class.uPlotData[i+1].push(eegmath.sma(row.data.means[band].slice(count-20, ATLAS.coherenceMap.map[0].data.count),20)[19]);
             }
           });
         
@@ -235,11 +284,11 @@ export class uPlotApplet {
         //Do a push and pop and get the moving average instead
       }
       else {
-        var nsamples = Math.floor(EEG.sps*State.data.nSecAdcGraph);
+        var nsamples = Math.floor(EEG.sps*this.xrange);
         if(nsamples > EEG.data.counter) {nsamples = EEG.data.counter-1}
 
         if ((graphmode === "TimeSeries") || (graphmode === "Stacked")) {
-            var nsamples = Math.floor(EEG.sps*State.data.nSecAdcGraph);
+            var nsamples = Math.floor(EEG.sps*this.xrange);
             if(nsamples > EEG.data.counter) { nsamples = EEG.data.counter-1;}
             this.class.uPlotData = [
                 EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
@@ -248,7 +297,7 @@ export class uPlotApplet {
                 if(row.viewing === true) {
                   if(view === 'All' || row.ch === ch) {  
                     if(State.data.useFilters === true) {
-                      this.class.uPlotData.push(State.data.filtered["A"+row.ch].slice(State.data.counter - nsamples, State.data.counter));
+                      this.class.uPlotData.push(State.data.filtered["A"+row.ch].slice(State.data.filtered["A"+row.ch].length - nsamples, State.data.filtered["A"+row.ch].length));
                     } else {
                       this.class.uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
                     }
@@ -287,17 +336,17 @@ export class uPlotApplet {
           document.getElementById(this.renderProps.id+"title").innerHTML = "ADC signals";
       
           if(EEG.data["A0"].length > 1) {
-            var nsamples = Math.floor(EEG.sps*State.data.nSecAdcGraph);
+            var nsamples = Math.floor(EEG.sps*this.xrange);
             if(nsamples > EEG.data.counter) {nsamples = EEG.data.counter-1;}
       
             this.class.uPlotData = [
-                EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
+                EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)//.map((x,i) => x = x-EEG.data.ms[0])
             ];
               ATLAS.channelTags.forEach((row,i) => {
                   if(row.viewing === true) {
                     if(view === 'All' || row.ch === ch) {
                       if(State.data.useFilters === true) {
-                        this.class.uPlotData.push(State.data.filtered["A"+row.ch].slice(State.data.counter - nsamples, State.data.counter));
+                        this.class.uPlotData.push(State.data.filtered["A"+row.ch].slice(State.data.filtered["A"+row.ch].length - nsamples, State.data.filtered["A"+row.ch].length ));
                       } else {
                         this.class.uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
                       }
@@ -322,7 +371,9 @@ export class uPlotApplet {
               newSeries, 
               this.class.uPlotData, 
               this.plotWidth, 
-              this.plotHeight
+              this.plotHeight,
+              undefined,
+              this.yrange
             );
           this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +((v-EEG.data.ms[0])*0.001).toFixed(2) + "s");
       
@@ -371,13 +422,15 @@ export class uPlotApplet {
                   newSeries, 
                   this.class.uPlotData, 
                   this.plotWidth, 
-                  this.plotHeight
+                  this.plotHeight,
+                  undefined,
+                  this.yrange
                 );
         }
         else if (gmode === "Stacked") {
       
           if(EEG.data["A0"].length > 1){
-          var nsamples = Math.floor(EEG.sps*State.data.nSecAdcGraph);
+          var nsamples = Math.floor(EEG.sps*this.xrange);
           if(nsamples > EEG.data.counter) {nsamples = EEG.data.counter-1}
       
             this.class.uPlotData = [
@@ -387,7 +440,7 @@ export class uPlotApplet {
                 if(row.viewing === true) { 
                   if(view === 'All' || row.ch === ch) {
                     if(State.data.useFilters === true) {
-                      this.class.uPlotData.push(State.data.filtered["A"+row.ch].slice(State.data.counter - nsamples, State.data.counter));
+                      this.class.uPlotData.push(State.data.filtered["A"+row.ch].slice(State.data.filtered["A"+row.ch].length - nsamples, State.data.filtered["A"+row.ch].length));
                     } else {
                       this.class.uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
                     }
@@ -459,12 +512,14 @@ export class uPlotApplet {
             });
           }
           //console.log(newSeries);
-          console.log(this.class.uPlotData);
+          //console.log(this.class.uPlotData);
           this.class.makeuPlot(
               newSeries, 
               this.class.uPlotData, 
               this.plotWidth, 
-              this.plotHeight
+              this.plotHeight,
+              undefined,
+              this.yrange
             );
           document.getElementById(this.renderProps.id+"title").innerHTML = "Coherence from tagged signals";
         }
@@ -473,7 +528,7 @@ export class uPlotApplet {
           
           var count = ATLAS.coherenceMap.map[0].data.count-1;
           //console.log(ATLAS.coherenceMap.map[0].data.times[count-1])
-          while(ATLAS.coherenceMap.map[0].data.times[ATLAS.coherenceMap.map[0].data.count-1]-ATLAS.coherenceMap.map[0].data.times[count-1] < State.data.nSecAdcGraph*1000 && count > 0) {
+          while(ATLAS.coherenceMap.map[0].data.times[ATLAS.coherenceMap.map[0].data.count-1]-ATLAS.coherenceMap.map[0].data.times[count-1] < this.xrange*1000 && count > 0) {
             count-=1;
           }
 
@@ -486,7 +541,7 @@ export class uPlotApplet {
                 value: (u, v) => v == null ? "-" : v.toFixed(1),
                 stroke: "rgb("+Math.random()*255+","+Math.random()*255+","+Math.random()*255+")"
               });
-              this.class.uPlotData.push(eegmath.sma(row.data.means[band].slice(count, ATLAS.coherenceMap.map[0].data.count),5));
+              this.class.uPlotData.push(eegmath.sma(row.data.means[band].slice(count, ATLAS.coherenceMap.map[0].data.count),20));
             }
           });
           //console.log(this.class.uPlotData)
@@ -494,7 +549,9 @@ export class uPlotApplet {
               newSeries, 
               this.class.uPlotData, 
               this.plotWidth, 
-              this.plotHeight
+              this.plotHeight,
+              undefined,
+              this.yrange
             );
           document.getElementById(this.renderProps.id+"title").innerHTML = "Mean Coherence over time";
           this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001-ATLAS.coherenceMap.map[0].data.times[0]).toFixed(2) + "s");
