@@ -43,7 +43,7 @@ export class uPlotApplet {
     HTMLtemplate(props=this.renderProps) {
         return `
         <div id='`+props.id+`'>    
-            <div id='`+props.id+`canvas' style='position:absolute;z-index:3; top:50px;'></div>
+            <div id='`+props.id+`canvas' style='position:absolute;z-index:3; top:50px'></div>
             <div id='`+props.id+`menu' style='position:absolute; float:right; z-index:4;'>
               <table style='position:absolute; transform:translateX(40px);'>
                 <tr>
@@ -263,7 +263,7 @@ export class uPlotApplet {
         var count = ATLAS.coherenceMap.map[0].data.count-1;
         //console.log(ATLAS.coherenceMap.map[0].data.times[count-1])
         //console.log(this.xrange)
-        if(this.class.uPlotData[0].length > EEG.sps*this.xrange*.025) {
+        if(this.class.uPlotData[0][this.class.uPlotData[0].length-1]-this.class.uPlotData[0][0] > this.xrange*1000) {
           this.class.uPlotData[0].shift();
         }
         console.log(EEG.sps*this.xrange)
@@ -271,7 +271,7 @@ export class uPlotApplet {
         this.class.uPlotData[0].push(ATLAS.coherenceMap.map[0].data.times[count])// = [ATLAS.coherenceMap.map[0].data.times.slice(count, ATLAS.coherenceMap.map[0].data.count)];
         
           ATLAS.coherenceMap.map.forEach((row,i) => {
-            if(this.class.uPlotData[i+1].length > EEG.sps*this.xrange*.025) {
+            if(this.class.uPlotData[i+1].length > this.class.uPlotData[0].length) {
               this.class.uPlotData[i+1].shift();
             }
             if(view === 'All') {
