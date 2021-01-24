@@ -220,58 +220,66 @@ document.addEventListener('click', function(e) {
 
 
 const initSystem = () => {
-    BrowserFS.configure({
-        fs: "MountableFileSystem",
-        options: {
-        '/data': { fs: "IndexedDB", options:{ storeName:'data'} }
-        //'/zip': { fs: "ZipFS"}
-        //'/tmp': { fs: "InMemory" },
-        //'/mnt/usb0': { fs: "LocalStorage" }
-        //'/cpp': { fs: "Emscripten" } // External C++ and Python scripts via https://developers.google.com/web/updates/2019/01/emscripten-npm. 
-        //'/py': { fs: "" } // See: https://github.com/iodide-project/pyodide -- 
-        }
-    }, (e) => {
-        BrowserFS.initialize()
-    });
+    let oldmfs = fs.getRootFS();
 
-    fs.open('/data/settings.json', 'w+', (e,f) => { 
-        if(e) throw e; 
-     
-        //var buffer = new ArrayBuffer(100000);
+    BrowserFS.FileSystem.IndexedDB.Create({}, (e, rootForMfs) => {
+        if(!rootForMfs) {
+            var configs = getConfigsFromHashes();
+            const UI = new UIManager(initEEGui, deInitEEGui, configs);
+            throw new Error(`?`);
+        }
+        BrowserFS.initialize(rootForMfs);
+        
         var contents = "";
-        fs.read('/data/settings.json', (err,data) => {
+        fs.readdir('/data', (e,data) => {
+           //console.log(data); 
+           if(data === undefined || data === 'undefined') {
+               fs.mkdir('/data');
+           }
+           
+           fs.readFile('/data/settings.json', (err, data) => {
             if(err) throw err;
             contents = data.toString();
-        });
-        if(contents.length < 1) {
-            let newcontent = JSON.stringify({appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:0,freqEnd:100,nSecAdcGraph:10});
-            contents = newcontent;
-            fs.write(f, newcontent, function(err){
-                if(err) throw err;
-                console.log("Settings file created");
-            });
-        }
+            //console.log(contents);
+           
+            const initUI = () => {
+                
+                let settings = JSON.parse(contents);
+                State.data.coherenceResult  = settings.coherenceResult;
+                State.data.FFTResult        = settings.FFTResult;
+                State.data.freqStart        = settings.freqStart;
+                State.data.freqEnd          = settings.freqEnd;
+                State.data.nSecAdcGraph     = settings.nSecAdcGraph;
         
-        fs.close(f);
+                var configs = getConfigsFromHashes();
+                if(configs.length === null){
+                    configs = settings.appletConfigs;
+                    State.data.appletConfigs = settings.appletConfigs;
+                }
+        
+                const UI = new UIManager(initEEGui, deInitEEGui, configs);
+            }
 
-        let settings = JSON.parse(contents);
-        State.data.coherenceResult  = settings.coherenceResult;
-        State.data.FFTResult        = settings.FFTResult;
-        State.data.freqStart        = settings.freqStart;
-        State.data.freqEnd          = settings.freqEnd;
-        State.data.nSecAdcGraph     = settings.nSecAdcGraph;
-
-        var configs = getConfigsFromHashes();
-        if(configs.length === null){
-            configs = settings.appletConfigs;
-            State.data.appletConfigs = settings.appletConfigs;
-        }
-
-        const UI = new UIManager(initEEGui, deInitEEGui, configs);
-
+            if(contents === undefined) {
+                let newcontent = JSON.stringify({appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph});
+                contents = newcontent;
+                fs.writeFile('/data/settings.json', newcontent, function(err){
+                    if(err) throw err;
+                    console.log("New settings file created");
+                    initUI();
+                });
+            }
+            else{ 
+                initUI();
+            }
+            
+    
+        });
+        });
     });
+    
   
-
+    //wip
     const onMaxData = () => {
         if(State.data.counter >= EEG.maxBufferedSamples) {
             let content = readyDataForWriting();
@@ -298,17 +306,54 @@ const initSystem = () => {
     }
 
     //State.subscribe('counter',onMaxData);
-
 }
 
 
 
 
-//initSystem();
+initSystem();
 
 
-var configs = getConfigsFromHashes(); 
+//var configs = getConfigsFromHashes(); 
 //console.log(configs)
 
 
-const UI = new UIManager(initEEGui, deInitEEGui, configs);
+//const UI = new UIManager(initEEGui, deInitEEGui, configs);
+
+
+
+let wakeLock = null;
+
+const requestWakeLock = async () => {
+    try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => {
+            console.log("Wake Lock released!");
+        });
+        console.log("Keeping awake...");
+    }
+    catch (err) {
+        console.error(err.name,err.message);
+    }
+}
+
+const releaseWakeLock = async () => {
+    if(!wakeLock) {
+        return;
+    }
+    try {
+        await wakeLock.release();
+        wakeLock = null;
+    }
+    catch (err){
+        console.error(err.name,err.message);
+    }
+}
+
+window.addEventListener('focus', () => {
+    requestWakeLock();
+});
+
+window.addEventListener('blur', () => {
+    releaseWakeLock();
+});
