@@ -46,7 +46,7 @@ class channelFilterer { //Feed-forward IIR filters
                 out = (State.data.filtered[this.channel][State.data.filtered[this.channel].length-3] + State.data.filtered[this.channel][State.data.filtered[this.channel].length-2] + State.data.filtered[this.channel][State.data.filtered[this.channel].length-1] + out)*.25;
             }
             else if(EEG.data.counter >= 4){
-                console.log(State.data.counter, State.data.filtered[this.channel].length)
+                //console.log(State.data.counter, State.data.filtered[this.channel].length)
                 out = (EEG.data[this.channel][EEG.data.counter-4] + EEG.data[this.channel][EEG.data.counter-3] + EEG.data[this.channel][EEG.data.counter-2] + out)*.25;
             }
         }
@@ -145,7 +145,7 @@ export const EEGInterfaceSetup = () => {
                     ATLAS.mapFFTData(ffts, State.data.lastPostTime, i, row.tag);
                     ATLAS.fftMap.map.find((o,i) => {
                         if(o.tag === row.tag){
-                            if(o.data.count > EEG.maxBufferedSamples) {
+                            if(o.data.count > 6000) {
                                 o.data.times.shift();
                                 o.data.amplitudes.shift();
                                 for(const prop in o.data.slices){
@@ -163,7 +163,7 @@ export const EEGInterfaceSetup = () => {
             ATLAS.mapCoherenceData(coher, State.data.lastPostTime);
 
             ATLAS.coherenceMap.map.forEach((row,i) => {
-                if(row.data.count > EEG.maxBufferedSamples) {
+                if(row.data.count > 6000) {
                     row.data.times.shift();
                     row.data.amplitudes.shift();
                     for(const prop in row.data.slices){
@@ -174,6 +174,9 @@ export const EEGInterfaceSetup = () => {
                 }
                 
             });
+
+            console.log(ATLAS.coherenceMap.map[0].data.count); 
+
             State.setState({FFTResult:ffts,coherenceResult:coher});
             
         }
@@ -200,7 +203,7 @@ export const bufferEEGData = (taggedOnly=true) => {
                     else{ 
                         dat = EEG.data[channel].slice(EEG.data.counter - EEG.sps, EEG.data.counter); 
                     }
-                    //console.log(channel);
+                    //console.log(dat);
                     buffer.push(dat);
                 }
             }
@@ -339,7 +342,7 @@ export const updateChannelView = (input) => {
         ATLAS.coherenceMap = ATLAS.genCoherenceMap(ATLAS.channelTags);
         ATLAS.coherenceMap.bandPasswindow = ATLAS.fftMap.shared.bandPassWindow;
         ATLAS.coherenceMap.shared.bandFreqs = ATLAS.fftMap.shared.bandFreqs;
-        console.log(ATLAS.coherenceMap.map);
+        //console.log(ATLAS.coherenceMap.map);
     }
 
 }

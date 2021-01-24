@@ -266,8 +266,8 @@ export class uPlotApplet {
         if(this.class.uPlotData[0][this.class.uPlotData[0].length-1]-this.class.uPlotData[0][0] > this.xrange*1000) {
           this.class.uPlotData[0].shift();
         }
-        console.log(EEG.sps*this.xrange)
-        console.log(this.class.uPlotData[0].length)
+        //console.log(EEG.sps*this.xrange)
+        //console.log(this.class.uPlotData[0].length)
         this.class.uPlotData[0].push(ATLAS.coherenceMap.map[0].data.times[count])// = [ATLAS.coherenceMap.map[0].data.times.slice(count, ATLAS.coherenceMap.map[0].data.count)];
         
           ATLAS.coherenceMap.map.forEach((row,i) => {

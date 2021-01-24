@@ -176,7 +176,7 @@ function initEEGui() {
         State.data.fftViewStart = start;
         State.data.fftViewEnd = end;
         
-        console.log(start, end)
+        //console.log(start, end)
         
         if(State.data.analyze === false) UI.reInitApplets();
       
