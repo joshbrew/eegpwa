@@ -39,10 +39,11 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.uVperStep = 0.000001 / (this.vref*this.stepSize*this.gain); //uV per step.
 		this.scalar = 1/(0.000001 / (this.vref*this.stepSize*this.gain)); //step per uV.
 
-		this.maxBufferedSamples = this.sps*60*5; //max samples in buffer this.sps*60*nMinutes = max minutes of data
+		this.maxBufferedSamples = this.sps*60*2; //max samples in buffer this.sps*60*nMinutes = max minutes of data
 		
 		this.data = { //Data object to keep our head from exploding. Get current data with e.g. this.data.A0[this.data.counter-1]
 			counter: 0,
+			startms: 0,
 			ms: [],
 			'A0': [],'A1': [],'A2': [],'A3': [],'A4': [],'A5': [],'A6': [],'A7': [], //ADC 0
 			'A8': [],'A9': [],'A10': [],'A11': [],'A12': [],'A13': [],'A14': [],'A15': [], //ADC 1
@@ -117,7 +118,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 				this.data.counter++;
 			}
 
-			if(this.data.counter-1 === 0) {this.data.ms[this.data.counter-1]= Date.now();}
+			if(this.data.counter-1 === 0) {this.data.ms[this.data.counter-1]= Date.now(); this.data.startms = this.data.ms[0];}
 			else {
 				if(this.data.counter >= this.maxBufferedSamples && this.data.ms[this.data.counter-1] !== 0 ) {
 					this.data.ms.push(this.data.ms[this.data.counter-1]+this.updateMs);

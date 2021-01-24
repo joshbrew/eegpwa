@@ -145,7 +145,7 @@ export const EEGInterfaceSetup = () => {
                     ATLAS.mapFFTData(ffts, State.data.lastPostTime, i, row.tag);
                     ATLAS.fftMap.map.find((o,i) => {
                         if(o.tag === row.tag){
-                            if(o.data.count > 6000) {
+                            if(o.data.count > 2000) {
                                 o.data.times.shift();
                                 o.data.amplitudes.shift();
                                 for(const prop in o.data.slices){
@@ -163,7 +163,7 @@ export const EEGInterfaceSetup = () => {
             ATLAS.mapCoherenceData(coher, State.data.lastPostTime);
 
             ATLAS.coherenceMap.map.forEach((row,i) => {
-                if(row.data.count > 6000) {
+                if(row.data.count > 2000) {
                     row.data.times.shift();
                     row.data.amplitudes.shift();
                     for(const prop in row.data.slices){
@@ -175,7 +175,7 @@ export const EEGInterfaceSetup = () => {
                 
             });
 
-            console.log(ATLAS.coherenceMap.map[0].data.count); 
+            //console.log(ATLAS.coherenceMap.map[0].data.count); 
 
             State.setState({FFTResult:ffts,coherenceResult:coher});
             

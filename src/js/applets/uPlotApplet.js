@@ -241,14 +241,14 @@ export class uPlotApplet {
       else if (graphmode === "Coherence") {
         if(view === 'All') {
           this.class.uPlotData = [ATLAS.coherenceMap.shared.bandPassWindow.slice(State.data.fftViewStart,State.data.fftViewEnd)];
-          console.log(State.data.coherenceResult)
+          //console.log(State.data.coherenceResult)
           State.data.coherenceResult.forEach((result,i) => {
             this.class.uPlotData.push(result.slice(State.data.fftViewStart,State.data.fftViewEnd));
           })
         }
         else{
           ATLAS.coherenceMap.map.find((o,i) => {
-            console.log(o)
+            //console.log(o)
             if(o.tag === view) {
               this.class.uPlotData = [ATLAS.fftMap.shared.bandPassWindow.slice(State.data.fftViewStart,State.data.fftViewEnd),o.data.amplitudes[o.data.count-1].slice(State.data.fftViewStart,State.data.fftViewEnd)];
               return true;
@@ -260,24 +260,27 @@ export class uPlotApplet {
       else if (graphmode === "CoherenceTimeSeries") {
         var band = document.getElementById(this.renderProps.id+"bandview").value
         
-        var count = ATLAS.coherenceMap.map[0].data.count-1;
+        var count = ATLAS.coherenceMap.map[0].data.count;
         //console.log(ATLAS.coherenceMap.map[0].data.times[count-1])
         //console.log(this.xrange)
-        if(this.class.uPlotData[0][this.class.uPlotData[0].length-1]-this.class.uPlotData[0][0] > this.xrange*1000) {
+        if(this.class.uPlotData[0][this.class.uPlotData[0].length-1]-this.class.uPlotData[0][0] >= this.xrange*1000) {
           this.class.uPlotData[0].shift();
         }
         //console.log(EEG.sps*this.xrange)
         //console.log(this.class.uPlotData[0].length)
-        this.class.uPlotData[0].push(ATLAS.coherenceMap.map[0].data.times[count])// = [ATLAS.coherenceMap.map[0].data.times.slice(count, ATLAS.coherenceMap.map[0].data.count)];
+        this.class.uPlotData[0].push(ATLAS.coherenceMap.map[0].data.times[count-1])// = [ATLAS.coherenceMap.map[0].data.times.slice(count, ATLAS.coherenceMap.map[0].data.count)];
         
           ATLAS.coherenceMap.map.forEach((row,i) => {
-            if(this.class.uPlotData[i+1].length > this.class.uPlotData[0].length) {
-              this.class.uPlotData[i+1].shift();
-            }
             if(view === 'All') {
               this.class.uPlotData[i+1].push(eegmath.sma(row.data.means[band].slice(count-20, ATLAS.coherenceMap.map[0].data.count),20)[19]);
+              if(this.class.uPlotData[i+1].length > this.class.uPlotData[0].length) {
+                this.class.uPlotData[i+1].shift();
+              }
             } else if (row.tag === view) {
               this.class.uPlotData[i+1].push(eegmath.sma(row.data.means[band].slice(count-20, ATLAS.coherenceMap.map[0].data.count),20)[19]);
+              if(this.class.uPlotData[i+1].length > this.class.uPlotData[0].length) {
+                this.class.uPlotData[i+1].shift();
+              }
             }
           });
         
@@ -377,7 +380,7 @@ export class uPlotApplet {
               undefined,
               this.yrange
             );
-          this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => ((v-EEG.data.ms[0])*0.01).toFixed(2) + "s");
+          this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => Math.floor((v-EEG.data.startms)*.00001666667)+"m:"+((v-EEG.data.startms)*.001 - 60*Math.floor((v-EEG.data.startms)*.00001666667)).toFixed(1) + "s");
       
         }
         else if (gmode === "FFT"){
@@ -472,7 +475,7 @@ export class uPlotApplet {
               this.plotWidth, 
               this.plotHeight
             );
-          this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => ((v-ATLAS.coherenceMap.map[0].data.times[0])*.001).toFixed(2)-EEG.data.ms[0] + "s");
+          this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => Math.floor((v-EEG.data.startms)*.00001666667)+"m:"+((v-EEG.data.startms)*.001 - 60*Math.floor((v-EEG.data.startms)*.00001666667)).toFixed(1) + "s");
           
         }
         else if (gmode === "Coherence") {
@@ -561,7 +564,7 @@ export class uPlotApplet {
               this.yrange
             );
           document.getElementById(this.renderProps.id+"title").innerHTML = "Mean Coherence over time";
-          this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +((v-ATLAS.coherenceMap.map[0].data.times[0])*.001).toFixed(2) + "s");
+          this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => Math.floor((v-EEG.data.startms)*.00001666667)+"m:"+((v-EEG.data.startms)*.001 - 60*Math.floor((v-EEG.data.startms)*.00001666667)).toFixed(1) + "s");
           
         }
         this.setLegend();
@@ -575,7 +578,7 @@ export class uPlotApplet {
           if(i>0){
             htmlToAppend += `<div id='`+this.renderProps.id+ser.label+`' style='color:`+ser.stroke+`; cursor:pointer;'>`+ser.label+`</div>`;
           }
-        })
+        });
         document.getElementById(this.renderProps.id+"legend").innerHTML = htmlToAppend;
         this.class.plot.series.forEach((ser,i) => {
           if(i>0){
