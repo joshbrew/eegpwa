@@ -229,63 +229,72 @@ const initSystem = () => {
             throw new Error(`?`);
         }
         BrowserFS.initialize(rootForMfs);
-        fs.mkdir('/data');
-        var contents = "";
-        fs.readdir('/data', (e,data) => {
-           //console.log(data); 
-           if(data === undefined || data === 'undefined') {
-               
-           }
-           fs.readFile('/data/settings.json', (err, data) => {
-                if(err) {
-                    fs.mkdir('/data');
-                    fs.writeFile('/data/settings.json',
-                    JSON.stringify(
-                        {appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph})
-                    , () => {
-                        var configs = getConfigsFromHashes();
-                        const UI = new UIManager(initEEGui, deInitEEGui, configs);
-                        throw err;
-                    });
-                    
-                }
-                contents = data.toString();
-                //console.log(contents);
-            
-                const initUI = () => {
-                    
-                    let settings = JSON.parse(contents);
-                    State.data.coherenceResult  = settings.coherenceResult;
-                    State.data.FFTResult        = settings.FFTResult;
-                    State.data.freqStart        = settings.freqStart;
-                    State.data.freqEnd          = settings.freqEnd;
-                    State.data.nSecAdcGraph     = settings.nSecAdcGraph;
-            
-                    var configs = getConfigsFromHashes();
-                    if(configs.length === null){
-                        configs = settings.appletConfigs;
-                        State.data.appletConfigs = settings.appletConfigs;
-                    }
-            
-                    const UI = new UIManager(initEEGui, deInitEEGui, configs);
-                }
+        fs.exists('/data', (exists) => {
+            if(exists) {
 
-                if(contents === undefined) {
-                    let newcontent = JSON.stringify({appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph});
-                    contents = newcontent;
-                    fs.writeFile('/data/settings.json', newcontent, function(err){
-                        if(err) throw err;
-                        console.log("New settings file created");
+            }
+            else {
+                fs.mkdir('/data');
+            }
+            var contents = "";
+            fs.readdir('/data', (e,data) => {
+            //console.log(data); 
+            if(data === undefined || data === 'undefined') {
+                
+            }
+            fs.appendFile('/data/settings.json','',(e) => {
+                fs.readFile('/data/settings.json', (err, data) => {
+                    if(err) {
+                        fs.mkdir('/data');
+                        fs.writeFile('/data/settings.json',
+                        JSON.stringify(
+                            {appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph})
+                        , () => {
+                            var configs = getConfigsFromHashes();
+                            const UI = new UIManager(initEEGui, deInitEEGui, configs);
+                            throw err;
+                        });
+                        
+                    }
+                    contents = data.toString();
+                    //console.log(contents);
+                
+                    const initUI = () => {
+                        
+                        let settings = JSON.parse(contents);
+                        State.data.coherenceResult  = settings.coherenceResult;
+                        State.data.FFTResult        = settings.FFTResult;
+                        State.data.freqStart        = settings.freqStart;
+                        State.data.freqEnd          = settings.freqEnd;
+                        State.data.nSecAdcGraph     = settings.nSecAdcGraph;
+                
+                        var configs = getConfigsFromHashes();
+                        if(configs.length === null){
+                            configs = settings.appletConfigs;
+                            State.data.appletConfigs = settings.appletConfigs;
+                        }
+                        console.log('browserfs successful')
+                        const UI = new UIManager(initEEGui, deInitEEGui, configs);
+                    }
+
+                    if(contents === undefined) {
+                        let newcontent = JSON.stringify({appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph});
+                        contents = newcontent;
+                        fs.writeFile('/data/settings.json', newcontent, function(err){
+                            if(err) throw err;
+                            console.log("New settings file created");
+                            initUI();
+                        });
+                    }
+                    else{ 
                         initUI();
-                    });
-                }
-                else{ 
-                    initUI();
-                }
-            
-    
+                    }
+                });
             });
-        });
+            
+            });
+        })
+        
     });
     
   
