@@ -60,23 +60,22 @@ export class uPlotApplet {
                       <option value="TimeSeries">Raw</option>
                     </select>
                   </td>
-                  <td id='`+props.id+`yrangetd'>
+                  <td id='`+props.id+`yrangetd' style='width:98px'>
                     Y scale <button id='`+props.id+`yrangeset' style='position:absolute; transform:translateX(21px); height:13px;'><div style='transform:translateY(-3px);'>Set</div></button><input type='text' id='`+props.id+`yrange' placeholder='0,100 or auto' style='width:90px'>
                   </td>
-                  <td id='`+props.id+`xrangetd'>
+                  <td id='`+props.id+`xrangetd' style='width:98px'>
                     Time: <button id='`+props.id+`xrangeset' style='position:absolute; transform:translateX(30px); height:13px;'><div style='transform:translateY(-3px);'>Set</div></button><input type='text' id='`+props.id+`xrange' placeholder='10 (sec)' style='width:90px'>
-                  </td>
-                  <td>
-                    <div id='`+props.id+`title' style='font-weight:bold; width:200px;'>Fast Fourier Transforms</div>
                   </td>
                   
                 </tr>
                 <tr>
-                  
                 <td colSpan=2 style='display:table-row;' id='`+props.id+`legend'></td>
                   <td>
                   `+genBandviewSelect(props.id+'bandview')+`
-                  </td><td></td>
+                  </td>
+                  <td colSpan=2>
+                    <div id='`+props.id+`title' style='font-weight:bold; width:200px;'>Fast Fourier Transforms</div>
+                  </td>
                 </tr>
               </table>
             </div>
