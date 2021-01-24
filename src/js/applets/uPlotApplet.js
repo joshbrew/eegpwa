@@ -43,12 +43,13 @@ export class uPlotApplet {
     HTMLtemplate(props=this.renderProps) {
         return `
         <div id='`+props.id+`'>    
-            <div id='`+props.id+`canvas' style='position:absolute;z-index:3;'></div>
+            <div id='`+props.id+`canvas' style='position:absolute;z-index:3; top:50px;'></div>
             <div id='`+props.id+`menu' style='position:absolute; float:right; z-index:4;'>
               <table style='position:absolute; transform:translateX(40px);'>
                 <tr>
                   <td>
-                    <select id="`+props.id+`channel"></select>
+                    Channel:
+                    <select id="`+props.id+`channel" style='width:80px'></select>
                   </td> 
                   <td>  
                     Graph:
@@ -68,13 +69,14 @@ export class uPlotApplet {
                   <td>
                     <div id='`+props.id+`title' style='font-weight:bold; width:200px;'>Fast Fourier Transforms</div>
                   </td>
+                  
                 </tr>
                 <tr>
-                  <td></td>
+                  
+                <td colSpan=2 style='display:table-row;' id='`+props.id+`legend'></td>
                   <td>
                   `+genBandviewSelect(props.id+'bandview')+`
-                  </td>
-                  <td></td>
+                  </td><td></td>
                 </tr>
               </table>
             </div>
@@ -367,6 +369,7 @@ export class uPlotApplet {
 
           if(view !== "All") {newSeries = this.class.makeSeriesFromChannelTags(ATLAS.channelTags,true,ch);}
           else {newSeries = this.class.makeSeriesFromChannelTags(ATLAS.channelTags,true);}
+          newSeries[0].label = "t";
           this.class.makeuPlot(
               newSeries, 
               this.class.uPlotData, 
@@ -375,7 +378,7 @@ export class uPlotApplet {
               undefined,
               this.yrange
             );
-          this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +((v-EEG.data.ms[0])*0.001).toFixed(2) + "s");
+          this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => ((v-EEG.data.ms[0])*0.01).toFixed(2) + "s");
       
         }
         else if (gmode === "FFT"){
@@ -418,6 +421,7 @@ export class uPlotApplet {
               //console.log(newSeries);
               //console.log(this.class.uPlotData);
               //console.log(newSeries)
+              newSeries[0].label = "Hz";
               this.class.makeuPlot(
                   newSeries, 
                   this.class.uPlotData, 
@@ -459,7 +463,8 @@ export class uPlotApplet {
       
           document.getElementById(this.renderProps.id+"title").innerHTML = "ADC signals Stacked";
       
-          //console.log(uPlotData)
+          //console.log(uPlotData);
+          newSeries[0].label = "t";
           this.class.makeStackeduPlot(
               undefined, 
               this.class.uPlotData,
@@ -468,8 +473,8 @@ export class uPlotApplet {
               this.plotWidth, 
               this.plotHeight
             );
-          this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001).toFixed(2) + "s");
-      
+          this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => ((v-ATLAS.coherenceMap.map[0].data.times[0])*.001).toFixed(2)-EEG.data.ms[0] + "s");
+          
         }
         else if (gmode === "Coherence") {
           ATLAS.coherenceMap.map.forEach((row,i) => {
@@ -513,6 +518,7 @@ export class uPlotApplet {
           }
           //console.log(newSeries);
           //console.log(this.class.uPlotData);
+          newSeries[0].label = "Hz";
           this.class.makeuPlot(
               newSeries, 
               this.class.uPlotData, 
@@ -522,6 +528,7 @@ export class uPlotApplet {
               this.yrange
             );
           document.getElementById(this.renderProps.id+"title").innerHTML = "Coherence from tagged signals";
+         
         }
         else if (gmode === "CoherenceTimeSeries") {
           var band = document.getElementById(this.renderProps.id+"bandview").value;
@@ -545,6 +552,7 @@ export class uPlotApplet {
             }
           });
           //console.log(this.class.uPlotData)
+          newSeries[0].label = "t";
           this.class.makeuPlot(
               newSeries, 
               this.class.uPlotData, 
@@ -554,9 +562,32 @@ export class uPlotApplet {
               this.yrange
             );
           document.getElementById(this.renderProps.id+"title").innerHTML = "Mean Coherence over time";
-          this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +(v*0.001-ATLAS.coherenceMap.map[0].data.times[0]).toFixed(2) + "s");
+          this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => +((v-ATLAS.coherenceMap.map[0].data.times[0])*.001).toFixed(2) + "s");
+          
         }
+        this.setLegend();
         //else if(graphmode === "StackedRaw") { graphmode = "StackedFFT" }//Stacked Coherence
       }
 
+      setLegend = () => {
+        document.getElementById(this.renderProps.id+"legend").innerHTML = "";
+        let htmlToAppend = ``;
+        this.class.plot.series.forEach((ser,i) => {
+          if(i>0){
+            htmlToAppend += `<div id='`+this.renderProps.id+ser.label+`' style='color:`+ser.stroke+`; cursor:pointer;'>`+ser.label+`</div>`;
+          }
+        })
+        document.getElementById(this.renderProps.id+"legend").innerHTML = htmlToAppend;
+        this.class.plot.series.forEach((ser,i) => {
+          if(i>0){
+            document.getElementById(this.renderProps.id+ser.label).onclick = () => {
+              if(this.class.plot.series[i].show === true){
+                document.getElementById(this.renderProps.id+ser.label).style.opacity = 0.3;
+                this.class.plot.setSeries(i,{show:false});
+              } else {this.class.plot.setSeries(i,{show:true}); document.getElementById(this.renderProps.id+ser.label).style.opacity = 1;}
+            }
+          }
+        });
+        
+      }
 }

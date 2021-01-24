@@ -52,12 +52,12 @@ export class SmoothieChartMaker {
 		this.series.forEach((series, i) => {
 			var stroke = ''; //Set the initial stroke and fill styles to be the same each time
 			var fill = '';
-			if(i === 0) { stroke = 'purple'; fill = 'rgba(128,0,128,0.2)'; }
-			else if(i === 1) { stroke = 'orange'; fill = 'rgba(255,128,0,0.2)'; }
-			else if(i === 2) { stroke = 'green';  fill = 'rgba(0,255,0,0.2)';   }
-			else if(i === 3) { stroke = 'turquoise';fill = 'rgba(0,255,150,0.2)';   }
-			else if(i === 4) { stroke = 'blue';   fill = 'rgba(0,0,255,0.2)' ;  }
-			else if(i === 5) { stroke = 'red';    fill = 'rgba(255,0,0,0.2)';   }
+			if(i === 0) 	 { stroke = 'red'; 	     fill = 'rgba(255,0,0,0.2)';   }
+			else if(i === 1) { stroke = 'orange';    fill = 'rgba(255,128,0,0.2)'; }
+			else if(i === 2) { stroke = 'green';     fill = 'rgba(0,255,0,0.2)';   }
+			else if(i === 3) { stroke = 'turquoise'; fill = 'rgba(0,255,150,0.2)'; }
+			else if(i === 4) { stroke = 'rgba(50,50,255,1)';      fill = 'rgba(0,0,255,0.2)';   }
+			else if(i === 5) { stroke = 'rgba(200,0,200,1)';    fill = 'rgba(128,0,128,0.2)'; }
 			else {
 				var r = Math.random()*255, g = Math.random()*255, b = Math.random()*255;
 				stroke = 'rgb('+r+","+g+","+b+")"; fill = 'rgba('+r+','+g+','+b+","+"0.2)";
@@ -132,12 +132,14 @@ export class uPlotMaker {
 			yOpts = {auto:false, range:yScale};
 		}
 
-
 		if(options === null){
 			uPlotOptions = {
 				width: width,
 				height: height,
 				series: series,
+				legend: {
+					show:false
+				},
 				scales: {
 					x:{time:false},
 					y:yOpts,
@@ -168,9 +170,9 @@ export class uPlotMaker {
 		}
 
 		//console.log(uPlotData);
-
 		if(this.plot !== null){ this.plot.destroy(); }
 		this.plot = new uPlot(uPlotOptions, uPlotData, document.getElementById(this.plotId));
+		//console.log(this.plot)
 	}
 
 	//Pass this the channelTags object from your eeg32 instance.
