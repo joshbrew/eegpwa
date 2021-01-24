@@ -236,12 +236,18 @@ const initSystem = () => {
            if(data === undefined || data === 'undefined') {
                
            }
-           
            fs.readFile('/data/settings.json', (err, data) => {
                 if(err) {
-                    var configs = getConfigsFromHashes();
-                    const UI = new UIManager(initEEGui, deInitEEGui, configs);
-                    throw err;
+                    fs.mkdir('/data');
+                    fs.writeFile('/data/settings.json',
+                    JSON.stringify(
+                        {appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph})
+                    , () => {
+                        var configs = getConfigsFromHashes();
+                        const UI = new UIManager(initEEGui, deInitEEGui, configs);
+                        throw err;
+                    });
+                    
                 }
                 contents = data.toString();
                 //console.log(contents);
