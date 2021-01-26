@@ -20,6 +20,8 @@ import {
   updateChannelView,
 } from './frontend/EEGInterface'
 
+import {CSV} from './utils/general/csv'
+
 //Import applets!
 import {AppletExample} from './applets/AppletExample'
 import {SmoothieApplet} from './applets/SmoothieApplet'
@@ -65,6 +67,7 @@ State.data.appletClasses.push(
 //import fs from 'fs'
 import * as BrowserFS from 'browserfs'
 const fs = BrowserFS.BFSRequire('fs')
+const BFSBuffer = BrowserFS.BFSRequire('buffer').Buffer;
 
 function getConfigsFromHashes() {
     let hashes = window.location.hash;
@@ -217,14 +220,29 @@ document.addEventListener('click', function(e) {
     console.log(target)
 }, false);
 */
+const initUI = (contents) => {
+                            
+    let settings = JSON.parse(contents);
+    State.data.coherenceResult  = settings.coherenceResult;
+    State.data.FFTResult        = settings.FFTResult;
+    State.data.freqStart        = settings.freqStart;
+    State.data.freqEnd          = settings.freqEnd;
 
+    let configs = getConfigsFromHashes();
+    if(configs.length === null){
+        configs = settings.appletConfigs;
+        State.data.appletConfigs = settings.appletConfigs;
+    }
+    console.log('browserfs successful')
+    const UI = new UIManager(initEEGui, deInitEEGui, configs);
+}
 
 const initSystem = () => {
     let oldmfs = fs.getRootFS();
 
     BrowserFS.FileSystem.IndexedDB.Create({}, (e, rootForMfs) => {
         if(!rootForMfs) {
-            var configs = getConfigsFromHashes();
+            let configs = getConfigsFromHashes();
             const UI = new UIManager(initEEGui, deInitEEGui, configs);
             throw new Error(`?`);
         }
@@ -236,95 +254,193 @@ const initSystem = () => {
             else {
                 fs.mkdir('/data');
             }
-            var contents = "";
+            let contents = "";
             fs.readdir('/data', (e,data) => {
-            //console.log(data); 
-            if(data === undefined || data === 'undefined') {
+                if(e) console.error(e);
                 
-            }
-            fs.appendFile('/data/settings.json','',(e) => {
-                fs.readFile('/data/settings.json', (err, data) => {
-                    if(err) {
-                        fs.mkdir('/data');
-                        fs.writeFile('/data/settings.json',
-                        JSON.stringify(
-                            {appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph})
-                        , () => {
-                            var configs = getConfigsFromHashes();
-                            const UI = new UIManager(initEEGui, deInitEEGui, configs);
-                            throw err;
-                        });
-                        
-                    }
-                    contents = data.toString();
-                    //console.log(contents);
-                
-                    const initUI = () => {
-                        
-                        let settings = JSON.parse(contents);
-                        State.data.coherenceResult  = settings.coherenceResult;
-                        State.data.FFTResult        = settings.FFTResult;
-                        State.data.freqStart        = settings.freqStart;
-                        State.data.freqEnd          = settings.freqEnd;
-                        State.data.nSecAdcGraph     = settings.nSecAdcGraph;
-                
-                        var configs = getConfigsFromHashes();
-                        if(configs.length === null){
-                            configs = settings.appletConfigs;
-                            State.data.appletConfigs = settings.appletConfigs;
+                fs.appendFile('/data/settings.json','',(e) => {
+                    fs.readFile('/data/settings.json', (err, data) => {
+                        if(err) {
+                            fs.mkdir('/data');
+                            fs.writeFile('/data/settings.json',
+                            JSON.stringify(
+                                {appletConfigs:State.data.appletConfigs,FFTResult:State.data.FFTResult,coherenceResult:State.data.coherenceResult,freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph})
+                            , (err) => {
+                                let configs = getConfigsFromHashes();
+                                const UI = new UIManager(initEEGui, deInitEEGui, configs);
+                                if(err) throw err;
+                            });
+                            
                         }
-                        console.log('browserfs successful')
-                        const UI = new UIManager(initEEGui, deInitEEGui, configs);
-                    }
 
-                    if(contents === undefined) {
-                        let newcontent = JSON.stringify({appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph});
-                        contents = newcontent;
-                        fs.writeFile('/data/settings.json', newcontent, function(err){
-                            if(err) throw err;
-                            console.log("New settings file created");
-                            initUI();
-                        });
-                    }
-                    else{ 
-                        initUI();
-                    }
+                        if(data.length === 0) {
+                            let newcontent = JSON.stringify({appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph});
+                            contents = newcontent;
+                            fs.writeFile('/data/settings.json', newcontent, function(err){
+                                if(err) throw err;
+                                console.log("New settings file created");
+                                initUI(contents);
+                            });
+                        }
+                        else{ 
+                            contents = data.toString();    
+                            initUI(contents);
+                        }
+                    });
                 });
+                
             });
-            
-            });
-        })
-        
-    });
-    
-  
-    //wip
-    const onMaxData = () => {
-        if(State.data.counter >= EEG.maxBufferedSamples) {
-            let content = readyDataForWriting();
-            let path = "/data/"+State.data.sessionName;
-            if(State.data.sessionName === ""){
-                State.data.sessionName = new Date().toISOString();
-                fs.appendFile(path,content[0].join(","));
-            }
-            content[1].splice(content[1].length-EEG.sps*State.data.nSecAdcGraph,EEG.sps*State.data.nSecAdcGraph);// Shave off the last 10 seconds since we'll be kep
-            fs.appendFile(path,content[1].join(","));
+        });
 
-            
-            for(prop in EEG.data){
-                if(typeof EEG.data[prop] === 'object'){
-                    EEG.data[prop].splice(0,EEG.data.counter-EEG.sps*State.data.nSecAdcGraph);
-                    EEG.data[prop].concat(new Array(EEG.data.counter-EEG.sps*State.data.nSecAdcGraph).fill(0));
-                    EEG.data.counter = EEG.sps*State.data.nSecAdcGraph;
+        const newSession = () => {
+            let sessionName = new Date().toISOString(); //Use the time stamp as the session name
+            State.data.sessionName = sessionName;
+            State.data.sessionChunks = 0;
+            fs.appendFile('/data/'+sessionName,"", (e) => {
+                if(e) throw e;
+            });
+        }
+
+        const deleteSession = (path) => {
+            fs.unlink(path, (e) => {
+                if(e) console.error(e);
+            });
+        }
+
+        const getFiles = () => {
+            fs.readdir('/data', (e,data) => { 
+                if(e) console.error(e);
+                return data; //Returns an array of names in the directory
+            });
+        }
+
+        const saveChunk = () => {
+            let data = readyDataForWriting();
+            State.data.sessionChunks++;
+            if(State.data.sessionChunks === 1) {
+                fs.appendFile('/data/'+State.data.sessionName, data[0]+data[1], (e) => {
+                    if(e) throw e;
+                }); //+"_c"+State.data.sessionChunks
+            }
+            else {
+                fs.appendFile('/data/'+State.data.sessionName, data[1], (e) => {
+                    if(e) throw e;
+                }); //+"_c"+State.data.sessionChunks
+            }
+            let eeghead = Math.floor(EEG.sps*30); //Keep the most recent 30 seconds of data.
+            let atlashead = Math.floor(30*State.data.workerMaxSpeed); //Estimated
+            if(eeghead > EEG.data.counter || atleashead > ATLAS.coherenceMap.map[0].count)
+
+            for(const prop in EEG.data) {
+                if(typeof EEG.data[prop] === "object") {
+                    EEG.data[prop].splice(0,head);
+                }
+                else if (prop === "counter") {
+                    EEG.data[prop] -= head;
                 }
             }
-            //TODO: Leave some data in the atlasses or just have applets work with their own circular buffers
-            ATLAS.regenAtlasses(State.data.freqStart, State.data.freqEnd, EEG.sps);
-            //Clears heap to save memory
+            ATLAS.channelTags.forEach((row, i) => {
+                if(row.tag !== null && row.tag !== 'other'){
+                    ATLAS.fftMap.map.find((o,i) => {
+                        if(o.tag === row.tag){
+                            if(o.data.count > atlashead) {
+                                o.data.times.splice(0,atlashead);
+                                o.data.amplitudes.splice(0,atlashead);
+                                for(const prop in o.data.slices){
+                                    o.data.slices[prop].splice(0,atlashead);
+                                    o.data.means[prop].splice(0,atlashead);
+                                }
+                                o.data.count -= atlashead;
+                            }
+                            return true;
+                        }
+                    });
+                }
+            });
+            ATLAS.coherenceMap.map.forEach((row,i) => {
+                if(row.data.count > atlashead) {
+                    row.data.times.splice(0,atlashead);
+                    row.data.amplitudes.splice(0,atlashead);;
+                    for(const prop in row.data.slices){
+                        row.data.slices[prop].splice(0,atlashead);
+                        row.data.means[prop].splice(0,atlashead);
+                    }
+                    row.data.count -= atlashead;
+                }
+                
+            });
         }
-    }
 
-    //State.subscribe('counter',onMaxData);
+        //Write CSV data in chunks to not overwhelm memory
+        const writeToCSV = (path) => {
+            fs.stat('/data'+path,(e,stats) => {
+                if(e) throw e;
+                let filesize = stats.size;
+                fs.open('/data'+path,'r',(e,fd) => {
+                    if(e) throw e;
+                    let i = 0;
+                    let maxFileSize = State.data.fileSizeLimitMb*1024*1024;
+                    let end = maxFileSize;
+                    if(filesize < maxFileSize) {
+                        end = filesize;
+                        let buf = new BFSBuffer.alloc(end);
+                        fs.read(fd,buf,0,'utf-8',(e,bytesRead,output) => {   
+                            if(bytesRead !== 0) CSV.saveCSV(output.toString(),path);
+                        });
+                    }
+                    else {
+                        const writeChunkToFile = () => {
+                            if(i < filesize) {
+                                if(i+end > filesize) {end=filesize - i;}  
+                                let buf = new BFSBuffer.alloc(end);
+                                let chunk = 0;
+                                fs.read(fd,buf,i,'utf-8',(e,bytesRead,output) => {   
+                                    if(bytesRead !== 0) {
+                                        CSV.saveCSV(output.toString(),path+"_"+chunk);
+                                        i+=maxFileSize;
+                                        chunk++;
+                                        writeChunkToFile();
+                                    }
+                                });
+                            }
+                        }  
+                    }
+                    //let file = fs.createWriteStream('./'+State.data.sessionName+'.csv');
+                    //file.write(data.toString());
+                }); 
+            });
+            
+        }
+
+        const saveSettings = () => {
+            fs.writeFile('/data/settings.json',
+            JSON.stringify({   
+                    appletConfigs:State.data.appletConfigs,
+                    FFTResult:State.data.FFTResult,
+                    coherenceResult:State.data.coherenceResult,
+                    freqStart:State.data.freqStart,
+                    freqEnd:State.data.freqEnd
+                })
+            , (err) => {
+                if(err) throw err;
+            });
+        }
+
+        //TODO:
+        /* 
+        Figure out why larger buffers for streaming data cause a crash when full
+        Automate the chunk saving for oncoming data as the buffers fill. Just have it call the save operation before the buffers fill completely so we don't lose any data
+        Visual GUI for file browsing and saving.
+        Test large datasets
+
+        */
+
+
+
+
+
+
+    });
 }
 
 

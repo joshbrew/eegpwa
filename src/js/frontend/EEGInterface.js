@@ -88,36 +88,40 @@ import {cyton} from '../utils/hardware_compat/cyton'
 
 export const ATLAS = new eegAtlas(defaultTags);
 export var EEG = new eeg32( //cyton(
-(newLinesInt) => { //on decoded
-    if(State.data.useFilters === true) {
-        if(EEG.data.counter !== EEG.maxBufferedSamples) {
-            while(State.data.counter < EEG.data.counter){
-                State.data.filterers.forEach((filterer,i) => {
-                    let out = filterer.apply(State.data.counter);
-                    State.data.filtered[filterer.channel].push(out);
-                });
-                State.data.counter++;
+    (newLinesInt) => { //on decoded
+        //if(EEG.data.counter === EEG.maxBufferedSamples) debugger;
+        //console.log(newLinesInt)
+        if(newLinesInt > 0) {
+            if(State.data.useFilters === true) {
+                let linesFiltered = 0;
+                while(linesFiltered < newLinesInt){
+                    let ct = State.data.counter;
+                    if(State.data.counter > EEG.data.counter) { 
+                        ct -= 5120;
+                    }
+                    State.data.filterers.forEach((filterer,i) => {
+                        let out = filterer.apply(ct);
+                        State.data.filtered[filterer.channel].push(out);
+                    });
+                    if(State.data.counter > EEG.data.counter) {
+                        State.data.counter -= 5120;
+                        State.data.filterers.forEach((filterer,i) => {
+                            State.data.filtered[filterer.channel].splice(0,5120);
+                        });
+                    }
+                    State.data.counter++;
+                    linesFiltered++;
+                } 
+            }
+            else {
+                State.data.counter = EEG.data.counter;
             }
         }
-        else {
-            for(let i = newLinesInt; i>1; i--){
-                State.data.filterers.forEach((filterer,j) =>{
-                    State.data.filtered[filterer.channel].shift();
-                    let out = filterer.apply(State.data.counter-i);
-                    State.data.filtered[filterer.channel].push(out);
-                });
-                //console.log(State.data.filtered)
-            }
-        }
-    }
-    else {
-        State.data.counter = EEG.data.counter;
-    }
-}, () => { //on connected
-    State.setState({connected:true, rawFeed:true});
-}, () => { //on disconnected
-    State.setState({connected:false,rawFeed:false,analyze:false});
-}); //onConnected callback to set state on front end.
+    }, () => { //on connected
+        State.setState({connected:true, rawFeed:true});
+    }, () => { //on disconnected
+        State.setState({connected:false,rawFeed:false,analyze:false});
+    }); //connection callbacks to set state on front end.
 
 
 //class EEGInterface { constructor () { } }
@@ -145,7 +149,7 @@ export const EEGInterfaceSetup = () => {
                     ATLAS.mapFFTData(ffts, State.data.lastPostTime, i, row.tag);
                     ATLAS.fftMap.map.find((o,i) => {
                         if(o.tag === row.tag){
-                            if(o.data.count > 2000) {
+                            if(o.data.count > 5000) {
                                 o.data.times.shift();
                                 o.data.amplitudes.shift();
                                 for(const prop in o.data.slices){
@@ -163,7 +167,7 @@ export const EEGInterfaceSetup = () => {
             ATLAS.mapCoherenceData(coher, State.data.lastPostTime);
 
             ATLAS.coherenceMap.map.forEach((row,i) => {
-                if(row.data.count > 2000) {
+                if(row.data.count > 5000) {
                     row.data.times.shift();
                     row.data.amplitudes.shift();
                     for(const prop in row.data.slices){
@@ -175,7 +179,7 @@ export const EEGInterfaceSetup = () => {
                 
             });
 
-            //console.log(ATLAS.coherenceMap.map[0].data.count); 
+            //console.log(ATLAS.coherenceMap.map[0].data.count,EEG.data.counter); 
 
             State.setState({FFTResult:ffts,coherenceResult:coher});
             
@@ -186,6 +190,17 @@ export const EEGInterfaceSetup = () => {
         }
         
     }
+
+}
+
+export const resetSession = () => {
+    State.data.analyze = false;
+    State.data.rawFeed = false;
+
+    setTimeout(()=>{
+        EEG.resetDataBuffers();
+        ATLAS.regenAtlasses();
+    }, 100);
 
 }
 
@@ -209,7 +224,7 @@ export const bufferEEGData = (taggedOnly=true) => {
             }
             else{
                 var channel = "A"+ATLAS.channelTags[i].ch;
-                if(State.data.useFilters === true) { dat = EEG.data[channel].slice(State.data.counter - EEG.sps, State.data.counter); }
+                if(State.data.useFilters === true) { dat = State.data.filtered[channel].slice(State.data.counter - EEG.sps, State.data.counter); }
                 else{ dat = EEG.data[channel].slice(EEG.data.counter - EEG.sps, EEG.data.counter); }
                 //console.log(channel);
                 buffer.push(dat);
@@ -242,23 +257,23 @@ export const runEEGWorker = () => {
 }
 
 export const readyDataForWriting = () => {
-    let header = [];
+    let header = ["TimeStamps","UnixTime"];
     let data = [];
     let mapidx = 0;
     for(let i = 0; i<EEG.data.counter; i++){
         let line=[];
-        line.push(EEG.data.ms[i]);
+        line.push(new Date(EEG.data.ms[i]).toLocaleString(),EEG.data.ms[i]);
         ATLAS.channelTags.forEach((tag,j) => {
             if(typeof tag.ch === "number"){
                 line.push(EEG.data["A"+tag.ch]);
                 if(i===0) {
-                    header.push("A"+ch);
+                    header.push("A"+tag.ch);
                 }
             }
         });
-        if(ATLAS.fftMap.map[0].times[mapidx] === EEG.data.ms[i]) {
+        if(ATLAS.coherenceMap.map[0].times[mapidx] === EEG.data.ms[i]) {
             ATLAS.channelTags.forEach((tag,j) => {
-                if(tag.tag !== null) {
+                if(tag.tag !== null && tag.tag !== 'other') {
                     let coord = ATLAS.getAtlasCoordByTag(tag.tag);
                     if(i===0) {
                         header.push(coord.tag,ATLAS.fftMap.shared.bandPassWindow.join(","));
@@ -270,14 +285,14 @@ export const readyDataForWriting = () => {
                 if(i===0){
                     header.push(row.tag,ATLAS.coherenceMap.shared.bandPassWindow.join(','));
                 }
-                line.push("coh:",row.data.amplitudes[mapidx]);
+                line.push("coh:",row.data.amplitudes[mapidx].join(","));
             });
             mapidx++;
         }
         data.push(line.join(",")+"\n");
     }
 
-    return [header,data];
+    return [header.join(","),data];
 }
 
 export const updateBandPass = (freqStart, freqEnd) => {

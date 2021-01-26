@@ -39,7 +39,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.uVperStep = 0.000001 / (this.vref*this.stepSize*this.gain); //uV per step.
 		this.scalar = 1/(0.000001 / (this.vref*this.stepSize*this.gain)); //step per uV.
 
-		this.maxBufferedSamples = this.sps*60*2; //max samples in buffer this.sps*60*nMinutes = max minutes of data
+		this.maxBufferedSamples = this.sps*60*5; //max samples in buffer this.sps*60*nMinutes = max minutes of data
 		
 		this.data = { //Data object to keep our head from exploding. Get current data with e.g. this.data.A0[this.data.counter-1]
 			counter: 0,
@@ -66,6 +66,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	
 	resetDataBuffers(){
 		this.data.counter = 0;
+		this.data.startms = 0;
 		for(const prop in this.data) {
 			if(typeof this.data[prop] === "object"){
 				this.data[prop] = new Array(this.maxBufferedSamples).fill(0);
@@ -101,51 +102,63 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			indices.push(i);
 		}
 		//console.log(indices);
-
 		if(indices.length >= 2){
-			var line = buffer.splice(indices[0],indices[1]-indices[0]); //Splice out this line to be decoded
+			let newLines = 0;
+			for(let k = 1; k < indices.length; k++) {
+				if(indices[k] - indices[k-1] !== 105) {
+					
+				} //This is not a valid sequence going by size, drop sequence and return
+				else {
+					var line = buffer.slice(indices[k-1],indices[k]+1); //Splice out this line to be decoded
+					
+					// line[0] = stop byte, line[1] = start byte, line[2] = counter, line[3:99] = ADC data 32x3 bytes, line[100-104] = Accelerometer data 3x2 bytes
 
-			// line[0] = stop byte, line[1] = start byte, line[2] = counter, line[3:99] = ADC data 32x3 bytes, line[100-104] = Accelerometer data 3x2 bytes
+					//line found, decode.
+					if(this.data.counter < this.maxBufferedSamples){
+						this.data.counter++;
+					}
 
-			if(indices[1] - indices[0] !== 105) {buffer.splice(0,indices[1]); return false;} //This is not a valid sequence going by size, drop sequence and return
+					if(this.data.counter-1 === 0) {this.data.ms[this.data.counter-1]= Date.now(); this.data.startms = this.data.ms[0];}
+					else {
+						this.data.ms[this.data.counter-1]=this.data.ms[this.data.counter-2]+this.updateMs;
+						
+						if(this.data.counter >= this.maxBufferedSamples) {
+							this.data.ms.splice(0,5120);
+							this.data.ms.push(new Array(5120).fill(0));
+						}
+					}//Assume no dropped samples
+				
+					for(var i = 3; i < 99; i+=3) {
+						var channel = "A"+(i-3)/3;
+						this.data[channel][this.data.counter-1]=this.bytesToInt24(line[i],line[i+1],line[i+2]);
+						if(this.data.counter >= this.maxBufferedSamples) { 
+							this.data[channel].splice(0,5120);
+							this.data[channel].push(new Array(5120).fill(0));//shave off the last 10 seconds of data if buffer full (don't use shift())
+						}
+							//console.log(this.data[channel][this.data.counter-1],indices[k], channel)
+					}
 
-			if(indices[0] !== 0){
-				buffer.splice(0,indices[0]); // Remove any useless junk on the front of the buffer.
+					this.data["Ax"][this.data.counter-1]=this.bytesToInt16(line[99],line[100]);
+					this.data["Ay"][this.data.counter-1]=this.bytesToInt16(line[101],line[102]);
+					this.data["Az"][this.data.counter-1]=this.bytesToInt16(line[103],line[104]);
+
+					
+					if(this.data.counter >= this.maxBufferedSamples) { 
+						this.data["Ax"].splice(0,5120);
+						this.data["Ay"].splice(0,5120);
+						this.data["Az"].splice(0,5120);
+						this.data.counter -= 5120;
+					}
+					//console.log(this.data)
+					newLines++;
+					//console.log(indices[k-1],indices[k])
+					//console.log(buffer[indices[k-1],buffer[indices[k]]])
+					//indices.shift();
+				}
+				
 			}
-
-			//line found, decode.
-			if(this.data.counter < this.maxBufferedSamples){
-				this.data.counter++;
-			}
-
-			if(this.data.counter-1 === 0) {this.data.ms[this.data.counter-1]= Date.now(); this.data.startms = this.data.ms[0];}
-			else {
-				if(this.data.counter >= this.maxBufferedSamples && this.data.ms[this.data.counter-1] !== 0 ) {
-					this.data.ms.push(this.data.ms[this.data.counter-1]+this.updateMs);
-					this.data.ms.shift();
-				}
-				else{
-					this.data.ms[this.data.counter-1]=this.data.ms[this.data.counter-2]+this.updateMs;
-				}
-			}//Assume no dropped samples
-		
-			for(var i = 3; i < 99; i+=3) {
-				var channel = "A"+(i-3)/3;
-				if(this.data.counter >= this.maxBufferedSamples) { 
-					this.data[channel].push(this.bytesToInt24(line[i],line[i+1],line[i+2]));
-					this.data[channel].shift();
-				}
-				else{
-					this.data[channel][this.data.counter-1]=this.bytesToInt24(line[i],line[i+1],line[i+2]);
-				}
-			}
-
-			this.data["Ax"][this.data.counter-1]=this.bytesToInt16(line[99],line[100]);
-			this.data["Ay"][this.data.counter-1]=this.bytesToInt16(line[101],line[102]);
-			this.data["Az"][this.data.counter-1]=this.bytesToInt16(line[103],line[104]);
-			//console.log(this.data)
-
-			return true;
+			if(newLines > 0) buffer.splice(0,indices[indices.length-1]);
+			return newLines;
 			//Continue
 		}
 		//else {this.buffer = []; return false;}
@@ -167,13 +180,10 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	onReceive(value){
 		this.buffer.push(...value);
 
-		let newLines = 0;
-		while (this.buffer.length > 209) {
-			//console.log("decoding... ", this.buffer.length)
-			this.decode(this.buffer);
-			newLines++
-		}
-		this.onDecodedCallback(newLines);
+		let newLines = this.decode(this.buffer);
+		//console.log(this.data)
+		//console.log("decoding... ", this.buffer.length)
+		if(newLines !== false && newLines !== 0 ) this.onDecodedCallback(newLines);
 	}
 
 	async onPortSelected(port,baud=this.baudrate) {
@@ -201,15 +211,15 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	}
 
 	async subscribe(port){
-		while (this.port.readable && this.subscribed === true) {
+		if (this.port.readable && this.subscribed === true) {
 			this.reader = port.readable.getReader();
-			while(this.subscribed === true) {
+			const streamData = async () => {
 				try {
 					const { value, done } = await this.reader.read();
 					if (done || this.subscribed === false) {
 						// Allow the serial port to be closed later.
 						await this.reader.releaseLock();
-						break;
+						
 					}
 					if (value) {
 						//console.log(value.length);
@@ -220,11 +230,15 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 						//console.log("new Read");
 						//console.log(this.decoder.decode(value));
 					}
+					if(this.subscribed === true) {
+						setTimeout(()=>{streamData();}, 16.66667);//Throttled read 1/512sps = 1.953ms/sample @ 103 bytes / line or 1030bytes every 20ms
+					}
 				} catch (error) {
 					console.log(error);// TODO: Handle non-fatal read error.
-					break;
+					
 				}
 			}
+			streamData();
 		}
 	}
 

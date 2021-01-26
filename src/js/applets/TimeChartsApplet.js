@@ -50,7 +50,7 @@ export class TimeChartsApplet {
     init() {
         this.AppletHTML = new DOMFragment(this.HTMLtemplate,this.parentNode,this.renderProps,()=>{this.setupHTML()}); //Changes to this.props will automatically update the html template
         this.class = new TimeChartMaker(this.renderProps.id+'charts', 30000);
-        this.class.setEEGTimeCharts(EEG, ATLAS, State.data.nSecAdcGraph);
+        this.class.setEEGTimeCharts(EEG, ATLAS, 10);
     }
 
     
