@@ -261,6 +261,21 @@ export const runEEGWorker = () => {
 }
 
 export const readyDataForWriting = (from=0,to=State.data.counter) => {
+    function toISOLocal(d) {
+        var z  = n =>  ('0' + n).slice(-2);
+        var zz = n => ('00' + n).slice(-3);
+        off = Math.abs(off);
+      
+        return d.getFullYear() + '-'
+               + z(d.getMonth()+1) + '-' +
+               z(d.getDate()) + 'T' +
+               z(d.getHours()) + ':'  + 
+               z(d.getMinutes()) + ':' +
+               z(d.getSeconds()) + '.' +
+               zz(d.getMilliseconds())
+      }
+      
+
     let header = ["TimeStamps","UnixTime"];
     let data = [];
     let mapidx = 0;
@@ -271,7 +286,7 @@ export const readyDataForWriting = (from=0,to=State.data.counter) => {
     }
     for(let i = from; i<to; i++){
         let line=[];
-        line.push(new Date(EEG.data.ms[i]).toISOString(),EEG.data.ms[i]);
+        line.push(toISOLocal(new Date(EEG.data.ms[i])),EEG.data.ms[i]);
         ATLAS.channelTags.forEach((tag,j) => {
             if(typeof tag.ch === "number"){
                 if(State.data.useFilters) {
