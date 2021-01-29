@@ -313,7 +313,7 @@ const initSystem = () => {
             listFiles();
         }
 
-        const deleteSession = (path) => {
+        const deleteFile = (path) => {
             fs.unlink(path, (e) => {
                 if(e) console.error(e);
             });
@@ -337,7 +337,11 @@ const initSystem = () => {
                             document.getElementById(str+"svg").onclick = () => {
                                 console.log(str);
                                 writeToCSV(str);
-                            }  
+                            } 
+                            document.getElementById(str+"delete").onclick = () => { 
+                                deleteFile("/data/"+str);
+                                listFiles();
+                            } 
                         }
                     });
                 }
