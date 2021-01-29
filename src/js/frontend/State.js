@@ -21,7 +21,6 @@ export const State = new StateManager(
         fftViewEnd:127,
         nSec:1,
         fdBackMode: 'coherence',
-        sessionName: '',
 
         connected:false,
         analyze:false,
@@ -34,12 +33,14 @@ export const State = new StateManager(
         dcblocker:true,
         sma4:true,
         filtered:{},
+        filterers:[],
 
         workerMaxSpeed: 50,
 
         sessionName:"",
         sessionChunks:0,
-        fileSizeLimitMb: 250 
+        saveCounter: 5120,//Countdown to saving based on max buffer size in eeg32, leave this alone
+        fileSizeLimitMb: 250
         //File size limited mainly due to browser memory limits. Data will be downloaded in chunks of max specified size for large datasets.
         //To estimate file size: 1 sec data = (99-3*nTaggedChannels)*sps + workerMaxSpeed*256*4*nFFTChannels + workerMaxSpeed*256*4*nCoherenceChannels. The *4 is for a 32 bit float (4 bytes).
         //2 channels collection of 2 fft, 1 coherence, and 3 channels of data = roughly 68.1Kbps, 4.09Mb per min, 245.1Mb per hour.

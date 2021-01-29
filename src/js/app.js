@@ -8,6 +8,7 @@ import {
     menudropdown2_template,
     menudropdown3_template,
     appletbox_template,
+    file_template,
     menu_setup
 } from './frontend/UITemplates'
 import {
@@ -111,6 +112,10 @@ function initEEGui() {
     document.getElementById("useFilters").addEventListener('change',() => {
         State.data.useFilters = document.getElementById("useFilters").checked;
         if(State.data.useFilters === true) {
+            State.data.counter = State.data.filtered[State.data.filterer[0].channel].length;
+        }
+        else {
+            State.data.counter = EEG.data.counter;
         }
     });
     document.getElementById("notch50").addEventListener('change',() => {
@@ -255,50 +260,57 @@ const initSystem = () => {
                 fs.mkdir('/data');
             }
             let contents = "";
-            fs.readdir('/data', (e,data) => {
-                if(e) console.error(e);
-                
-                fs.appendFile('/data/settings.json','',(e) => {
-                    fs.readFile('/data/settings.json', (err, data) => {
-                        if(err) {
-                            fs.mkdir('/data');
-                            fs.writeFile('/data/settings.json',
-                            JSON.stringify(
-                                {appletConfigs:State.data.appletConfigs,FFTResult:State.data.FFTResult,coherenceResult:State.data.coherenceResult,freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph})
-                            , (err) => {
-                                let configs = getConfigsFromHashes();
-                                const UI = new UIManager(initEEGui, deInitEEGui, configs);
-                                if(err) throw err;
-                            });
-                            
-                        }
+            fs.appendFile('/data/settings.json','',(e) => {
+                if(e) throw e;
+                fs.readFile('/data/settings.json', (err, data) => {
+                    if(err) {
+                        fs.mkdir('/data');
+                        fs.writeFile('/data/settings.json',
+                        JSON.stringify(
+                            {appletConfigs:State.data.appletConfigs,FFTResult:State.data.FFTResult,coherenceResult:State.data.coherenceResult,freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph})
+                        , (err) => {
+                            let configs = getConfigsFromHashes();
+                            const UI = new UIManager(initEEGui, deInitEEGui, configs);
+                            if(err) throw err;
+                        });
+                        
+                    }
 
-                        if(data.length === 0) {
-                            let newcontent = JSON.stringify({appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph});
-                            contents = newcontent;
-                            fs.writeFile('/data/settings.json', newcontent, function(err){
-                                if(err) throw err;
-                                console.log("New settings file created");
-                                initUI(contents);
-                            });
-                        }
-                        else{ 
-                            contents = data.toString();    
+                    if(data.length === 0) {
+                        let newcontent = JSON.stringify({appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph});
+                        contents = newcontent;
+                        fs.writeFile('/data/settings.json', newcontent, (err) => {
+                            if(err) throw err;
+                            console.log("New settings file created");
                             initUI(contents);
+                            listFiles();
+                        });
+                    }
+                    else{ 
+                        contents = data.toString();    
+                        initUI(contents);
+                        listFiles();
+                    }
+                    State.subscribe('saveCounter', () => {
+                        console.log(State.data.saveCounter);
+                        if(State.data.saveCounter <= 0) {
+                            autoSaveChunk();
                         }
                     });
                 });
-                
             });
+            
         });
 
         const newSession = () => {
             let sessionName = new Date().toISOString(); //Use the time stamp as the session name
             State.data.sessionName = sessionName;
             State.data.sessionChunks = 0;
+            State.data.saveCounter = EEG.data.maxBufferedSamples-5120;
             fs.appendFile('/data/'+sessionName,"", (e) => {
                 if(e) throw e;
             });
+            listFiles();
         }
 
         const deleteSession = (path) => {
@@ -307,94 +319,77 @@ const initSystem = () => {
             });
         }
 
-        const getFiles = () => {
-            fs.readdir('/data', (e,data) => { 
-                if(e) console.error(e);
-                return data; //Returns an array of names in the directory
-            });
-        }
-
-        const saveChunk = () => {
-            let data = readyDataForWriting();
-            State.data.sessionChunks++;
-            if(State.data.sessionChunks === 1) {
-                fs.appendFile('/data/'+State.data.sessionName, data[0]+data[1], (e) => {
-                    if(e) throw e;
-                }); //+"_c"+State.data.sessionChunks
-            }
-            else {
-                fs.appendFile('/data/'+State.data.sessionName, data[1], (e) => {
-                    if(e) throw e;
-                }); //+"_c"+State.data.sessionChunks
-            }
-            let eeghead = Math.floor(EEG.sps*30); //Keep the most recent 30 seconds of data.
-            let atlashead = Math.floor(30*State.data.workerMaxSpeed); //Estimated
-            if(eeghead > EEG.data.counter || atleashead > ATLAS.coherenceMap.map[0].count)
-
-            for(const prop in EEG.data) {
-                if(typeof EEG.data[prop] === "object") {
-                    EEG.data[prop].splice(0,head);
-                }
-                else if (prop === "counter") {
-                    EEG.data[prop] -= head;
-                }
-            }
-            ATLAS.channelTags.forEach((row, i) => {
-                if(row.tag !== null && row.tag !== 'other'){
-                    ATLAS.fftMap.map.find((o,i) => {
-                        if(o.tag === row.tag){
-                            if(o.data.count > atlashead) {
-                                o.data.times.splice(0,atlashead);
-                                o.data.amplitudes.splice(0,atlashead);
-                                for(const prop in o.data.slices){
-                                    o.data.slices[prop].splice(0,atlashead);
-                                    o.data.means[prop].splice(0,atlashead);
-                                }
-                                o.data.count -= atlashead;
-                            }
-                            return true;
+        const listFiles = () => {
+            fs.readdir('/data', (e,dirr) => { 
+                if(e) return;
+                if(dirr) {
+                    console.log("files",dirr)
+                    let filediv = document.getElementById("filesystem");
+                    filediv.innerHTML = "";
+                    
+                    dirr.forEach((str,i) => {
+                        if(str !== "settings.json"){
+                            filediv.innerHTML += file_template({id:str});
+                        }
+                    });
+                    dirr.forEach((str,i) => {
+                        if(str !== "settings.json") {
+                            document.getElementById(str+"svg").onclick = () => {
+                                console.log(str);
+                                writeToCSV(str);
+                            }  
                         }
                     });
                 }
             });
-            ATLAS.coherenceMap.map.forEach((row,i) => {
-                if(row.data.count > atlashead) {
-                    row.data.times.splice(0,atlashead);
-                    row.data.amplitudes.splice(0,atlashead);;
-                    for(const prop in row.data.slices){
-                        row.data.slices[prop].splice(0,atlashead);
-                        row.data.means[prop].splice(0,atlashead);
-                    }
-                    row.data.count -= atlashead;
-                }
-                
-            });
+        }
+
+        const autoSaveChunk = () => {
+            let from = 0; if(State.data.sessionChunks > 0) { from = State.data.saveCounter+5120; }
+            let data = readyDataForWriting(from,State.data.counter);
+            State.data.saveCounter = EEG.maxBufferedSamples;
+            console.log("Saving chunk to /data/"+State.data.sessionName,State.data.sessionChunks);
+            if(State.data.sessionChunks === 0) {
+                fs.appendFile('/data/'+State.data.sessionName, data[0]+data[1], (e) => {
+                    if(e) throw e;
+                    State.data.sessionChunks++;
+                }); //+"_c"+State.data.sessionChunks
+                listFiles();
+            }
+            else {
+                fs.appendFile('/data/'+State.data.sessionName, data[1], (e) => {
+                    if(e) throw e;
+                    State.data.sessionChunks++;
+                }); //+"_c"+State.data.sessionChunks
+            }
+            
         }
 
         //Write CSV data in chunks to not overwhelm memory
         const writeToCSV = (path) => {
-            fs.stat('/data'+path,(e,stats) => {
+            fs.stat('/data/'+path,(e,stats) => {
                 if(e) throw e;
                 let filesize = stats.size;
-                fs.open('/data'+path,'r',(e,fd) => {
+                console.log(filesize)
+                fs.open('/data/'+path,'r',(e,fd) => {
                     if(e) throw e;
                     let i = 0;
                     let maxFileSize = State.data.fileSizeLimitMb*1024*1024;
                     let end = maxFileSize;
                     if(filesize < maxFileSize) {
                         end = filesize;
-                        let buf = new BFSBuffer.alloc(end);
-                        fs.read(fd,buf,0,'utf-8',(e,bytesRead,output) => {   
+                        fs.read(fd,end,0,'utf-8',(e,output,bytesRead) => { 
+                            if (e) throw e;
                             if(bytesRead !== 0) CSV.saveCSV(output.toString(),path);
-                        });
+                        }); 
                     }
                     else {
                         const writeChunkToFile = () => {
                             if(i < filesize) {
                                 if(i+end > filesize) {end=filesize - i;}  
-                                let buf = new BFSBuffer.alloc(end);
                                 let chunk = 0;
-                                fs.read(fd,buf,i,'utf-8',(e,bytesRead,output) => {   
+                                fs.read(fd,end,i,'utf-8',(e,output,bytesRead) => {   
+                                    if (e) throw e;
                                     if(bytesRead !== 0) {
                                         CSV.saveCSV(output.toString(),path+"_"+chunk);
                                         i+=maxFileSize;
@@ -428,7 +423,6 @@ const initSystem = () => {
 
         //TODO:
         /* 
-        Figure out why larger buffers for streaming data cause a crash when full
         Automate the chunk saving for oncoming data as the buffers fill. Just have it call the save operation before the buffers fill completely so we don't lose any data
         Visual GUI for file browsing and saving.
         Test large datasets

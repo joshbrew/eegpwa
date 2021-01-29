@@ -97,13 +97,13 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		var search = this.boyerMoore(needle);
 		var skip = search.byteLength;
 		var indices = [];
+		let newLines = 0;
 
 		for (var i = search(haystack); i !== -1; i = search(haystack, i + skip)) {
 			indices.push(i);
 		}
 		//console.log(indices);
 		if(indices.length >= 2){
-			let newLines = 0;
 			for(let k = 1; k < indices.length; k++) {
 				if(indices[k] - indices[k-1] !== 105) {
 					
@@ -147,6 +147,9 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 						this.data["Ax"].splice(0,5120);
 						this.data["Ay"].splice(0,5120);
 						this.data["Az"].splice(0,5120);
+						this.data["Ax"].push(new Array(5120).fill(0))
+						this.data["Ay"].push(new Array(5120).fill(0))
+						this.data["Az"].push(new Array(5120).fill(0))
 						this.data.counter -= 5120;
 					}
 					//console.log(this.data)
@@ -183,7 +186,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		let newLines = this.decode(this.buffer);
 		//console.log(this.data)
 		//console.log("decoding... ", this.buffer.length)
-		if(newLines !== false && newLines !== 0 ) this.onDecodedCallback(newLines);
+		if(newLines !== false && newLines !== 0 && !isNaN(newLines) ) this.onDecodedCallback(newLines);
 	}
 
 	async onPortSelected(port,baud=this.baudrate) {

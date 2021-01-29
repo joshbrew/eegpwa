@@ -193,11 +193,13 @@ export class uPlotMaker {
 					}
 				}
 				else{
-					newSeries.push({
-						label:"A"+row.ch + ", Tag: "+row.tag,
-						value: (u, v) => v == null ? "-" : v.toFixed(2),
-						stroke: "rgb("+Math.random()*128+","+Math.random()*128+","+Math.random()*128+")"
-					});
+					if(ch===null || row.ch === ch) {
+						newSeries.push({
+							label:"A"+row.ch + ", Tag: "+row.tag,
+							value: (u, v) => v == null ? "-" : v.toFixed(2),
+							stroke: "rgb("+Math.random()*128+","+Math.random()*128+","+Math.random()*128+")"
+						});
+					}
 				}
 			}
 		  });

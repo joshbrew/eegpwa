@@ -5,6 +5,7 @@ import {applyFilter, IIRNotchFilter, IIRLowPassFilter, DCBlocker} from '../utils
 let defaultTags = [
     {ch: 4, tag: "Fp2", viewing: true},
     {ch: 24, tag: "Fp1", viewing: true},
+    {ch: 9, tag: "other", viewing: true}
 ];
 
 
@@ -90,8 +91,10 @@ export const ATLAS = new eegAtlas(defaultTags);
 export var EEG = new eeg32( //cyton(
     (newLinesInt) => { //on decoded
         //if(EEG.data.counter === EEG.maxBufferedSamples) debugger;
-        //console.log(newLinesInt)
+        
+        //console.log(State.data.saveCounter)
         if(newLinesInt > 0) {
+            State.data.saveCounter -= newLinesInt;
             if(State.data.useFilters === true) {
                 let linesFiltered = 0;
                 while(linesFiltered < newLinesInt){
@@ -118,6 +121,7 @@ export var EEG = new eeg32( //cyton(
             }
         }
     }, () => { //on connected
+        State.data.sessionName = new Date().toISOString();
         State.setState({connected:true, rawFeed:true});
     }, () => { //on disconnected
         State.setState({connected:false,rawFeed:false,analyze:false});
@@ -256,43 +260,53 @@ export const runEEGWorker = () => {
     }
 }
 
-export const readyDataForWriting = () => {
+export const readyDataForWriting = (from=0,to=State.data.counter) => {
     let header = ["TimeStamps","UnixTime"];
     let data = [];
     let mapidx = 0;
-    for(let i = 0; i<EEG.data.counter; i++){
+    if(from!==0) { 
+        while (ATLAS.coherenceMap.map[0].data.times[mapidx] !== EEG.data.ms[from]) {
+            mapidx++;
+        }
+    }
+    for(let i = from; i<to; i++){
         let line=[];
-        line.push(new Date(EEG.data.ms[i]).toLocaleString(),EEG.data.ms[i]);
+        line.push(new Date(EEG.data.ms[i]).toISOString(),EEG.data.ms[i]);
         ATLAS.channelTags.forEach((tag,j) => {
             if(typeof tag.ch === "number"){
-                line.push(EEG.data["A"+tag.ch]);
+                if(State.data.useFilters) {
+                    line.push(State.data.filtered["A"+tag.ch][i]);
+                }
+                else { 
+                    line.push(EEG.data["A"+tag.ch][i]); 
+                }
                 if(i===0) {
                     header.push("A"+tag.ch);
                 }
             }
         });
-        if(ATLAS.coherenceMap.map[0].times[mapidx] === EEG.data.ms[i]) {
+        if(ATLAS.coherenceMap.map[0].data.times[mapidx] === EEG.data.ms[i]) {
             ATLAS.channelTags.forEach((tag,j) => {
                 if(tag.tag !== null && tag.tag !== 'other') {
                     let coord = ATLAS.getAtlasCoordByTag(tag.tag);
-                    if(i===0) {
+                    if(mapidx===0) {
                         header.push(coord.tag,ATLAS.fftMap.shared.bandPassWindow.join(","));
                     }
                     line.push("fft:",coord.data.amplitudes[mapidx].join(","));
                 }
             });
             ATLAS.coherenceMap.map.forEach((row,j) => {
-                if(i===0){
+                if(mapidx===0){
                     header.push(row.tag,ATLAS.coherenceMap.shared.bandPassWindow.join(','));
                 }
                 line.push("coh:",row.data.amplitudes[mapidx].join(","));
             });
             mapidx++;
         }
-        data.push(line.join(",")+"\n");
+        data.push(line.join(","));
     }
-
-    return [header.join(","),data];
+    console.log(data)
+    return [header.join(",")+"\n",data.join("\n")];
 }
 
 export const updateBandPass = (freqStart, freqEnd) => {
@@ -470,12 +484,22 @@ export const addChannelOptions = (selectId, taggedOnly=true, additionalOptions=[
         }
     }
     else{
-      if(i === 0) {
-        opts += `<option value='`+row.ch+`' selected='selected'>`+row.ch+`</option>`
-      }
-      else {
-        opts += `<option value='`+row.ch+`'>`+row.ch+`</option>`
-      }
+        if(row.tag !== null && row.tag !== 'other') {
+            if(i === 0) {
+                opts += `<option value='`+row.ch+`' selected='selected'>`+row.tag+`</option>`
+            }
+            else {
+                opts += `<option value='`+row.ch+`'>`+row.tag+`</option>`
+            }
+        }
+        else {
+            if(i === 0) {
+                opts += `<option value='`+row.ch+`' selected='selected'>`+row.ch+`</option>`
+            }
+            else {
+                opts += `<option value='`+row.ch+`'>`+row.ch+`</option>`
+            }
+        }
     }
     });
     if(additionalOptions.length > 0) {

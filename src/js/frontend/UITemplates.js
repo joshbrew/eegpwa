@@ -1,13 +1,16 @@
 import menusvg from '../../assets/menu.svg'
 import menuxsvg from '../../assets/menuX.svg'
 import logo from '../../public/logo512.png'
+import filesvg from '../../assets/file_noun.svg'
+import csvsvg from '../../assets/csv_noun.svg'
+
 export function menu_template(props={}) {
     return `
     <img id="logo" src=`+logo+` style="position:absolute; height:50px; left:50%; margin-left:-25px; width:50px; top:17px; z-index:9999; pointer-events:none;"/>  
     <table id="UI" style="width:100%; left:0px; top:0px; position:absolute; z-index:1;">
         <tr id="menu_header" style="height:80px; text-align:center;">
         </tr>
-        <tr id="menu_dropdown" style="height:400px; opacity:0; ">
+        <tr id="menu_dropdown" style="height:300px; opacity:0; ">
         </tr>
         <tr id="menu_dropdown2" style="height:400px; opacity:0; transform:translateY(-900px);">
         </tr>
@@ -37,7 +40,7 @@ export function menuheader_template(props={}) {
             <div style=transform:translate(0px,-6px);>■</div>
         </button>
     </td>
-    <td id="visuals" style="width:10%;">
+    <td id="visuals" style="width:7.5%;">
         <button id="visualsbutton" style="height:40px; width:40px; transform:translate(2px,13px); font-size:35px;">   
                 <svg id="squaresvg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" version="1.1" style="fill:black; transform:translate(-19px,-13px); height:50px; width:50px; shape-rendering:geometricPrecision;text-rendering:geometricPrecision;image-rendering:optimizeQuality;" viewBox="0 0 1128.88 1411.1000000000001" x="0px" y="0px" fill-rule="evenodd" clip-rule="evenodd"><defs><style type="text/css">
                     .fil0 {}
@@ -48,6 +51,9 @@ export function menuheader_template(props={}) {
                     <path class='fil0' style='transition: all 0.8s;' d="M831.84 230.32l-177.75 0c-36.94,0 -66.83,29.89 -66.83,66.83l0 177.75c0,36.94 29.89,66.83 66.83,66.83l177.75 -0.01c36.94,0 66.83,-29.89 66.83,-66.83l0 -177.75c0,-36.93 -29.89,-66.82 -66.83,-66.82z"/>
                 </g></g></g><text x="0" y="1143.88" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">Created by Ilham Fitrotul Hayat</text><text x="0" y="1148.88" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">from the Noun Project</text></svg>
         </button>
+    </td>
+    <td id="files" style="width:7.5%;">
+        <img id="filesvg" src=`+filesvg+` style="height:60px;width:60px; transform:translateY(6px);" />
     </td>
     <td id="menu" style="width:75%;"> 
         <div style="float:right; margin-right: 80px;">
@@ -64,7 +70,7 @@ export function menudropdown_template(props={}) {
     //<tr><td>Set Time Series View</td><td colspan=2><input type="text" style="width:100%;" id="GraphTime" placeholder="10 (seconds)"></input></td><td><button id="setTimeSpan">Set</button></td></tr>
             
     return `
-    <td style="width:100%; vertical-align:center; border:2px inset black;" colspan=5>
+    <td style="width:100%; vertical-align:center; border:2px inset black;" colspan=6>
         <table style="margin-left:auto; margin-right:auto; ">
             <tr><td>Set Band View</td><td><input type="text" style="width:95%;" id="freqStart" placeholder="0 (Hz)"></td><td>to</td><td><input type="text" style="width:100%;" id="freqEnd" placeholder="128 (Hz)"></td><td><button id="setBandpass">Set</button></td></tr>
             <tr><td>Set Tags</td><td colspan=3><input type="text" style="width:100%;" id="Tags" placeholder="Format: 0:Fp1 or 2:Fz or 6:P6:0,1,2 or 6:delete"></input></td><td><button id="setTags">Set</button></td></tr>
@@ -75,7 +81,7 @@ export function menudropdown_template(props={}) {
 
 export function menudropdown2_template(props={}) {
     return `
-    <td style="width:100%; vertical-align:center; border:2px inset black;" colspan=4>
+    <td style="width:100%; vertical-align:center; border:2px inset black;" colspan=5>
         <table style="margin-left:auto; margin-right:auto;">
             <tr>
                 <td>Applet 1:<select id="applet1"></select></td>
@@ -96,7 +102,8 @@ export function menudropdown2_template(props={}) {
 
 export function menudropdown3_template(props={}) {
     return `
-    <td style="width:100%; vertical-align:top; border:2px inset black;" colspan=4>
+    <td style="width:100%; height:400px; vertical-align:top; border:2px inset black;" colspan=6>
+        <div id="filesystem" style="width:100%;height:400px;overflow-y:scroll;"></div>
     </td>
     `;
 }
@@ -104,6 +111,15 @@ export function menudropdown3_template(props={}) {
 export function appletbox_template(props={}){
     return `
     <div id="applets" style="z-index:2; position:absolute;top:90px;height:`+(window.innerHeight-90)+`;width:`+window.innerWidth+`" ></div>
+    `;
+}
+
+export function file_template(props={id:Math.random()}) {
+    return `
+    <div id="`+props.id+`">
+        <p id="`+props.id+`filename">`+props.id+`</p><br>
+        <img id="`+props.id+`svg" src="`+csvsvg+`" style="height:60px;width:60px;">
+    </div>
     `;
 }
 
@@ -138,12 +154,43 @@ export function menu_setup() {
       }, 300);
      });
 
+     document.getElementById("filesvg").onclick = () => {
+        if(document.getElementById("menucheckbox").checked === true){
+            document.getElementById("menuxsvg").click();
+        }
+         if(document.getElementById("menu_dropdown3").style.opacity === "0"){ 
+             
+            document.getElementById("menu_dropdown2").style.opacity = 0;
+            document.getElementById("menu_dropdown2").style.transform = "translateY(-900px)";   
+            document.getElementById("menu_dropdown2").style.transition ="transform 0.5s ease-in-out, opacity 0.1s ease";
+
+            document.getElementById("menu_dropdown").style.opacity = 0;
+            document.getElementById("menu_dropdown").style.transform = "translateY(-500px)";
+            document.getElementById("menu_dropdown").style.transition ="transform 0.5s ease-in-out, opacity 0.1s ease";
+    
+            document.getElementById("menu_dropdown3").style.transform = "translateY(-700px)";
+            document.getElementById("menu_dropdown3").style.opacity = 1;
+            document.getElementById("menu_dropdown3").style.transition ="transform 0.5s ease-in-out, opacity 0.4s ease 0.3s"
+            document.getElementById("UI").style.zIndex = 999;
+         }
+         else {
+            document.getElementById("menu_dropdown3").style.transform = "translateY(-1300px)";
+            document.getElementById("menu_dropdown3").style.opacity = 0;
+            document.getElementById("menu_dropdown3").style.transition ="transform 0.5s ease-in-out, opacity 0.1s ease";
+            document.getElementById("UI").style.zIndex = -1;
+         }
+    }
+
      document.getElementById("menucheckbox").addEventListener('click',() => {
 
       if(document.getElementById("menucheckbox").checked === true){
         
         document.getElementById("menu_dropdown2").style.opacity = 0;
         document.getElementById("menu_dropdown2").style.transform = "translateY(-900px)";   
+        document.getElementById("menu_dropdown2").style.transition ="transform 0.5s ease-in-out, opacity 0.1s ease";
+
+        document.getElementById("menu_dropdown3").style.transform = "translateY(-1300px)";
+        document.getElementById("menu_dropdown3").style.opacity = 0;
         document.getElementById("menu_dropdown2").style.transition ="transform 0.5s ease-in-out, opacity 0.1s ease";
 
         document.getElementById("menu_dropdown").style.opacity = 1;
@@ -163,12 +210,15 @@ export function menu_setup() {
         if(document.getElementById("menucheckbox").checked === true){
             document.getElementById("menuxsvg").click();
         }
-         if(document.getElementById("menu_dropdown2").style.transform === "translateY(-900px)"){
+         if(document.getElementById("menu_dropdown2").style.opacity === "0"){
 
             document.getElementById("menu_dropdown2").style.opacity = 1;
-            document.getElementById("menu_dropdown2").style.transform = "translateY(-400px)";
+            document.getElementById("menu_dropdown2").style.transform = "translateY(-300px)";
             document.getElementById("menu_dropdown2").style.transition ="transform 0.5s ease-in-out, opacity 0.4s ease 0.3s";
 
+            document.getElementById("menu_dropdown3").style.transform = "translateY(-1300px)";
+            document.getElementById("menu_dropdown3").style.opacity = 0;
+            document.getElementById("menu_dropdown2").style.transition ="transform 0.5s ease-in-out, opacity 0.1s ease";
             
             document.getElementById("menu_dropdown").style.opacity = 0;
             document.getElementById("menu_dropdown").style.transform = "translateY(-500px)";

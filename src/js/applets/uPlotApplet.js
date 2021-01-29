@@ -92,7 +92,10 @@ export class uPlotApplet {
           if(document.getElementById(this.renderProps.id+'mode').value === "CoherenceTimeSeries" || document.getElementById(this.renderProps.id+'mode').value === "Coherence"){
             addCoherenceOptions(this.renderProps.id+'channel',true,['All']);
           }
-          else{
+          else if (document.getElementById(this.renderProps.id+'mode').value === "TimeSeries" || document.getElementById(this.renderProps.id+'mode').value === "Stacked"){
+            addChannelOptions(this.renderProps.id+'channel',false,['All']);
+          }
+          else {
             addChannelOptions(this.renderProps.id+'channel',true,['All']);
           }
           if (document.getElementById(this.renderProps.id+'mode').value === "CoherenceTimeSeries") {
@@ -122,8 +125,6 @@ export class uPlotApplet {
                   this.sub = State.subscribe('FFTResult',this.onUpdate);
               }
           }
-            
-
         }
 
         document.getElementById(this.renderProps.id+'bandview').style.width='98px';
@@ -369,8 +370,8 @@ export class uPlotApplet {
             
           }
 
-          if(view !== "All") {newSeries = this.class.makeSeriesFromChannelTags(ATLAS.channelTags,true,ch);}
-          else {newSeries = this.class.makeSeriesFromChannelTags(ATLAS.channelTags,true);}
+          if(view !== "All") {newSeries = this.class.makeSeriesFromChannelTags(ATLAS.channelTags,false,ch);}
+          else {newSeries = this.class.makeSeriesFromChannelTags(ATLAS.channelTags,false);}
           newSeries[0].label = "t";
           this.class.makeuPlot(
               newSeries, 
@@ -567,6 +568,7 @@ export class uPlotApplet {
           this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => Math.floor((v-EEG.data.startms)*.00001666667)+"m:"+((v-EEG.data.startms)*.001 - 60*Math.floor((v-EEG.data.startms)*.00001666667)).toFixed(1) + "s");
           
         }
+
         this.setLegend();
         //else if(graphmode === "StackedRaw") { graphmode = "StackedFFT" }//Stacked Coherence
       }

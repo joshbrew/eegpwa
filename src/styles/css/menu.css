@@ -39,11 +39,12 @@ body {
 }
 
 #menu_dropdown3 {
-  background-color: radial-gradient(circle, rgb(175, 190, 231) 0%, rgb(190, 255, 203) 35%, rgb(197, 221, 226) 100%);
+  background: radial-gradient(circle, rgb(175, 190, 231) 0%, rgb(190, 242, 255) 35%, rgb(201, 224, 255) 100%);
   opacity:0;
   transform:translateY(-500px);
   transition: all 0.5s ease-in-out;
 }
+
 
 #menu_header button {
   border:none;
