@@ -270,7 +270,7 @@ export const readyDataForWriting = (from=0,to=State.data.counter) => {
       
         return d.getFullYear() + '-'
                + z(d.getMonth()+1) + '-' +
-               z(d.getDate()-off/60|0) + 'T' +
+               z(d.getDate()) + 'T' +
                z(d.getHours()) + ':'  + 
                z(d.getMinutes()) + ':' +
                z(d.getSeconds()) + '.' +
