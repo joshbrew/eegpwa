@@ -141,6 +141,144 @@ class Biquad_Filter {
 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    let freq_actual = 1.2;
+    let freq_guess_in = 1.5;
+    let α = 0.05; //Phase offset multiplier
+    let ß = 0.4; //Frequency offset multiplier. Beta is multiplied by alpha squared in the algorithm
+    let fs = 512; //Sample rate (sps)
+    let nSec = 20; //Seconds of sine wave to compute
+    
+    let nsamples = Math.floor(fs*nSec);
+
+    let wave = genSineWave(freq_actual,1,nSec,fs);
+    let wave_amps = wave[1];
+    let wave_t = wave[0];
+
+    let string1 = freq_actual+'Hz sine in, guess '+freq_guess_in+'Hz to start. α='+α+', ß='+ß+'*α^2';
+
+    //console.log(string1);//,//wave)
+    document.getElementById("string1").innerHTML = string1;
+
+    let dftpll_result = DFTpll(wave_amps,fs,nsamples,freq_guess_in,0,α,ß)
+
+    let string2 = "PLL RESULT: Freq_guessed (Hz): "+ dftpll_result.freq_guesses[nsamples-1].toFixed(4)+"Hz, Phase guessed (rad):" + dftpll_result.phase_guesses[nsamples-1].toFixed(4) + ", Phase error: "+dftpll_result.phase_errs[nsamples-1].toFixed(4);
+    //document.getElementById("string2").innerHTML = string2;
+
+    //console.log(string2);
+    console.log("dftpll result: ", dftpll_result)
+
+    let dpll_result = my_dpll(wave_amps,freq_guess_in, α, ß);
+
+    console.log("dpll_result", dpll_result);
+
+
+
+
+
+
+    let apll_result = arachnoidPLL(wave_amps,freq_guess_in,freq_guess_in,freq_actual,fs);
+    console.log("arachnoide example",apll_result)
+
+
+    let spll_result = SPLL();
+    console.log("spll result",spll_result)
+
+
+    let data = [[{
+              x: wave_t,
+              y: wave_amps,
+              type: 'line',
+              marker: {
+                color: "rgba(255,100,100, 1)"
+              },
+              name: "Sine",
+              //xbins: {  size: 0.01  }
+            }],[{
+                x:wave_t,
+                y:dftpll_result.mixed,
+                type: 'line',
+                marker: {
+                    color: "rgba(100,255,100, 1)"
+                },
+                name: 'Mixed',    
+                xbins: {  size: 1  }
+            }],[{
+                x:wave_t,
+                y:dpll_result.estimated,
+                type: 'line',
+                marker: {
+                    color: "rgba(255,155,0, 1)"
+                },
+                name: 'Mixed',    
+                xbins: {  size: 1  }
+            }],[{
+                x:apll_result.times,
+                y:apll_result.amplitudes,
+                type: 'line',
+                marker: {
+                    color: "rgba(255,55,125, 1)"
+                },
+                name: 'Mixed',    
+                xbins: {  size: 1  }
+            }]
+          ];
+
+    let config = { 
+        scrollZoom: true, 
+        responsive: true, 
+    }
+    
+    Plotly.newPlot("sinechart",data[0],undefined,config);
+    Plotly.newPlot("mixedchart",data[1],undefined,config);
+    Plotly.newPlot("freqchart",data[2],undefined,config);
+    Plotly.newPlot("dpllchart",data[3],undefined,config);
+
+
+function genSineWave(freq=20,peakAmp=1,nSec=1,fs=512,freq2=0,peakAmp2=1){
+        var sineWave = [];
+        var t = [];
+        var increment = 1/fs; //x-axis time increment based on sample rate
+        for (var ti = 0; ti < nSec; ti+=increment){
+            var amplitude = Math.sin(2*Math.PI*freq*ti)*peakAmp;
+            amplitude += Math.sin(2*Math.PI*freq2*ti)*peakAmp2; //Add interference
+            sineWave.push(amplitude);
+            t.push(ti);
+        }
+        return [t,sineWave]; // [[times],[amplitudes]]
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//from an arachnoid tutorial https://arachnoid.com/phase_locked_loop/index.html
 function arachnoidPLL(signal,freq_guess,freq_max,freq_actual, sps) {
   let LP_loop = new Biquad_Filter('lowpass',freq_max,sps); //The notch filter is probably better for filtering signals closer to the cutoff as an additional measure.
   let LP_lock = new Biquad_Filter('lowpass',freq_max,sps); //let out = applyFilter(signal[i],LP_lock)
@@ -177,145 +315,7 @@ function arachnoidPLL(signal,freq_guess,freq_max,freq_actual, sps) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    let freq_actual = 1.2;
-    let freq_guess_in = 1.5;
-    let α = 0.05; //Phase offset multiplier
-    let ß = 0.4; //Frequency offset multiplier. Beta is multiplied by alpha squared in the algorithm
-    let fs = 512; //Sample rate (sps)
-    let nSec = 5; //Seconds of sine wave to compute
-    
-    let nsamples = Math.floor(fs*nSec);
-
-    let wave = genSineWave(freq_actual,1,nSec,fs);
-    let wave_amps = wave[1];
-    let wave_t = wave[0];
-
-    let string1 = freq_actual+'Hz sine in, guess '+freq_guess_in+'Hz to start. α='+α+', ß='+ß+'*α^2';
-
-    //console.log(string1);//,//wave)
-    document.getElementById("string1").innerHTML = string1;
-
-    let dftpll_result = DFTpll(wave_amps,fs,nsamples,freq_guess_in,0,α,ß)
-
-    let string2 = "PLL RESULT: Freq_guessed (Hz): "+ dftpll_result.freq_guesses[nsamples-1].toFixed(4)+"Hz, Phase guessed (rad):" + dftpll_result.phase_guesses[nsamples-1].toFixed(4) + ", Phase error: "+dftpll_result.phase_errs[nsamples-1].toFixed(4);
-    //document.getElementById("string2").innerHTML = string2;
-
-    //console.log(string2);
-    //console.log("Mixing result: ", dftpll_result.mixed)
-
-    let dpll_result = my_dpll(wave_amps,freq_guess_in);
-
-    //console.log(dpll_result);
-
-
-
-
-
-
-    let apll_result = arachnoidPLL(wave_amps,freq_guess_in,freq_guess_in,freq_actual,fs);
-    console.log(apll_result)
-
-
-
-
-
-
-    let data = [[{
-              x: wave_t,
-              y: wave_amps,
-              type: 'line',
-              marker: {
-                color: "rgba(255,100,100, 1)"
-              },
-              name: "Sine",
-              //xbins: {  size: 0.01  }
-            }],[{
-                x:wave_t,
-                y:dftpll_result.mixed,
-                type: 'line',
-                marker: {
-                    color: "rgba(100,255,100, 1)"
-                },
-                name: 'Mixed',    
-                xbins: {  size: 1  }
-            }],[{
-                x:wave_t,
-                y:dftpll_result.freq_guesses,
-                type: 'line',
-                marker: {
-                    color: "rgba(255,155,0, 1)"
-                },
-                name: 'Mixed',    
-                xbins: {  size: 1  }
-            }],[{
-                x:apll_result.times,
-                y:apll_result.amplitudes,
-                type: 'line',
-                marker: {
-                    color: "rgba(255,55,125, 1)"
-                },
-                name: 'Mixed',    
-                xbins: {  size: 1  }
-            }]
-          ];
-
-    let config = { 
-        scrollZoom: true, 
-        responsive: true, 
-    }
-    
-    Plotly.newPlot("sinechart",data[0],undefined,config);
-    //Plotly.newPlot("mixedchart",data[1],undefined,config);
-    //Plotly.newPlot("freqchart",data[2],undefined,config);
-    Plotly.newPlot("dpllchart",data[3],undefined,config);
-
-
-function genSineWave(freq=20,peakAmp=1,nSec=1,fs=512,freq2=0,peakAmp2=1){
-        var sineWave = [];
-        var t = [];
-        var increment = 1/fs; //x-axis time increment based on sample rate
-        for (var ti = 0; ti < nSec; ti+=increment){
-            var amplitude = Math.sin(2*Math.PI*freq*ti)*peakAmp;
-            amplitude += Math.sin(2*Math.PI*freq2*ti)*peakAmp2; //Add interference
-            sineWave.push(amplitude);
-            t.push(ti);
-        }
-        return [t,sineWave]; // [[times],[amplitudes]]
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//homebrew... This *should* work, and does on one second of data for some reason. But otherwise there's some complex mathemagic I am unaware of 
 function DFTpll(signal=genSineWave(3.3,1,1,512)[1], fs=512, len=512, freq_est=3, dcoffset=0, alpha=0.05, beta=0.5){ //modifed DFT equation for extracting a single frequency mixed with a simulated frequency, trying to minimze error
     var real = 0;
     var imag = 0;
@@ -385,9 +385,9 @@ function DFTpll(signal=genSineWave(3.3,1,1,512)[1], fs=512, len=512, freq_est=3,
 
 }
 
-function my_dpll(signal_in, expectedFreq=4) {
-  let α = 0.05;    //Phase modulation scalar
-  let ß = .01;    //Frequency modulation scalar
+function my_dpll(signal_in, expectedFreq=4, alpha=0.05, beta=0.01) {
+  let α = alpha;    //Phase modulation scalar
+  let ß = beta;    //Frequency modulation scalar
   var phase_out = 0;
   var freq=expectedFreq,
       peakAmp=Math.max(...signal_in),
@@ -421,6 +421,79 @@ function my_dpll(signal_in, expectedFreq=4) {
 }
 
 
+
+//https://github.com/DanielRanis/SPLL/blob/master/spll.m
+function SPLL(){
+  let A = 3.3;
+  let phi = Math.PI;
+  let f = 10;
+  let fs=512;
+  let T=50/f;
+  let Ts=1/fs;
+  let bit=19;
+
+  let Bn=fs*.01;
+  let D=0.707;
+  let K0=1,Kd=0.5,
+  Kp=(1/(Kd*K0))*(4*D/(D+(1/(4*D))))*(Bn/fs);
+  Ki=(1/(Kd*K0))*(4/(D+((1/4*D))**2))*((Bn/fs)**2);
+
+  let t = []
+  let signalin_sim = [];
+  for(let i = 0; i<T; i+=1/512) {
+    t.push(i);
+    signalin_sim.push(A*Math.sin(2*Math.PI*i*f + phi));
+  }
+
+  let ef = new Array(signalin_sim.length).fill(0);
+  let dphiOut = new Array(signalin_sim.length).fill(0);
+  let phi2Out = new Array(signalin_sim.length).fill(0);
+  let OUT = new Array(signalin_sim.length).fill(0);
+  let phi_err = new Array(signalin_sim.length).fill(0);
+
+  let NCO = 0;
+  let phi2 = 0;
+  let t1=0,t2=0,t3=0,t4=0;
+  let fc=5;
+  let RC=1/(fc*2*Math.PI);
+  let dt=Ts;
+  let a = dt/(RC+dt);
+  for(let k = 0; k<signalin_sim.length; k++) {
+    
+    let ed=Kd*NCO*signalin_sim[k];
+    
+    //low pass
+    let y0=a*ed+(1-a)*t4;
+    ed = y0;
+    dphiOut[k]=ed;
+    
+    //Filter output;
+    let ef2=Ki*ed+t1;
+    ef[k]=Kp*ed+ef2;
+
+    //NCO Output
+    phi2=t2+K0+t3;
+    phi2Out[k]=phi2;
+    NCO=-Math.sin(2*Math.PI*f*t[k]+phi2); //How to modulate f?
+    OUT[k]=NCO;
+
+    //Phase error
+    phi_err[k]=phi-Math.abs(phi2);
+
+    t1=ef2;
+    t2=phi2;
+    t3=ef[k];
+    t3=y0;
+
+  }
+
+  return { dphiOut:dphiOut, phi2Out:phi2Out, OUT:OUT, phi_err:phi_err }
+
+}
+
+
+
+/* //how do I process a signal into this?
 function PLL4thOrder(
   fc, //Cutoff Frequency 
   pm, //Phase margin (deg)
@@ -524,7 +597,7 @@ function PLL4thOrder(
 
     let d_test = PLL4thOrder(fc,pm,kphi,kvco,N);
   }
-
+*/
 
 
   

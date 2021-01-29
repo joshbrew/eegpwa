@@ -294,7 +294,7 @@ const initSystem = () => {
                     State.subscribe('saveCounter', () => {
                         console.log(State.data.saveCounter);
                         if(State.data.saveCounter <= 0) {
-                            autoSaveChunk(from);
+                            autoSaveChunk();
                         }
                     });
                     document.getElementById("saveSession").onclick = () => {
