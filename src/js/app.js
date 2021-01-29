@@ -288,7 +288,7 @@ const initSystem = () => {
                         listFiles();
                     }
                     State.subscribe('saveCounter', () => {
-                        console.log(State.data.saveCounter);
+                        //console.log(State.data.saveCounter);
                         if(State.data.saveCounter <= 0) {
                             autoSaveChunk();
                         }
@@ -355,7 +355,9 @@ const initSystem = () => {
 
         const autoSaveChunk = (startidx=0) => {
             let from = startidx; if(State.data.sessionChunks > 0) { from = State.data.counter - 5120 + State.data.saveCounter; }
+            
             let data = readyDataForWriting(from,State.data.counter);
+            console.log(data)
             State.data.saveCounter = 5120;
             console.log("Saving chunk to /data/"+State.data.sessionName,State.data.sessionChunks);
             if(State.data.sessionChunks === 0) {
@@ -367,7 +369,7 @@ const initSystem = () => {
                 
             }
             else {
-                fs.appendFile('/data/'+State.data.sessionName, data[1], (e) => {
+                fs.appendFile('/data/'+State.data.sessionName, "\n"+data[1], (e) => {
                     if(e) throw e;
                     State.data.sessionChunks++;
                 }); //+"_c"+State.data.sessionChunks

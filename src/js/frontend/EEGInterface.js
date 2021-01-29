@@ -283,7 +283,8 @@ export const readyDataForWriting = (from=0,to=State.data.counter) => {
     let data = [];
     let mapidx = 0;
     if(from!==0) { 
-        while (ATLAS.coherenceMap.map[0].data.times[mapidx] !== EEG.data.ms[from]) {
+        console.log(EEG.data.ms[from])
+        while (ATLAS.coherenceMap.map[0].data.times[mapidx] < EEG.data.ms[from]) {
             mapidx++;
         }
     }
@@ -323,7 +324,7 @@ export const readyDataForWriting = (from=0,to=State.data.counter) => {
         }
         data.push(line.join(","));
     }
-    console.log(data)
+    //console.log(data)
     return [header.join(",")+"\n",data.join("\n")];
 }
 
