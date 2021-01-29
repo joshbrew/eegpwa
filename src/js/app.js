@@ -299,7 +299,7 @@ const initSystem = () => {
                     });
                     document.getElementById("saveSession").onclick = () => {
                         if(EEG.data.counter > 0 && ((State.data.saveCounter < EEG.data.maxBufferedSamples && State.data.sessionChunks === 0) || (State.data.saveCounter < EEG.data.maxBufferedSamples-5120 && State.data.sessionChunks > 0))) {
-                            autoSaveChunk(State.data.newSessionIdx);
+                            //autoSaveChunk(State.data.newSessionIdx);
                         }
                     }
                     document.getElementById("newSession").onclick = () => {
