@@ -332,7 +332,6 @@ const initSystem = () => {
                     console.log("files",dirr)
                     let filediv = document.getElementById("filesystem");
                     filediv.innerHTML = "";
-                    
                     dirr.forEach((str,i) => {
                         if(str !== "settings.json"){
                             filediv.innerHTML += file_template({id:str});

@@ -86,18 +86,18 @@ onmessage = (e) => {
       l = 1;
       cordfts.forEach((dft,i) => {
         var newdft = new Array(dft.length).fill(0);
-        if(i < nChannels) { //first multiply autocorrelograms
+        if(i < nChannels) { //first multiply autocorrelogram ffts by unfiltered ffts
           dft.forEach((amp,j) => {
-            newdft[j] = amp*dfts[1][i][j];
+            newdft[j] = amp//*dfts[1][i][j];
           });
           autoFFTproducts.push(newdft);
         }
-        else{ //now multiply cross correlograms
+        else{ //now multiply cross correlogram ffts
           //var timeMod = (e.data.input[1]-1)*.3333333; //Scaling for longer time intervals
           //if(timeMod <= 1) { timeMod = 1; }
           dft.forEach((amp,j) => {
               newdft[j] = amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j];//*1.6666666;
-              newdft[j] = Math.pow(newdft[j],.125)
+              //newdft[j] = Math.pow(newdft[j],.125)
           });
           l++;
           if((l+k) === nChannels) {
