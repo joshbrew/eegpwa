@@ -253,9 +253,7 @@ const initSystem = () => {
         }
         BrowserFS.initialize(rootForMfs);
         fs.exists('/data', (exists) => {
-            if(exists) {
-
-            }
+            if(exists) { }
             else {
                 fs.mkdir('/data');
             }
@@ -273,9 +271,7 @@ const initSystem = () => {
                             const UI = new UIManager(initEEGui, deInitEEGui, configs);
                             if(err) throw err;
                         });
-                        
                     }
-
                     if(data.length === 0) {
                         let newcontent = JSON.stringify({appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph});
                         contents = newcontent;
@@ -298,8 +294,8 @@ const initSystem = () => {
                         }
                     });
                     document.getElementById("saveSession").onclick = () => {
-                        if(EEG.data.counter > 0 && ((State.data.saveCounter < EEG.data.maxBufferedSamples && State.data.sessionChunks === 0) || (State.data.saveCounter < EEG.data.maxBufferedSamples-5120 && State.data.sessionChunks > 0))) {
-                            //autoSaveChunk(State.data.newSessionIdx);
+                        if(EEG.data.counter > 0 && ((State.data.saveCounter < 5120 && State.data.sessionChunks === 0) || (State.data.saveCounter < 5120 && State.data.sessionChunks > 0))) {
+                            autoSaveChunk();
                         }
                     }
                     document.getElementById("newSession").onclick = () => {
@@ -320,7 +316,6 @@ const initSystem = () => {
                 if(e) throw e;
                 listFiles();
             });
-            
         }
 
         const deleteFile = (path) => {
@@ -359,9 +354,9 @@ const initSystem = () => {
         }
 
         const autoSaveChunk = (startidx=0) => {
-            let from = startidx; if(State.data.sessionChunks > 0) { from = State.data.saveCounter+5120; }
+            let from = startidx; if(State.data.sessionChunks > 0) { from = State.data.counter - 5120 + State.data.saveCounter; }
             let data = readyDataForWriting(from,State.data.counter);
-            State.data.saveCounter = EEG.maxBufferedSamples;
+            State.data.saveCounter = 5120;
             console.log("Saving chunk to /data/"+State.data.sessionName,State.data.sessionChunks);
             if(State.data.sessionChunks === 0) {
                 fs.appendFile('/data/'+State.data.sessionName, data[0]+data[1], (e) => {
