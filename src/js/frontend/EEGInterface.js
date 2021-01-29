@@ -290,14 +290,14 @@ export const readyDataForWriting = (from=0,to=State.data.counter) => {
                 if(tag.tag !== null && tag.tag !== 'other') {
                     let coord = ATLAS.getAtlasCoordByTag(tag.tag);
                     if(mapidx===0) {
-                        header.push(coord.tag,ATLAS.fftMap.shared.bandPassWindow.join(","));
+                        header.push(coord.tag+"; FFT Hz:",ATLAS.fftMap.shared.bandPassWindow.join(","));
                     }
                     line.push("fft:",coord.data.amplitudes[mapidx].join(","));
                 }
             });
             ATLAS.coherenceMap.map.forEach((row,j) => {
                 if(mapidx===0){
-                    header.push(row.tag,ATLAS.coherenceMap.shared.bandPassWindow.join(','));
+                    header.push(row.tag+"; COH Hz:",ATLAS.coherenceMap.shared.bandPassWindow.join(','));
                 }
                 line.push("coh:",row.data.amplitudes[mapidx].join(","));
             });
