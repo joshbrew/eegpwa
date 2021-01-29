@@ -5,7 +5,7 @@ import {applyFilter, IIRNotchFilter, IIRLowPassFilter, DCBlocker} from '../utils
 let defaultTags = [
     {ch: 4, tag: "Fp2", viewing: true},
     {ch: 24, tag: "Fp1", viewing: true},
-    {ch: 9, tag: "other", viewing: true}
+    {ch: 8, tag: "other", viewing: true}
 ];
 
 
@@ -268,7 +268,7 @@ export const readyDataForWriting = (from=0,to=State.data.counter) => {
         var sign = off < 0? '+' : '-';
         off = Math.abs(off);
       
-        return d.getFullYear() + '-'
+        return d.getFullYear() + '-' //https://stackoverflow.com/questions/49330139/date-toisostring-but-local-time-instead-of-utc
                + z(d.getMonth()+1) + '-' +
                z(d.getDate()) + 'T' +
                z(d.getHours()) + ':'  + 
