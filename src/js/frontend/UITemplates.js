@@ -103,6 +103,7 @@ export function menudropdown2_template(props={}) {
 export function menudropdown3_template(props={}) {
     return `
     <td style="width:100%; height:400px; vertical-align:top; border:2px inset black;" colspan=6>
+        <button id="saveSession">Save Current Data</button><button id="newSession">New Session</button>
         <div id="filesystem" style="width:100%;height:400px;overflow-y:scroll;"></div>
     </td>
     `;

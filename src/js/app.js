@@ -294,9 +294,17 @@ const initSystem = () => {
                     State.subscribe('saveCounter', () => {
                         console.log(State.data.saveCounter);
                         if(State.data.saveCounter <= 0) {
-                            autoSaveChunk();
+                            autoSaveChunk(from);
                         }
                     });
+                    document.getElementById("saveSession").onclick = () => {
+                        if(EEG.data.counter > 0 && ((State.data.saveCounter < EEG.data.maxBufferedSamples && State.data.sessionChunks === 0) || (State.data.saveCounter < EEG.data.maxBufferedSamples-5120 && State.data.sessionChunks > 0))) {
+                            autoSaveChunk(State.data.newSessionIdx);
+                        }
+                    }
+                    document.getElementById("newSession").onclick = () => {
+                        newSession();
+                    }
                 });
             });
             
@@ -306,16 +314,19 @@ const initSystem = () => {
             let sessionName = new Date().toISOString(); //Use the time stamp as the session name
             State.data.sessionName = sessionName;
             State.data.sessionChunks = 0;
-            State.data.saveCounter = EEG.data.maxBufferedSamples-5120;
+            State.data.saveCounter = 5120;
+            State.data.newSessionIdx = State.data.counter;
             fs.appendFile('/data/'+sessionName,"", (e) => {
                 if(e) throw e;
+                listFiles();
             });
-            listFiles();
+            
         }
 
         const deleteFile = (path) => {
             fs.unlink(path, (e) => {
                 if(e) console.error(e);
+                listFiles();
             });
         }
 
@@ -340,7 +351,6 @@ const initSystem = () => {
                             } 
                             document.getElementById(str+"delete").onclick = () => { 
                                 deleteFile("/data/"+str);
-                                listFiles();
                             } 
                         }
                     });
@@ -348,8 +358,8 @@ const initSystem = () => {
             });
         }
 
-        const autoSaveChunk = () => {
-            let from = 0; if(State.data.sessionChunks > 0) { from = State.data.saveCounter+5120; }
+        const autoSaveChunk = (startidx=0) => {
+            let from = startidx; if(State.data.sessionChunks > 0) { from = State.data.saveCounter+5120; }
             let data = readyDataForWriting(from,State.data.counter);
             State.data.saveCounter = EEG.maxBufferedSamples;
             console.log("Saving chunk to /data/"+State.data.sessionName,State.data.sessionChunks);
