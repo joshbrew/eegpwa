@@ -367,8 +367,9 @@ const initSystem = () => {
                 fs.appendFile('/data/'+State.data.sessionName, data[0]+data[1], (e) => {
                     if(e) throw e;
                     State.data.sessionChunks++;
+                    listFiles();
                 }); //+"_c"+State.data.sessionChunks
-                listFiles();
+                
             }
             else {
                 fs.appendFile('/data/'+State.data.sessionName, data[1], (e) => {
