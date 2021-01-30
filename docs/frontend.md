@@ -1,5 +1,5 @@
 ## Front end
-The frontend ties together several simplified systems after beating my head against a ton of different frameworks from React to Nativescript to lit-html, and so on. Plus Dovydas (@Giveback007) showed me some great tricks with his state manager but I wanted to simplify it to basic js. Full documentation pending but the code is written to be plainly readable so check it out.
+The frontend ties together several simplified systems after beating my head against a ton of different frameworks from React to Nativescript to lit-html, and so on. I always ended up coming back to the same basic fragments in vanilla JS and then using the standard document functions because I could do everything so much quicker - ironic considering everything is made for productivity but maybe I'm just in a niche here with my needs. My system ends up seriously benchmarking javascript, however. Plus Dovydas (@Giveback007) showed me some great tricks with his state manager but I wanted to simplify it to basic js. Full documentation pending but the code is written to be plainly readable so check it out.
 
 In order of abstraction:
 
@@ -29,3 +29,10 @@ So most of the EEG data organizing happens here for the front end. There are als
 
 ##### UIManager.js: 
 This is just a hack I put together to manage the applets. It sets up and resizes the applets for you according to the set functions in the applet templates. It's important to keep that format to make the applets load into the UI correctly, which is covered in applets.md better.
+
+
+
+
+### Also the file system
+
+This is a work in progress. I am using IndexedDB via BrowserFS, which is just a nice fs wrapper for a bunch of file systems that have their own syntaxes. IndexedDB allows for arbitrary cache sizes and I can parse directly to a CSV file from there or performantly scroll cached datasets thanks to the big data developers behind it. BrowserFS is not well documented and has some mysteries as to how to use it across the app, so right now it's all in app.js and wraps the UI initialization in a semi-messy way. 
