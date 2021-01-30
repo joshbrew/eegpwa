@@ -37,6 +37,7 @@ Everything here now was accomplished over the past couple months, when it's done
 * Wicked fast HTML rendering with custom fragment system.
 * State based UI system for easy subscribing/unsubcribing disparate features to data streams. 
 * Applet based feature system, easy to write features and add to the main app. The whole app is interchangable.
+* IndexedDB file system with BrowserFS, download a formatted CSV, optimized for performance and not overwhelming browser memory limits by autosaving often and breaking up download file sizes into chunks.
 
 ## Javascript EEG Utilities (WIP docs as we add features)
 
