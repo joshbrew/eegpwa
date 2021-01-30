@@ -1,5 +1,5 @@
 ## Applets
-The applet system here is just a simple way to make sure that modular content gets nested correctly in the app with everything else. As long as you maintain the basic format in the template, you can write any kind of javascript you want otherwise and involve any packages you want.
+The applet system here is just a simple way to make sure that modular content gets nested correctly in the app with everything else. As long as you maintain the basic format in the template, you can write any kind of javascript you want otherwise and involve any packages you want. There are some useful tools in the dom fragment system and state manager for you to take advantage of too, to ensure performant rendering.
 
 Check out AppletTemplate.js in the applets folder. You'll see a bunch of mostly empty functions and a constructor. In order to create applets, you need to copy and paste this template to a new file and then fill out all of the functions. You can try to extend the class too but I find that to be more mental work than it should be. 
 
