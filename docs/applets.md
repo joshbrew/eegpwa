@@ -68,7 +68,7 @@ export class Applet {
 
 The most important function to make something happen on screen is the HTMLtemplate, then use the setupHTML function to attach functions to buttons etc. Leave the random id generator alone, also, or make sure you use something just as random, as that lets you add a randomized id to all of your named html elements so they don't accidentally overlap with others. 
 
-See how this all works in the other examples, the simplest being AppletExample.js. You can use State.subscribe('propname',onchange) to get updates from the app, then pull data from the EEG or ATLAS objects accordingly. Feel free to add any state variables you want. 
+See how this all works in the other examples, the simplest being AppletExample.js. You can use State.subscribe('propname',onchange) to get updates from the app, then pull data from the EEG or ATLAS objects accordingly. Feel free to add any state variables you want or make entirely new state managers as needed, I tried to make this the most straightforward possible way to make content. 
 
 The configure() function is used if you instantiate the applet from a hashtag on the address bar (or if you want to customize a link/shortcut). If your applet has multiple view options etc you can have it be configurable. This will work with a config autosave system being implemented here (probably already done before anyone reads this file) so that when you restart the app, the applets can be reconfigured from file exactly how you want them.
 
