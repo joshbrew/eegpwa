@@ -311,6 +311,7 @@ const initSystem = () => {
             State.data.sessionName = sessionName;
             State.data.sessionChunks = 0;
             State.data.saveCounter = 5120;
+            State.data.newSessionCt++;
             State.data.newSessionIdx = State.data.counter;
             fs.appendFile('/data/'+sessionName,"", (e) => {
                 if(e) throw e;
@@ -353,8 +354,10 @@ const initSystem = () => {
         }
 
         const autoSaveChunk = (startidx=0) => {
-            let from = startidx; if(State.data.sessionChunks > 0) { from = State.data.counter - 5120 + State.data.saveCounter; }
-            
+            let from = startidx; 
+            if(State.data.sessionChunks > 0) { from = State.data.counter - 5120 + State.data.saveCounter; }
+            else if(State.data.newSessionCt > 0) { from = State.data.newSessionIdx; }
+
             let data = readyDataForWriting(from,State.data.counter);
             //console.log(data)
             State.data.saveCounter = 5120;
@@ -374,6 +377,21 @@ const initSystem = () => {
                 }); //+"_c"+State.data.sessionChunks
             }
             
+        }
+
+        //Read a chunk of data from a saved dataset
+        const readFromDB = (path,begin=0,end=State.nSecAdcGraph*EEG.sps) => {
+            fs.open('/data/'+path,'r',(e,fd) => {
+                if(e) throw e;
+            
+                fs.read(fd,end,begin,'utf-8',(er,output,bytesRead) => { 
+                    if (er) throw er;
+                    if(bytesRead !== 0) {
+                        let data = output.toString();
+                        //Now parse the data back into the buffers.
+                    };
+                }); 
+            });
         }
 
         //Write CSV data in chunks to not overwhelm memory
