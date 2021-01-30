@@ -33,7 +33,7 @@ Everything here now was accomplished over the past couple months independently, 
 * Digital biquad filters, as many as you want...
 * Live charting, brain mapping, coherence, much more to come.
 * Modular data and visual tools with class based modules, and a modifiable decoder for enabling any hardware.
-* Configured for the [FreeEEG32](https://github.com/neuroidss/freeeeg32_beta), easy to add other configurations.
+* Configured for the [FreeEEG32](https://github.com/neuroidss/freeeeg32_beta), easy to add other configurations, I need to add a formal layer to accept data from any kind of stream into some functions so you don't need to mess with anything else in the app.
 * Wicked fast HTML rendering with custom fragment system.
 * State based UI system for easy subscribing/unsubcribing disparate features to data streams. 
 * Applet based feature system, easy to write features and add to the main app. The whole app is interchangable.
