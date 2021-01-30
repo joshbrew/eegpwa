@@ -86,7 +86,7 @@ onmessage = (e) => {
       l = 1;
       cordfts.forEach((dft,i) => {
         var newdft = new Array(dft.length).fill(0);
-        if(i < nChannels) { //first multiply autocorrelogram ffts by unfiltered ffts
+        if(i < nChannels) { //first multiply autocorrelogram ffts by unfiltered ffts (to scale relative the actual amplitudes)
           dft.forEach((amp,j) => {
             newdft[j] = amp//*dfts[1][i][j];
           });

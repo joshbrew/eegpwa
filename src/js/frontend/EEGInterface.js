@@ -294,7 +294,7 @@ export const readyDataForWriting = (from=0,to=State.data.counter) => {
         ATLAS.channelTags.forEach((tag,j) => {
             if(typeof tag.ch === "number"){
                 if(State.data.useFilters) {
-                    line.push(State.data.filtered["A"+tag.ch][i]);
+                    line.push(State.data.filtered["A"+tag.ch][i].toFixed(0));
                 }
                 else { 
                     line.push(EEG.data["A"+tag.ch][i]); 
@@ -309,16 +309,20 @@ export const readyDataForWriting = (from=0,to=State.data.counter) => {
                 if(tag.tag !== null && tag.tag !== 'other') {
                     let coord = ATLAS.getAtlasCoordByTag(tag.tag);
                     if(mapidx===0) {
-                        header.push(coord.tag+"; FFT Hz:",ATLAS.fftMap.shared.bandPassWindow.join(","));
+                        let bpfreqs = [...ATLAS.fftMap.shared.bandPassWindow].map((x,i) => x = x.toFixed(3));
+                        header.push(coord.tag+"; FFT Hz:",bpfreqs.join(","));
                     }
-                    line.push("fft:",coord.data.amplitudes[mapidx].join(","));
+                    let fftamps = [...coord.data.amplitudes[mapidx]].map((x,i) => x = x.toFixed(3));
+                    line.push("fft:",fftamps.join(","));
                 }
             });
             ATLAS.coherenceMap.map.forEach((row,j) => {
                 if(mapidx===0){
-                    header.push(row.tag+"; COH Hz:",ATLAS.coherenceMap.shared.bandPassWindow.join(','));
+                    let bpfreqs = [...ATLAS.coherenceMap.shared.bandPassWindow].map((x,i) => x = x.toFixed(3));
+                    header.push(row.tag+"; COH Hz:",bpfreqs.join(','));
                 }
-                line.push("coh:",row.data.amplitudes[mapidx].join(","));
+                let cohamps = [...row.data.amplitudes[mapidx]].map((x,i) => x = x.toFixed(3));
+                line.push("coh:",cohamps.join(","));
             });
             mapidx++;
         }
