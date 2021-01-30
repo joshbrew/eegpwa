@@ -1,4 +1,5 @@
 import {State} from '../frontend/State'
+import {EEG, ATLAS} from '../frontend/EEGInterface'
 import {DOMFragment} from '../frontend/DOMFragment'
 
 //You can extend or call this class and set renderProps and these functions

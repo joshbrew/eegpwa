@@ -23,7 +23,7 @@ const fragment = new DOMFragment(templateStringGen,document.body,htmlprops,onRen
 */
 
 export class DOMFragment {
-    constructor(templateStringGen=this.templateStringGen, parentNode=document.body, props={}, onRender=()=>{}, onchange=()=>{}, propUpdateInterval="FRAMERATE") {
+    constructor(templateStringGen=this.templateStringGen, parentNode=document.body, props={}, onRender=()=>{}, onchange=()=>{}, propUpdateInterval="NEVER") {
         this.templateStringGen = templateStringGen(props);
         this.onRender = onRender;
         

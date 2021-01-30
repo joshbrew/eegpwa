@@ -211,9 +211,10 @@ export class uPlotMaker {
 	}
 
 	//Stacked uplot with dynamic y scaling per series. Define either series or channelTags (from the eeg32 instance)
-	makeStackeduPlot = (series=[{}], data=[], options = null, channelTags = null, width = 1000, height = 800) => {
+	makeStackeduPlot = (series=[{}], data=[], options = null, channelTags = null, width = 1000, height = 800, yScale=true) => {
 		var newSeries = [{}];
 		var serieslen = 0;
+		//console.log(data)
 		if(series === newSeries) {
 			if(channelTags === null) { console.log("No series data!"); return; }
 			serieslen = channelTags.length;
@@ -240,7 +241,6 @@ export class uPlotMaker {
 		});
 
 		var max = Math.max(...windows);
-
 
 		var mapidx=0;
 
@@ -320,12 +320,28 @@ export class uPlotMaker {
 		  else{ return (((v-ax)*(max)+mins[ax])).toFixed(2);}
 		}
 
+
+		let yOpts = {auto:true};
+		if(yScale === true){
+		}
+		else{
+			yOpts = {auto:false, range:yScale};
+		}
+
+
 		var uPlotOptions;
 		if(options === null){
 		uPlotOptions = {
 		  width: width,
 		  height: height,
 		  series: newSeries,
+		  legend: {
+			show:false
+		  },
+		  scales: {
+			x:{time:false},
+			y:yOpts,
+		  },
 		  axes: [
 			{
 			scale: "sec",
@@ -345,7 +361,26 @@ export class uPlotMaker {
 
 	}
 
-	updateStackedData(dat) {
+	updateStackedData(dat, updateYAxis=false) {
+
+		var windows = [];
+		var maxs = [];
+		var mins = [];
+
+		if((dat.length === 0)) { //No data
+			console.error("uPlotMaker: No data inputted!");
+			return;
+		}
+
+		dat.forEach((row,i) => {
+			if(i>0){
+				windows.push(Math.ceil(Math.max(...row)) - Math.min(...row));
+				mins.push(Math.min(...row));
+				maxs.push(Math.max(...row));
+		  	}
+		});
+
+		var max = Math.max(...windows);
 
 		var mapidx=0;
 
@@ -368,9 +403,26 @@ export class uPlotMaker {
 		];
 
 		dat.forEach((row) => {
-			uPlotData.push(row.map((t,j) => ymapper(t,j)));
-			mapidx++;
-		  });
+			if(i>0){
+				uPlotData.push(row.map((t,j) => ymapper(t,j)));
+				mapidx++;
+			}
+		});
+
+		if(updateYAxis){
+			let ax=-1;
+			const axmapper = (v,i) => {
+				if(v === Math.floor(v)){
+				  if(v < this.plot.series.length){
+					ax++;
+					return this.plot.series[v].label;
+				  }
+				}
+				else{ return (((v-ax)*(max)+mins[ax])).toFixed(2);}
+			  }
+			let yvalues = (u, splits) => splits.map((v,i) => axmapper(v,i));
+			this.plot.axes[1].values = yvalues;
+		}
 
 		this.plot.setData(uPlotData);
 	}
