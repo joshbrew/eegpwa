@@ -1,5 +1,5 @@
 ## Front end
-The frontend ties together several simplified systems after beating my head against a ton of different frameworks from React to Nativescript to lit-html, and so on. Plus Dovydas showed me some great tricks with his state manager but I wanted to simplify it to basic js. Full documentation pending but the code is written to be plainly readable so check it out.
+The frontend ties together several simplified systems after beating my head against a ton of different frameworks from React to Nativescript to lit-html, and so on. Plus Dovydas (@Giveback007) showed me some great tricks with his state manager but I wanted to simplify it to basic js. Full documentation pending but the code is written to be plainly readable so check it out.
 
 In order of abstraction:
 
