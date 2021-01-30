@@ -47,6 +47,8 @@ See [signalAnalysis.md](/docs/signalAnalysis.md) for working docs
 
 ### Visual features
 
+See the working [applets doc](/docs/applets.md) on how to add your own visual features fairly easily. There are very few restrictions on what you can do as it's all based in vanillajs. See [frontend.md](/docs/frontend.md) for a wip breakdown on how we built our front end app system. 
+ 
 Going by packages:
 * uPlot
 * smoothiejs
@@ -60,4 +62,4 @@ Planned:
 * Reintegrating HEG features from the other PWA, including the bluetooth and event sources. Websockets are easy too.
 * I have a stupid simple audio system, geolocation, and a ton of other fun stuff from tinkering with the HEG we can borrow. 
 
-Lots more, see the TODO.txt as well for more notes.
+Lots more, see the [TODO.txt](/TODO.txt) as well for more notes.
