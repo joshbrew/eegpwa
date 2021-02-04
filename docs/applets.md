@@ -1,5 +1,5 @@
 ## Applets
-The applet system here is just a simple way to make sure that modular content gets nested correctly in the app with everything else. As long as you maintain the basic format in the template, you can write any kind of javascript you want otherwise and involve any packages you want.
+The applet system here is just a simple way to make sure that modular content gets nested correctly in the app with everything else. As long as you maintain the basic format in the template, you can write any kind of javascript you want otherwise and involve any packages you want. There are some useful tools in the dom fragment system and state manager for you to take advantage of too, to ensure performant rendering.
 
 Check out AppletTemplate.js in the applets folder. You'll see a bunch of mostly empty functions and a constructor. In order to create applets, you need to copy and paste this template to a new file and then fill out all of the functions. You can try to extend the class too but I find that to be more mental work than it should be. 
 
@@ -66,9 +66,9 @@ export class Applet {
 ```
 
 
-The most important function to make something happen on screen is the HTMLtemplate, then use the setupHTML function to attach functions to buttons etc. Leave the random id generator alone, also, or make sure you use something just as random, as that lets you add a randomized id to all of your named html elements so they don't accidentally overlap with others. 
+The most important function to make something happen on screen is the HTMLtemplate, then use the setupHTML function to attach functions to buttons etc. Leave the random id generator alone, also, or make sure you use something just as random, as that lets you add a randomized id to all of your named html elements so they don't accidentally overlap with others. Leave the DOMFragment call alone inthe init() function but feel free to add anything below it as that is important for the UI Manager, same with the deInit() function. Basically if it's predefined leave it, I may expand on the defaults more later too but without breaking any prior work as the system as-is works fine by me.
 
-See how this all works in the other examples, the simplest being AppletExample.js. You can use State.subscribe('propname',onchange) to get updates from the app, then pull data from the EEG or ATLAS objects accordingly. Feel free to add any state variables you want. 
+See how this all works in the other examples, the simplest being AppletExample.js. You can use State.subscribe('propname',onchange) to get updates from the app, then pull data from the EEG or ATLAS objects accordingly. Feel free to add any state variables you want or make entirely new state managers as needed. I tried to make this the most straightforward possible way to make content as part of a system with a bunch of moving parts to it, and without any annoying API choices with a ton of useless extra syntax to learn getting in the way. I am just a pure JS type of dude and these solutions can be faster and more elegant as long as you respect the fragments and general optimization rules.
 
 The configure() function is used if you instantiate the applet from a hashtag on the address bar (or if you want to customize a link/shortcut). If your applet has multiple view options etc you can have it be configurable. This will work with a config autosave system being implemented here (probably already done before anyone reads this file) so that when you restart the app, the applets can be reconfigured from file exactly how you want them.
 
