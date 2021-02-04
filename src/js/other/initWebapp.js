@@ -2,8 +2,6 @@ import { HEGwebAPI, graphJS, circleJS, audioJS, videoJS, hillJS, textReaderJS, b
 import { graphNode, ThreeGlobe } from './threeApp'
 //import { nodeSerial } from './nodeserialUtils'
 import { webSerial } from './webserialUtils'
-import { Free_EEG32 } from './FREE_EEG32'
-import { ChromaticAberrationEffect } from 'postprocessing';
 // Custom Scripts and UI setup, feedback modules must be manually linked to session event data (you can mix and match or write your own easily) 
 // Advanced Client scripts using external packages
 

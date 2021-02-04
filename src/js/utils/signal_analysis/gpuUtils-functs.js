@@ -101,7 +101,7 @@ function softmax(array, len, i) { // Returns a single array value for a 1d softm
     return Math.exp(array[i])/esum;
 }
 
-function DFT(signal, len, freq, dcoff){ //Extract a particular frequency
+function DFT(signal, len, freq){ //Extract a particular frequency
     var real = 0;
     var imag = 0;
     var _len = 1/len;
@@ -109,22 +109,22 @@ function DFT(signal, len, freq, dcoff){ //Extract a particular frequency
 
     for(var i = 0; i<len; i++){
       var sharedi = shared*i; //this.thread.x is the target frequency
-      real = real+(signal[i]-dcoff)*Math.cos(sharedi);
-      imag = imag-(signal[i]-dcoff)*Math.sin(sharedi);
+      real = real+signal[i]*Math.cos(sharedi);
+      imag = imag-signal[i]*Math.sin(sharedi);
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
     return [real*_len,imag*_len]; //mag(real,imag)
 }
 
-function DFTlist(signals, len, freq, n, dcoff) { //Extract a particular frequency
+function DFTlist(signals, len, freq, n) { //Extract a particular frequency
     var real = 0;
     var imag = 0;
     var _len = 1/len;
     var shared = 6.28318530718*freq*_len;
     for(var i = 0; i<len; i++){
       var sharedi = shared*i; //this.thread.x is the target frequency
-      real = real+(signals[i+(len-1)*n]-dcoff)*Math.cos(sharedi);
-      imag = imag-(signals[i+(len-1)*n]-dcoff)*Math.sin(sharedi);  
+      real = real+signals[i+(len-1)*n]*Math.cos(sharedi);
+      imag = imag-signals[i+(len-1)*n]*Math.sin(sharedi);  
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
     return [real*_len,imag*_len]; //mag(real,imag)
@@ -132,7 +132,7 @@ function DFTlist(signals, len, freq, n, dcoff) { //Extract a particular frequenc
 
 //FFT, simply implements a nyquist frequency based index skip for frequencies <= sampleRate*.25.
 //Other optimization: could do 4 at once and return a vec4, this is what you see in some other libs
-function FFT(signal, len, freq, sr, dcoff){ //Extract a particular frequency
+function FFT(signal, len, freq, sr){ //Extract a particular frequency
     var real = 0;
     var imag = 0;
     var _len = 1/len;
@@ -152,8 +152,8 @@ function FFT(signal, len, freq, sr, dcoff){ //Extract a particular frequency
       var j = i;
       if(j > len) { j = len; }
       var sharedi = shared*j; //this.thread.x is the target frequency
-      real = real+(signal[j]-dcoff)*Math.cos(sharedi);
-      imag = imag-(signal[j]-dcoff)*Math.sin(sharedi);
+      real = real+signal[j]*Math.cos(sharedi);
+      imag = imag-signal[j]*Math.sin(sharedi);
       N += 1;
     }
     //var mag = Math.sqrt(real[k]*real[k]+imag[k]*imag[k]);
@@ -290,8 +290,8 @@ function correlogramsPCKern(arrays, len, means, estimators) {
 
 
 //Return frequency domain based on DFT
-function dftKern(signal, len, scalar, dcoff) {
-    var result = DFT(signal,len, this.thread.x, dcoff);
+function dftKern(signal, len, scalar) {
+    var result = DFT(signal,len, this.thread.x);
     return mag(result[0], result[1])*scalar;
 }
 
@@ -300,8 +300,8 @@ function idftKern(amplitudes, len, scalar) {
     return mag(result[0], result[1])*scalar;
 }
 
-function fftKern(signal, len, scalar, sampleRate, dcoff) {
-    var result = FFT(signal,len, this.thread.x, sampleRate, dcoff);
+function fftKern(signal, len, scalar, sampleRate) {
+    var result = FFT(signal,len, this.thread.x, sampleRate);
     return mag(result[0], result[1])*scalar;
 }
 
@@ -319,30 +319,30 @@ function listdft2DKern(signals, scalar) {
 }
 
 // More like a vertex buffer list to chunk through lists of signals
-function listdft1DKern(signals,len, scalar, dcoffs) {
+function listdft1DKern(signals,len, scalar) {
     var result = [0, 0];
     if (this.thread.x <= len) {
-      result = DFT(signals,len,this.thread.x,dcoffs[0]);
+      result = DFT(signals,len,this.thread.x);
     } else {
       var n = Math.floor(this.thread.x/len);
-      result = DFTlist(signals,len,this.thread.x-n*len,n,dcoffs[n]);
+      result = DFTlist(signals,len,this.thread.x-n*len,n);
     }
 
     return mag(result[0],result[1])*scalar;
 }
 
-function dft_windowedKern(signal, sampleRate, freqStart, freqEnd, scalar, dcoff) {
+function dft_windowedKern(signal, sampleRate, freqStart, freqEnd, scalar) {
     var result = [0,0];
     var freq = ( (this.thread.x/sampleRate) * ( freqEnd - freqStart ) ) + freqStart;
-    result = DFT(signals,sampleRate,freq,dcoff);
+    result = DFT(signal,sampleRate,freq);
 
     return mag(result[0],result[1])*scalar;
 }
 
-function fft_windowedKern(signal, sampleRate, freqStart, freqEnd, scalar, dcoff) {
+function fft_windowedKern(signal, sampleRate, freqStart, freqEnd, scalar) {
     var result = [0,0];
     var freq = ( (this.thread.x/sampleRate) * ( freqEnd - freqStart ) ) + freqStart;
-    result = FFT(signals,sampleRate,freq,dcoff);
+    result = FFT(signal,sampleRate,freq);
 
     return mag(result[0],result[1])*scalar;
 }
@@ -363,15 +363,15 @@ function ifft_windowedKern(amplitudes, sampleRate, freqStart, freqEnd, scalar) {
     return mag(result[0],result[1])*scalar;
 }
 
-function listdft1D_windowedKern(signals, sampleRate, freqStart, freqEnd, scalar, dcoffs) { //Will make a higher resolution DFT for a smaller frequency window.
+function listdft1D_windowedKern(signals, sampleRate, freqStart, freqEnd, scalar) { //Will make a higher resolution DFT for a smaller frequency window.
     var result = [0, 0];
     if (this.thread.x < sampleRate) {
       var freq = ( (this.thread.x/sampleRate) * ( freqEnd - freqStart ) ) + freqStart;
-      result = DFT(signals,sampleRate,freq,dcoffs[0]);
+      result = DFT(signals,sampleRate,freq);
     } else {
       var n = Math.floor(this.thread.x/sampleRate);
       var freq = ( ( ( this.thread.x - n * sampleRate) / sampleRate ) * ( freqEnd - freqStart ) ) + freqStart;
-      result = DFTlist(signals,sampleRate,freq-n*sampleRate,n,dcoffs[n]);
+      result = DFTlist(signals,sampleRate,freq-n*sampleRate,n);
     }
     //var mags = mag(result[0],result[1]);
 

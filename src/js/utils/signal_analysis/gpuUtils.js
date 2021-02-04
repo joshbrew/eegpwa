@@ -141,7 +141,7 @@ export class gpuUtils {
  
     var outputTex;
    
-    if(precompute === true) {
+    if(precompute === true) { //Precompute the means and estimators rather than in every single thread
       var means = [];
       var ests = [];
       arrays.forEach((arr,i) => {
@@ -191,7 +191,7 @@ export class gpuUtils {
   } 
 
   //Input array buffer and the number of seconds of data
-  gpuDFT(signalBuffer, nSeconds, scalar=1, DCoffset=0, texOut = false){
+  gpuDFT(signalBuffer, nSeconds, scalar=1, texOut = false){
 
     var nSamples = signalBuffer.length;
     var sampleRate = nSamples/nSeconds;
@@ -216,7 +216,7 @@ export class gpuUtils {
   }
 
   //Input array of array buffers of the same length and the number of seconds recorded
-  MultiChannelDFT(signalBuffer, nSeconds, scalar=1, DCoffset=DCoffset=new Array(signalBuffer.length).fill(0), texOut = false) {
+  MultiChannelDFT(signalBuffer, nSeconds, scalar=1, texOut=false) {
     
     var signalBufferProcessed = [];
       
@@ -231,7 +231,7 @@ export class gpuUtils {
     this.listdft1D.setOutput([signalBufferProcessed.length]); //Set output to length of list of signals
     this.listdft1D.setLoopMaxIterations(nSamplesPerChannel); //Set loop size to the length of one signal (assuming all are uniform length)
         
-    var outputTex = this.listdft1D(signalBufferProcessed,nSamplesPerChannel, scalar, DCoffset);
+    var outputTex = this.listdft1D(signalBufferProcessed,nSamplesPerChannel, scalar);
     if(texOut === false){
       var orderedMagsList = [];
 
@@ -256,7 +256,7 @@ export class gpuUtils {
 
       
   //Input buffer of signals [[channel 0],[channel 1],...,[channel n]] with the same number of samples for each signal. Returns arrays of the positive DFT results in the given window.
-  MultiChannelDFT_Bandpass(signalBuffer=[],nSeconds,freqStart,freqEnd, scalar=1, DCoffset=new Array(signalBuffer.length).fill(0), texOut = false) {
+  MultiChannelDFT_Bandpass(signalBuffer=[],nSeconds,freqStart,freqEnd, scalar=1, texOut = false) {
 
     var signalBufferProcessed = [];
       
@@ -272,7 +272,7 @@ export class gpuUtils {
     this.listdft1D_windowed.setOutput([signalBufferProcessed.length]); //Set output to length of list of signals
     this.listdft1D_windowed.setLoopMaxIterations(nSamplesPerChannel); //Set loop size to the length of one signal (assuming all are uniform length)
         
-    var outputTex = this.listdft1D_windowed(signalBufferProcessed,sampleRate,freqStart,freqEnd_nyquist, scalar, DCoffset);
+    var outputTex = this.listdft1D_windowed(signalBufferProcessed,sampleRate,freqStart,freqEnd_nyquist, scalar);
     if(texOut === true) { return outputTex; }
     
     signalBufferProcessed = outputTex.toArray();
@@ -303,17 +303,19 @@ export class gpuUtils {
 
   //Order and sum positive magnitudes from bandpass DFT
   orderBPMagnitudes(signalBufferProcessed,nSeconds,sampleRate,nSamplesPerChannel) {
-    var posMagsList = [];
-    for(var i = 0; i < signalBufferProcessed.length; i+=nSamplesPerChannel){
-      posMagsList.push([...signalBufferProcessed.slice(i,Math.ceil(nSamplesPerChannel*.5+i))]);
-     }
+    var magList = [];
+
+      for(var i = 0; i < signalBufferProcessed.length; i+=nSamplesPerChannel){
+        magList.push([...signalBufferProcessed.slice(i,Math.ceil(nSamplesPerChannel*.5+i))]);
+      }
+
 
     var summedMags = [];
     var _sampleRate = 1/sampleRate;
     if(nSeconds > 1) { //Need to sum results when sample time > 1 sec
-      posMagsList.forEach((row, k) => {
+      magList.forEach((row, k) => {
         summedMags.push([]);
-        var _max = 1/Math.max(...row)
+        var _max = 1/Math.max(...row); //uhh
         for(var i = 0; i < row.length; i++ ){
           if(i == 0){
               summedMags[k]=row.slice(i,Math.floor(sampleRate));
@@ -321,26 +323,36 @@ export class gpuUtils {
           }
           else {
               var j = i-Math.floor(Math.floor(i*_sampleRate)*sampleRate)-1; //console.log(j);
-              summedMags[k][j] = summedMags[k][j] * row[i-1]*_max;
+              summedMags[k][j] = summedMags[k][j] * row[i-1]*_max; 
           }
         }
         summedMags[k] = [...summedMags[k].slice(0,Math.ceil(summedMags[k].length*0.5))]
+
       });
       //console.log(summedMags);
       return summedMags;  
     }
     
-    else {return posMagsList;}
+    else {return magList;}
   }
 
-  //Returns the x axis (frequencies) for the bandpass filter amplitudes
-  bandPassWindow(freqStart,freqEnd,sampleRate) {
+  //Returns the x axis (frequencies) for the bandpass filter amplitudes. The window gets stretched or squeezed between the chosen frequencies based on the sample rate in my implementation.
+  bandPassWindow(freqStart,freqEnd,nSteps,posOnly=true) {
  
     var freqEnd_nyquist = freqEnd*2;
+    let increment = (freqEnd_nyquist - freqStart)/nSteps;
+
     var fftwindow = [];
-      for (var i = 0; i < Math.ceil(0.5*sampleRate); i++){
-          fftwindow.push(freqStart + (freqEnd_nyquist-freqStart)*i/(sampleRate));
+    if(posOnly === true){
+      for (var i = 0; i < Math.ceil(0.5*nSteps); i+=increment){
+          fftwindow.push(freqStart + (freqEnd_nyquist-freqStart)*i/(nSteps));
       }
+    }
+    else{
+      for (var i = -Math.ceil(0.5*nSteps); i < Math.ceil(0.5*nSteps); i+=increment){
+        fftwindow.push(freqStart + (freqEnd_nyquist-freqStart)*i/(nSteps));
+      }
+    }
     return fftwindow;
   }
 }

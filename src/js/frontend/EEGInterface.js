@@ -1,93 +1,12 @@
 import {State} from './State'
-import {applyFilter, IIRNotchFilter, IIRLowPassFilter, DCBlocker} from '../utils/signal_analysis/IIRFilter'
-
-
-let defaultTags = [
-    {ch: 4, tag: "Fp2", viewing: true},
-    {ch: 24, tag: "Fp1", viewing: true},
-    {ch: 8, tag: "other", viewing: true}
-];
-
-
-class channelFilterer { //Feed-forward IIR filters
-    constructor(channel="A0",sps=512) {
-        this.channel=channel; this.idx = 0; this.sps = sps;
-
-        State.data.filtered[this.channel] = [];//Add placeholder to state
-
-        this.notch50 = new IIRNotchFilter(sps,50,0.5);
-        this.notch50_2 = new IIRNotchFilter(sps,50,0.5);
-        this.notch50_3 = new IIRNotchFilter(sps,50,0.5);
-        this.notch60 = new IIRNotchFilter(sps,60,0.5);
-        this.notch60_2 = new IIRNotchFilter(sps,60,0.5);
-        this.notch60_3 = new IIRNotchFilter(sps,60,0.5);
-        this.lp1 = new IIRLowPassFilter(sps,50);
-        this.lp2 = new IIRLowPassFilter(sps,50);
-        this.lp3 = new IIRLowPassFilter(sps,50);
-        this.dcb = new DCBlocker(0.995);
-    }
-
-    reset(sps=this.sps) {
-        this.notch50 = new IIRNotchFilter(sps,50,0.5);
-        this.notch50_2 = new IIRNotchFilter(sps,50,0.5);
-        this.notch50_3 = new IIRNotchFilter(sps,50,0.5);
-        this.notch60 = new IIRNotchFilter(sps,60,0.5);
-        this.notch60_2 = new IIRNotchFilter(sps,60,0.5);
-        this.notch60_3 = new IIRNotchFilter(sps,60,0.5);
-        this.lp1 = new IIRLowPassFilter(sps,50);
-        this.lp2 = new IIRLowPassFilter(sps,50);
-        this.lp3 = new IIRLowPassFilter(sps,50);
-        this.dcb = new DCBlocker(0.995);
-    }
-
-    apply(idx=this.lastidx+1) {
-        let out=EEG.data[this.channel][idx]; 
-        if(State.data.sma4 === true) {
-            if(State.data.counter >= 4) { //Apply a 4-sample moving average
-                out = (State.data.filtered[this.channel][State.data.filtered[this.channel].length-3] + State.data.filtered[this.channel][State.data.filtered[this.channel].length-2] + State.data.filtered[this.channel][State.data.filtered[this.channel].length-1] + out)*.25;
-            }
-            else if(EEG.data.counter >= 4){
-                //console.log(State.data.counter, State.data.filtered[this.channel].length)
-                out = (EEG.data[this.channel][EEG.data.counter-4] + EEG.data[this.channel][EEG.data.counter-3] + EEG.data[this.channel][EEG.data.counter-2] + out)*.25;
-            }
-        }
-        if(State.data.dcblocker === true) { //Apply a DC blocking filter
-            out = this.dcb.step(out);
-        }
-        if(State.data.notch50 === true) { //Apply a 50hz notch filter
-            out = applyFilter(out,this.notch50);
-            out = applyFilter(out,this.notch50_2);
-            out = applyFilter(out,this.notch50_3);
-        }
-        if(State.data.notch60 === true) { //Apply a 60hz notch filter
-            out = applyFilter(out,this.notch60);
-            out = applyFilter(out,this.notch60_2);
-            out = applyFilter(out,this.notch60_3);
-        }
-        if(State.data.lowpass50 === true) { //Apply 3 50Hz lowpass filters
-            out = applyFilter(out,this.lp1);
-            out = applyFilter(out,this.lp2);
-            out = applyFilter(out,this.lp3);
-        }
-        this.lastidx=idx;
-        return out;
-    }
-    
-}
-
-State.data.filterers = [];
-
-defaultTags.forEach((row,i) => {
-    State.data.filterers.push(new channelFilterer("A"+row.ch));
-});
-
-
+//import {applyFilter, IIRNotchFilter, IIRLowPassFilter} from '../utils/signal_analysis/IIRFilter'
+import {Biquad, makeNotchFilter, makeBandpassFilter, DCBlocker} from '../utils/signal_analysis/BiquadFilters'
 
 import {eeg32, eegAtlas} from '../utils/eeg32'
 
 import {cyton} from '../utils/hardware_compat/cyton'
 
-export const ATLAS = new eegAtlas(defaultTags);
+
 export var EEG = new eeg32( //cyton(
     (newLinesInt) => { //on decoded
         //if(EEG.data.counter === EEG.maxBufferedSamples) debugger;
@@ -128,6 +47,197 @@ export var EEG = new eeg32( //cyton(
     }); //connection callbacks to set state on front end.
 
 
+let defaultTags = [
+    {ch: 4, tag: "Fp2", viewing: true},
+    {ch: 24, tag: "Fp1", viewing: true},
+    {ch: 8, tag: "other", viewing: true}
+];
+
+export const ATLAS = new eegAtlas(defaultTags);
+/*
+class iirChannelFilterer { //Feed-forward IIR filters
+    constructor(channel="A0",sps=512, filtering=true) {
+        this.channel=channel; this.idx = 0; this.sps = sps;
+        this.filtering=filtering;
+
+        State.data.filtered[this.channel] = [];//Add placeholder to state
+
+        this.notch50 = new IIRNotchFilter(sps,50,0.5);
+        this.notch50_2 = new IIRNotchFilter(sps,50,0.5);
+        this.notch50_3 = new IIRNotchFilter(sps,50,0.5);
+        this.notch60 = new IIRNotchFilter(sps,60,0.5);
+        this.notch60_2 = new IIRNotchFilter(sps,60,0.5);
+        this.notch60_3 = new IIRNotchFilter(sps,60,0.5);
+        this.lp1 = new IIRLowPassFilter(sps,50);
+        this.lp2 = new IIRLowPassFilter(sps,50);
+        this.lp3 = new IIRLowPassFilter(sps,50);
+        this.dcb = new DCBlocker(0.995);
+    }
+
+    reset(sps=this.sps) {
+        this.notch50 = new IIRNotchFilter(sps,50,0.5);
+        this.notch50_2 = new IIRNotchFilter(sps,50,0.5);
+        this.notch50_3 = new IIRNotchFilter(sps,50,0.5);
+        this.notch60 = new IIRNotchFilter(sps,60,0.5);
+        this.notch60_2 = new IIRNotchFilter(sps,60,0.5);
+        this.notch60_3 = new IIRNotchFilter(sps,60,0.5);
+        this.lp1 = new IIRLowPassFilter(sps,50);
+        this.lp2 = new IIRLowPassFilter(sps,50);
+        this.lp3 = new IIRLowPassFilter(sps,50);
+        this.dcb = new DCBlocker(0.995);
+    }
+
+    apply(idx=this.lastidx+1) {
+        let out=EEG.data[this.channel][idx]; 
+        if(State.data.uVScaling === true){
+            out = out*EEG.uVperStep;
+        }
+        if(this.filtering === true) {
+            if(State.data.sma4 === true) {
+                if(State.data.counter >= 4) { //Apply a 4-sample moving average
+                    out = (State.data.filtered[this.channel][State.data.filtered[this.channel].length-3] + State.data.filtered[this.channel][State.data.filtered[this.channel].length-2] + State.data.filtered[this.channel][State.data.filtered[this.channel].length-1] + out)*.25;
+                }
+                else if(EEG.data.counter >= 4){
+                    //console.log(State.data.counter, State.data.filtered[this.channel].length)
+                    out = (EEG.data[this.channel][EEG.data.counter-4] + EEG.data[this.channel][EEG.data.counter-3] + EEG.data[this.channel][EEG.data.counter-2] + out)*.25;
+                }
+            }
+            if(State.data.dcblocker === true) { //Apply a DC blocking filter
+                out = this.dcb.step(out);
+            }
+            if(State.data.notch50 === true) { //Apply a 50hz notch filter
+                out = applyFilter(out,this.notch50);
+                out = applyFilter(out,this.notch50_2);
+                out = applyFilter(out,this.notch50_3);
+            }
+            if(State.data.notch60 === true) { //Apply a 60hz notch filter
+                out = applyFilter(out,this.notch60);
+                out = applyFilter(out,this.notch60_2);
+                out = applyFilter(out,this.notch60_3);
+            }
+            if(State.data.lowpass50 === true) { //Apply 3 50Hz lowpass filters
+                out = applyFilter(out,this.lp1);
+                out = applyFilter(out,this.lp2);
+                out = applyFilter(out,this.lp3);
+            }
+        }
+        this.lastidx=idx;
+        return out;
+    }
+    
+}
+*/
+
+class biquadChannelFilterer {
+    constructor(channel="A0",sps=512, filtering=true) {
+        this.channel=channel; this.idx = 0; this.sps = sps;
+        this.filtering=filtering;
+        this.bplower = 3; this.bpupper = 45;
+
+        State.data.filtered[this.channel] = [];//Add placeholder to state
+
+        this.notch50 = [
+                    makeNotchFilter(50,sps,1)
+                ];
+        this.notch60 = [
+                    makeNotchFilter(60,sps,1)
+                ];
+        this.lp1 = [
+                    new Biquad('lowpass', 50, 512),
+                    new Biquad('lowpass', 50, 512),
+                    new Biquad('lowpass', 50, 512),
+                    new Biquad('lowpass', 50, 512)
+                ];
+        this.bp1 = [
+                    makeBandpassFilter(this.bplower,this.bpupper,sps,1),
+                    makeBandpassFilter(this.bplower,this.bpupper,sps,1),
+                    makeBandpassFilter(this.bplower,this.bpupper,sps,1),
+                    makeBandpassFilter(this.bplower,this.bpupper,sps,1)
+                ];
+        this.dcb = new DCBlocker(0.995);
+    }
+
+    reset(sps=this.sps) {
+        this.notch50 = makeNotchFilter(50,sps,1);
+        this.notch60 = makeNotchFilter(60,sps,1);
+        this.lp1 = [
+                    new Biquad('lowpass', 50, 512),
+                    new Biquad('lowpass', 50, 512),
+                    new Biquad('lowpass', 50, 512),
+                    new Biquad('lowpass', 50, 512)
+                ];
+        this.bp1 = [
+                    makeBandpassFilter(this.bplower,this.bpupper,sps,9.75)
+                ];
+        this.dcb = new DCBlocker(0.995);
+    }
+
+    setBandpass(bplower=this.bplower,bpupper=this.bpupper) {
+        this.bplower=bplower; this.bpupper = bpupper;
+        this.bp1 = [
+            makeBandpassFilter(bplower,bpupper,sps),
+            makeBandpassFilter(bplower,bpupper,sps),
+            makeBandpassFilter(bplower,bpupper,sps),
+            makeBandpassFilter(bplower,bpupper,sps)
+        ];
+    }
+
+    apply(idx=this.lastidx+1) {
+        let out=EEG.data[this.channel][idx]; 
+        if(this.filtering === true) {
+            if(State.data.sma4 === true) {
+                if(State.data.counter >= 4) { //Apply a 4-sample moving average
+                    out = (State.data.filtered[this.channel][State.data.filtered[this.channel].length-3] + State.data.filtered[this.channel][State.data.filtered[this.channel].length-2] + State.data.filtered[this.channel][State.data.filtered[this.channel].length-1] + out)*.25;
+                }
+                else if(EEG.data.counter >= 4){
+                    //console.log(State.data.counter, State.data.filtered[this.channel].length)
+                    out = (EEG.data[this.channel][EEG.data.counter-4] + EEG.data[this.channel][EEG.data.counter-3] + EEG.data[this.channel][EEG.data.counter-2] + out)*.25;
+                }
+            }
+            if(State.data.dcblocker === true) { //Apply a DC blocking filter
+                out = this.dcb.applyFilter(out);
+            }
+            if(State.data.notch50 === true) { //Apply a 50hz notch filter
+                this.notch50.forEach((f,i) => {
+                    out = f.applyFilter(out);
+                });
+            }
+            if(State.data.notch60 === true) { //Apply a 60hz notch filter
+                this.notch60.forEach((f,i) => {
+                    out = f.applyFilter(out);
+                });
+            } 
+            if(State.data.lowpass50 === true) { //Apply 4 50Hz lowpass filters
+                this.lp1.forEach((f,i) => {
+                    out = f.applyFilter(out);
+                });
+            }
+            if(State.data.bandpass === true) { //Apply 4 Bandpass filters
+                this.bp1.forEach((f,i) => {
+                    out = f.applyFilter(out);
+                });
+            }
+            if(State.data.uVScaling === true){
+                out = out*EEG.uVperStep;
+            }
+        }
+        this.lastidx=idx;
+        //console.log(this.channel, out)
+        return out;
+    }
+}
+
+defaultTags.forEach((row,i) => {
+    if(row.tag !== 'other') {
+        State.data.filterers.push(new biquadChannelFilterer("A"+row.ch,EEG.sps,true));
+    }
+    else { 
+        State.data.filterers.push(new biquadChannelFilterer("A"+row.ch,EEG.sps,false)); 
+    }
+});
+    
+
+
 //class EEGInterface { constructor () { } }
 
 export const EEGInterfaceSetup = () => {
@@ -143,7 +253,34 @@ export const EEGInterfaceSetup = () => {
 
     window.receivedMsg = (msg) => { //Set worker message response
         //console.log("received!");
-        if(msg.foo === "coherence"){
+        if(msg.foo === "multidftbandpass" || msg.foo === "multidft") {
+            var ffts = [...msg.output[1]];
+          
+            //console.log("out", ffts)
+            ATLAS.channelTags.forEach((row, i) => {
+                if(row.tag !== null && row.tag !== 'other' && i < EEG.nChannels){
+                    
+                    ATLAS.mapFFTData(ffts, State.data.lastPostTime, i, row.tag);
+                    ATLAS.fftMap.map.find((o,i) => {
+                        if(o.tag === row.tag){
+                            if(o.data.count > 5000) {
+                                o.data.times.shift();
+                                o.data.amplitudes.shift();
+                                for(const prop in o.data.slices){
+                                    o.data.slices[prop].shift();
+                                    o.data.means[prop].shift();
+                                }
+                                o.data.count-=1;
+                            }
+                            return true;
+                        }
+                    });
+                }
+            });
+
+            State.setState({FFTResult:ffts,coherenceResult:coher});
+        }
+        else if(msg.foo === "coherence"){
             var ffts = [...msg.output[1]];
             var coher = [...msg.output[2]];
             //console.log("out", ffts)
@@ -194,8 +331,9 @@ export const EEGInterfaceSetup = () => {
         }
         
     }
-
 }
+
+
 
 export const resetSession = () => {
     State.data.analyze = false;
@@ -250,12 +388,14 @@ export const runEEGWorker = () => {
         if(s.fdBackMode === 'coherence') {
             //console.log("post to worker")
             var buf = bufferEEGData(true);
-            //var mins = [];
-            //buf.forEach((row,i) =>{
-            //    var min = Math.min(...row) - 100; if (min < 0) { min = 0; }
-            //    mins.push(min);
-            //});
-            window.postToWorker({foo:'coherence', input:[buf, s.nSec, s.freqStart, s.freqEnd, EEG.uVperStep]});
+
+            window.postToWorker({foo:'coherence', input:[buf, s.nSec, s.freqStart, s.freqEnd, 1]});
+        }
+        else if (s.fdBackMode === 'multidftbandpass') {
+            //console.log("post to worker")
+            var buf = bufferEEGData(true);
+
+            window.postToWorker({foo:'multidftbandpass', input:[buf, s.nSec, s.freqStart, s.freqEnd, 1]});
         }
     }
 }
@@ -278,14 +418,21 @@ export const readyDataForWriting = (from=0,to=State.data.counter) => {
                "(UTC" + sign + z(off/60|0) + ':00)'
       }
       
-
     let header = ["TimeStamps","UnixTime"];
     let data = [];
     let mapidx = 0;
-    if(from!==0) { 
-        console.log(EEG.data.ms[from])
-        while (ATLAS.coherenceMap.map[0].data.times[mapidx] < EEG.data.ms[from]) {
-            mapidx++;
+    let fft_ref_ch = null;
+    ATLAS.channelTags.forEach((row,j) => {
+        if(row.tag !== null && row.tag !== 'other') {
+            fft_ref_ch = ATLAS.getAtlasCoordByTag(row.tag);
+        }
+    });
+    if(fft_ref_ch !== null) {
+        if(from!==0) { 
+            console.log(EEG.data.ms[from])
+            while (fft_ref_ch.data.times[mapidx] < EEG.data.ms[from]) {
+                mapidx++;
+            }
         }
     }
     for(let i = from; i<to; i++){
@@ -294,17 +441,17 @@ export const readyDataForWriting = (from=0,to=State.data.counter) => {
         ATLAS.channelTags.forEach((tag,j) => {
             if(typeof tag.ch === "number"){
                 if(State.data.useFilters) {
-                    line.push(State.data.filtered["A"+tag.ch][i].toFixed(0));
+                    line.push(State.data.filtered["A"+tag.ch][i].toFixed(3));
                 }
                 else { 
                     line.push(EEG.data["A"+tag.ch][i]); 
                 }
                 if(i===0) {
-                    header.push("A"+tag.ch);
+                    header.push("A"+tag.ch + ":"+tag.tag);
                 }
             }
         });
-        if(ATLAS.coherenceMap.map[0].data.times[mapidx] === EEG.data.ms[i]) {
+        if(fft_ref_ch.data.times[mapidx] === EEG.data.ms[i]) {
             ATLAS.channelTags.forEach((tag,j) => {
                 if(tag.tag !== null && tag.tag !== 'other') {
                     let coord = ATLAS.getAtlasCoordByTag(tag.tag);
@@ -316,17 +463,25 @@ export const readyDataForWriting = (from=0,to=State.data.counter) => {
                     line.push("fft:",fftamps.join(","));
                 }
             });
-            ATLAS.coherenceMap.map.forEach((row,j) => {
-                if(mapidx===0){
-                    let bpfreqs = [...ATLAS.coherenceMap.shared.bandPassWindow].map((x,i) => x = x.toFixed(3));
-                    header.push(row.tag+"; COH Hz:",bpfreqs.join(','));
-                }
-                let cohamps = [...row.data.amplitudes[mapidx]].map((x,i) => x = x.toFixed(3));
-                line.push("coh:",cohamps.join(","));
-            });
+            if(State.data.fdBackMode === 'coherence'){
+                ATLAS.coherenceMap.map.forEach((row,j) => {
+                    if(mapidx===0){
+                        let bpfreqs = [...ATLAS.coherenceMap.shared.bandPassWindow].map((x,i) => x = x.toFixed(3));
+                        header.push(row.tag+"; COH Hz:",bpfreqs.join(','));
+                    }
+                    let cohamps = [...row.data.amplitudes[mapidx]].map((x,i) => x = x.toFixed(3));
+                    line.push("coh:",cohamps.join(","));
+                });
+            }
             mapidx++;
         }
         data.push(line.join(","));
+    }
+    if(State.data.useFilters) {
+        header.push("No filters.");
+    }
+    else {
+        header.push("Filters used (unless tagged 'other'): Notch 50Hz:"+State.data.notch50+"; Notch 60Hz:"+State.data.notch60+" SMA(4):"+State.data.sma4+"; Low pass 50Hz:"+State.data.lowpass50+"; Bandpass ("+State.data.filterers[0].bplower+"Hz-"+State.data.filterers[0].bpupper+"Hz):"+State.data.bandpass)
     }
     //console.log(data)
     return [header.join(",")+"\n",data.join("\n")];
@@ -413,73 +568,79 @@ export function updateChannelTags (input) {
         var dict = item.split(":");
         var found = false;
         let setTags = ATLAS.channelTags.find((o, j) => {
-        if(o.ch === parseInt(dict[0])){
-            if(dict[1] === "delete"){
-                ATLAS.channelTags.splice(j,1);
+            if(o.ch === parseInt(dict[0])){
+                if(dict[1] === "delete"){
+                    ATLAS.channelTags.splice(j,1);
+                    atlasUpdated = true;
+                }
+                else{
+                    let otherTags = ATLAS.channelTags.find((p,k) => {
+                        if(p.tag === dict[1]){
+                            ATLAS.channelTags[k].tag = null;
+                            atlasUpdated = true;
+                            return true;
+                        }
+                    });
+
+                    //console.log(o);
+                    ATLAS.channelTags[j].tag = dict[1];
+                    ATLAS.channelTags[j].viewing = true;
+                   
+                    if(dict[2] !== undefined){
+                        var atlasfound = false;
+                        var searchatlas = ATLAS.fftMap.map.find((p,k) => {
+                        if(p.tag === dict[1]){
+                            atlasfound = true;
+                            return true;
+                        }
+                        });
+                        if(atlasfound !== true) {
+                            var coords = dict[2].split(",");
+                            if(coords.length === 3){
+                                ATLAS.addToAtlas(dict[1],parseFloat(coords[0]),parseFloat(coords[1]),parseFloat(coords[2]))
+                                atlasUpdated = true;
+                            }
+                        }
+                    }
+                }
+                found = true;
+                return true;
+            }
+            else if(o.tag === dict[1]){
+                ATLAS.channelTags[j].tag = null; //Set tag to null since it's being assigned to another channel
                 atlasUpdated = true;
             }
-            else{
-            let otherTags = ATLAS.channelTags.find((p,k) => {
-                if(p.tag === dict[1]){
-                    ATLAS.channelTags[k].tag = null;
-                    atlasUpdated = true;
-                    return true;
-                }
-            });
-
-            //console.log(o);
-            ATLAS.channelTags[j].tag = dict[1];
-            ATLAS.channelTags[j].viewing = true;
-
-            if(dict[2] !== undefined){
-                var atlasfound = false;
-                var searchatlas = ATLAS.fftMap.map.find((p,k) => {
-                if(p.tag === dict[1]){
-                    atlasfound = true;
-                    return true;
-                }
-                });
-                if(atlasfound !== true) {
-                    var coords = dict[2].split(",");
-                    if(coords.length === 3){
-                        ATLAS.addToAtlas(dict[1],parseFloat(coords[0]),parseFloat(coords[1]),parseFloat(coords[2]))
-                        atlasUpdated = true;
-                    }
-                }
-            }
-            }
-            found = true;
-            return true;
-            }
-        else if(o.tag === dict[1]){
-            ATLAS.channelTags[j].tag = null; //Set tag to null since it's being assigned to another channel
-            atlasUpdated = true;
-        }
         });
         if (found === false){
-        var ch = parseInt(dict[0]);
-        if(!isNaN(ch)) {
-            if((ch >= 0) && (ch < EEG.nChannels)){
-                ATLAS.channelTags.push({ch:parseInt(ch), tag: dict[1], viewing: true});
-
-            if(dict[2] !== undefined){
-                var atlasfound = false;
-                var searchatlas = ATLAS.fftMap.map.find((p,k) => {
-                    if(p.tag === dict[1]){
-                        atlasfound = true;
-                        return true;
+            var ch = parseInt(dict[0]);
+            if(!isNaN(ch) && dict[1] !== undefined) {
+                if((ch >= 0) && (ch < EEG.nChannels)){
+                    ATLAS.channelTags.push({ch:parseInt(ch), tag: dict[1], viewing: true});
+                    if(dict[1] !== 'other') {
+                        State.data.filterers.push(new biquadChannelFilterer("A"+ch,EEG.sps,true));
                     }
-                });
-                if(atlasfound !== true) {
-                    var coords = dict[2].split(",");
-                    if(coords.length === 3){
-                        ATLAS.addToAtlas(dict[1],parseFloat(coords[0]),parseFloat(coords[1]),parseFloat(coords[2]))
-                        atlasUpdated = true;
+                    else { 
+                        State.data.filterers.push(new biquadChannelFilterer("A"+ch,EEG.sps,false)); 
+                    }
+
+                    if(dict[2] !== undefined){
+                        var atlasfound = false;
+                        var searchatlas = ATLAS.fftMap.map.find((p,k) => {
+                            if(p.tag === dict[1]){
+                                atlasfound = true;
+                                return true;
+                            }
+                        });
+                        if(atlasfound !== true) {
+                            var coords = dict[2].split(",");
+                            if(coords.length === 3){
+                                ATLAS.addToAtlas(dict[1],parseFloat(coords[0]),parseFloat(coords[1]),parseFloat(coords[2]))
+                                atlasUpdated = true;
+                            }
+                        }
                     }
                 }
             }
-            }
-        }
         }
     });
 

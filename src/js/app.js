@@ -108,7 +108,15 @@ function initEEGui() {
     State.data.appletbox = new DOMFragment(appletbox_template, document.body);
     menu_setup();
 
-    
+    document.getElementById("getCoherence").addEventListener('change',() => {
+        if(document.getElementById("getCoherence").checked) {
+            State.data.fdBackMode = "coherence";
+        }
+        else {
+            State.data.fdBackMode = "multidftbandpass";
+        }
+    });
+
     document.getElementById("useFilters").addEventListener('change',() => {
         State.data.useFilters = document.getElementById("useFilters").checked;
         if(State.data.useFilters === true) {
@@ -118,12 +126,27 @@ function initEEGui() {
             State.data.counter = EEG.data.counter;
         }
     });
+    
+    document.getElementById("setbp").addEventListener('onclick', () => {
+        let lower = parseFloat(document.getElementById("bpupper").value);
+        let upper = parseFloat(document.getElementById("bplower").value);
+        if(!isNaN(lower) && !isNaN(upper)) {
+            State.data.filterers.forEach((fr,i) => {
+                fr.setBandpass(lower,upper);
+            });
+        }
+    });  
+    document.getElementById("bandpass").addEventListener('change',() => {
+        State.data.bandpass = document.getElementById("bandpass").checked;
+    });
+    
     document.getElementById("notch50").addEventListener('change',() => {
         State.data.notch50 = document.getElementById("notch50").checked;
     });
     document.getElementById("notch60").addEventListener('change',() => {
         State.data.notch60 = document.getElementById("notch60").checked;
     });
+  
     document.getElementById("lp50").addEventListener('change',() => {
         State.data.lowpass50 = document.getElementById("lp50").checked;
     });
@@ -132,6 +155,9 @@ function initEEGui() {
     });
     document.getElementById("sma4").addEventListener('change',() => {
         State.data.sma4 = document.getElementById("sma4").checked;
+    });
+    document.getElementById("uvscaling").addEventListener('change', () => {
+        State.data.uVScaling = document.getElementById("uvscaling").checked;
     });
 
     document.getElementById("connectbutton").addEventListener('click',() => {
@@ -168,7 +194,7 @@ function initEEGui() {
         State.setState({analyze: false, rawFeed: false});
     });
 
-    document.getElementById("setBandpass").addEventListener('click',() => {
+    document.getElementById("setBandView").addEventListener('click',() => {
       var freq0 = parseFloat(document.getElementById("freqStart").value); 
       if(isNaN(freq0)) { freq0 = State.data.freqStart; } console.log(freq0)
       var freq1 = parseFloat(document.getElementById("freqEnd").value);
@@ -272,7 +298,7 @@ const initSystem = () => {
                             if(err) throw err;
                         });
                     }
-                    if(data.length === 0) {
+                    if(!data) {
                         let newcontent = JSON.stringify({appletConfigs:[],FFTResult:[],coherenceResult:[],freqStart:State.data.freqStart,freqEnd:State.data.freqEnd,nSecAdcGraph:State.data.nSecAdcGraph});
                         contents = newcontent;
                         fs.writeFile('/data/settings.json', newcontent, (err) => {

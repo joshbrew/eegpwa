@@ -32,9 +32,9 @@ export class cyton { //Contains structs and necessary functions/API calls to ana
 		this.vref = 4.50; //2.5V voltage ref +/- 250nV
 		this.gain = 24;
 
-		this.vscale = this.vref*this.stepSize*this.gain; //volts per step.
-		this.uVperStep = 0.000001 / (this.vref*this.stepSize*this.gain); //uV per step.
-		this.scalar = 1/(0.000001 / (this.vref*this.stepSize*this.gain)); //step per uV.
+		this.vscale = (this.vref/this.gain)*this.stepSize; //volts per step.
+		this.uVperStep = 1000000 * ((this.vref/this.gain)*this.stepSize); //uV per step.
+		this.scalar = 1/(1000000 / ((this.vref/this.gain)*this.stepSize)); //steps per uV.
 
 		this.maxBufferedSamples = this.sps*60*5; //max samples in buffer this.sps*60*nMinutes = max minutes of data
 		
@@ -73,9 +73,9 @@ export class cyton { //Contains structs and necessary functions/API calls to ana
 		this.vref = vref; //2.5V voltage ref +/- 250nV
 		this.gain = gain;
 
-		this.vscale = this.vref*this.stepSize*this.gain; //volts per step.
-		this.uVperStep = 0.000001 / (this.vref*this.stepSize*this.gain); //uV per step.
-		this.scalar = 1/(0.000001 / (this.vref*this.stepSize*this.gain)); //step per uV.
+		this.vscale = (this.vref/this.gain)*this.stepSize; //volts per step.
+		this.uVperStep = 1000000 * ((this.vref/this.gain)*this.stepSize); //uV per step.
+		this.scalar = 1/(1000000 / ((this.vref/this.gain)*this.stepSize)); //steps per uV.
     }
 
     bytesToInt16(x0,x1){

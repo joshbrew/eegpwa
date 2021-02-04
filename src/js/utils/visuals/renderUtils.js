@@ -77,13 +77,14 @@ class Math3D { //some stuff for doing math in 3D
 
     static normalize(vec) { //nDimensional normalization
         var norm = 0;
-        norm = Math.sqrt(this.magnitude(vec));
+        norm = this.magnitude(vec);
         var vecn = [];
         vec.forEach((c,i) => {
             vecn.push(c*norm);
         })
         return vecn;
     }
+
 
     //Rotates a list of 3D vectors about the origin. Usually better to supply transforms as matrices for the GPU to multiply
     static rotateMesh(mesh, pitch, roll, yaw) {

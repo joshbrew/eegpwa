@@ -113,18 +113,22 @@ export class BrainMapApplet {
 
     onUpdate = () => {
         var viewing = document.getElementById(this.renderProps.id+"bandview").value;
-        this.class.updateHeatmapFromAtlas(ATLAS.fftMap,ATLAS.channelTags,viewing, 10000);
+        let hscalar = 0.05; if(State.data.uVScaling === false) { hscalar = 10;}
+        this.class.updateHeatmapFromAtlas(ATLAS.fftMap,ATLAS.channelTags,viewing, hscalar);
 
         if(State.data.coherenceResult.length === ATLAS.coherenceMap.map.length){
-            this.class.updateConnectomeFromAtlas(ATLAS.coherenceMap,ATLAS.fftMap,ATLAS.channelTags,viewing);
+            let cscalar = 0.1; if(State.data.uVScaling === false) { cscalar = 10;}
+            this.class.updateConnectomeFromAtlas(ATLAS.coherenceMap,ATLAS.fftMap,ATLAS.channelTags,viewing,true,cscalar);
         }
     }
 
     setBrainMap = () => {
         var viewing = document.getElementById(this.renderProps.id+"bandview");
         this.class.updatePointsFromAtlas(ATLAS.fftMap,ATLAS.channelTags);
-        this.class.updateHeatmapFromAtlas(ATLAS.fftMap,ATLAS.channelTags,viewing, 10000);
-        this.class.updateConnectomeFromAtlas(ATLAS.coherenceMap,ATLAS.fftMap,ATLAS.channelTags,viewing);
+        let hscalar = 0.1; if(State.data.uVScaling === false) { hscalar = 10;}
+        this.class.updateHeatmapFromAtlas(ATLAS.fftMap,ATLAS.channelTags,viewing, hscalar);
+        let cscalar = 0.1; if(State.data.uVScaling === false) { cscalar = 10;}
+            this.class.updateConnectomeFromAtlas(ATLAS.coherenceMap,ATLAS.fftMap,ATLAS.channelTags,viewing,true,cscalar);
     }
 
 }

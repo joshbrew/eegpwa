@@ -1,4 +1,4 @@
-//Feed forward IIR filters (Joshua Brewster, MIT licesne)
+//Feed forward IIR filters (Joshua Brewster)
 
       //https://github.com/mariusrubo/Unity-IIR-Realtime-Filtering/blob/master/FilterData.cs
     export  class IIRNotchFilter {

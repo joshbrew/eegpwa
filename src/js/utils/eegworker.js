@@ -51,12 +51,9 @@ onmessage = (e) => {
       var dfts;
 
       var scalar = 1;
-      var mins = new Array(buffer.length).fill(0);
-      if(e.data.input[4] !== undefined) {scalar = e.data.input[4];}
-      if(e.data.input[5] !== undefined) {e.data.input[5].forEach((min,i) => {mins[i] = min;});}
       //console.log(mins)
       //console.log(buffer);
-      dfts = gpu.MultiChannelDFT_Bandpass(buffer, e.data.input[1], e.data.input[2], e.data.input[3], scalar, mins);
+      dfts = gpu.MultiChannelDFT_Bandpass(buffer, e.data.input[1], e.data.input[2], e.data.input[3], scalar);
       //console.log(dfts)
       const cordfts = dfts[1].splice(e.data.input[0].length, buffer.length-e.data.input[0].length);
       //console.log(cordfts)
@@ -86,17 +83,16 @@ onmessage = (e) => {
       l = 1;
       cordfts.forEach((dft,i) => {
         var newdft = new Array(dft.length).fill(0);
-        if(i < nChannels) { //first multiply autocorrelogram ffts by unfiltered ffts (to scale relative the actual amplitudes)
+        if(i < nChannels) { //sort out autocorrelogram FFTs
           dft.forEach((amp,j) => {
             newdft[j] = amp//*dfts[1][i][j];
           });
           autoFFTproducts.push(newdft);
         }
-        else{ //now multiply cross correlogram ffts
-          //var timeMod = (e.data.input[1]-1)*.3333333; //Scaling for longer time intervals
-          //if(timeMod <= 1) { timeMod = 1; }
+        else{ //now multiply cross correlogram ffts and divide by autocorrelogram ffts (magnitude squared coherence)
           dft.forEach((amp,j) => {
-              newdft[j] = amp*autoFFTproducts[k][j]*autoFFTproducts[k+l][j];//*1.6666666;
+              newdft[j] = amp*amp/(autoFFTproducts[k][j]*autoFFTproducts[k+l][j]);//Magnitude squared coherence;
+              if(newdft[j] > 1) { newdft[j] = 1; } //caps the values at 1
               //newdft[j] = Math.pow(newdft[j],.125)
           });
           l++;

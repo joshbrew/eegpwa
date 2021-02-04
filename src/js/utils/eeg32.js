@@ -17,7 +17,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.decode = CustomDecoder;
 		//Free EEG 32 data structure:
         /*
-            [stop byte, start byte, counter byte, 32x3 channel data bytes (24 bit), 3x2 accelerometer data bytes, stop byte, start byte...]
+            [stop byte, start byte, counter byte, 32x3 channel data bytes (24 bit), 3x2 accelerometer data bytes, stop byte, start byte...] Gyroscope not enabled yet but would be printed after the accelerometer..
             Total = 105 bytes/line
         */
 		this.connected = false;
@@ -26,6 +26,8 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
         this.startByte = 160; // Start byte value
 		this.stopByte = 192; // Stop byte value
 		this.searchString = new Uint8Array([this.stopByte,this.startByte]); //Byte search string
+		this.readRate = 16.666667; //Throttle EEG read speed. (1.953ms/sample min @103 bytes/line)
+		this.readBufferSize = 2000; //Serial read buffer size, increase for slower read speeds (~1030bytes every 20ms) to keep up with the stream (or it will crash)
 
 		this.sps = 512; // Sample rate
 		this.nChannels = 32;
@@ -35,9 +37,9 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		this.vref = 2.50; //2.5V voltage ref +/- 250nV
 		this.gain = 8;
 
-		this.vscale = this.vref*this.stepSize*this.gain; //volts per step.
-		this.uVperStep = 0.000001 / (this.vref*this.stepSize*this.gain); //uV per step.
-		this.scalar = 1/(0.000001 / (this.vref*this.stepSize*this.gain)); //step per uV.
+		this.vscale = (this.vref/this.gain)*this.stepSize; //volts per step.
+		this.uVperStep = 1000000 * ((this.vref/this.gain)*this.stepSize); //uV per step.
+		this.scalar = 1/(1000000 / ((this.vref/this.gain)*this.stepSize)); //steps per uV.
 
 		this.maxBufferedSamples = this.sps*60*5; //max samples in buffer this.sps*60*nMinutes = max minutes of data
 		
@@ -73,6 +75,16 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 			}
 		}
 	}
+
+	setScalar(gain=24,stepSize=1/(Math.pow(2,23)-1),vref=4.50) {
+        this.stepSize = stepSize;
+		this.vref = vref; //2.5V voltage ref +/- 250nV
+		this.gain = gain;
+
+		this.vscale = (this.vref/this.gain)*this.stepSize; //volts per step.
+		this.uVperStep = 1000000 * ((this.vref/this.gain)*this.stepSize); //uV per step.
+		this.scalar = 1/(1000000 / ((this.vref/this.gain)*this.stepSize)); //steps per uV.
+    }
 
     bytesToInt16(x0,x1){
 		return x0 * 256 + x1;
@@ -192,7 +204,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 	async onPortSelected(port,baud=this.baudrate) {
 		try{
 			try {
-				await port.open({ baudRate: baud, bufferSize: 2048 });
+				await port.open({ baudRate: baud, bufferSize: this.readBufferSize });
 				this.onConnectedCallback();
 				this.connected = true;
 				this.subscribed = true;
@@ -200,7 +212,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 		
 			} //API inconsistency in syntax between linux and windows
 			catch {
-				await port.open({ baudrate: baud, buffersize: 2048 });
+				await port.open({ baudrate: baud, buffersize: this.readBufferSize });
 				this.onConnectedCallback();
 				this.connected = true;
 				this.subscribed = true;
@@ -234,7 +246,7 @@ export class eeg32 { //Contains structs and necessary functions/API calls to ana
 						//console.log(this.decoder.decode(value));
 					}
 					if(this.subscribed === true) {
-						setTimeout(()=>{streamData();}, 16.66667);//Throttled read 1/512sps = 1.953ms/sample @ 103 bytes / line or 1030bytes every 20ms
+						setTimeout(()=>{streamData();}, this.readRate);//Throttled read 1/512sps = 1.953ms/sample @ 103 bytes / line or 1030bytes every 20ms
 					}
 				} catch (error) {
 					console.log(error);// TODO: Handle non-fatal read error.
@@ -722,13 +734,13 @@ export class eegAtlas {
 		});
 	  }
 
-	//Returns the x axis (frequencies) for the bandpass filter amplitudes
-	bandPassWindow(freqStart,freqEnd,sampleRate) {
+	//Returns the x axis (frequencies) for the bandpass filter amplitudes. The window gets stretched or squeezed between the chosen frequencies based on the sample rate in my implementation.
+	bandPassWindow(freqStart,freqEnd,nSteps) {
 
 		var freqEnd_nyquist = freqEnd*2;
 		var fftwindow = [];
-		  for (var i = 0; i < Math.ceil(0.5*sampleRate); i++){
-			  fftwindow.push(freqStart + (freqEnd_nyquist-freqStart)*i/(sampleRate));
+		  for (var i = 0; i < Math.ceil(0.5*nSteps); i++){
+			  fftwindow.push(freqStart + (freqEnd_nyquist-freqStart)*i/(nSteps));
 		  }
 		return fftwindow;
 	  }

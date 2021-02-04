@@ -80,7 +80,7 @@ export class uPlotApplet {
               </table>
             </div>
         </div>
-        `;
+        `; //<option value="Stacked">Stacked Raw</option>
     }
 
     //Setup javascript functions for the new HTML here
@@ -112,6 +112,8 @@ export class uPlotApplet {
           }
           
           this.setuPlot();
+    
+
           if(document.getElementById(this.renderProps.id+'mode').value==="TimeSeries") {
               if(this.sub !== null){
                   State.unsubscribe('FFTResult',this.sub);
@@ -174,8 +176,8 @@ export class uPlotApplet {
         
         this.setPlotDims();
         
-        this.class = new uPlotMaker(this.renderProps.id+'canvas');
-        //this.setuPlot();
+        this.class = new uPlotMaker(this.renderProps.id+'canvas');       
+        //this.setuPlot(); console.log(this.class.plot)
         this.sub = State.subscribe('FFTResult',()=>{try{this.onUpdate();}catch(e){console.error(e);}});
     }
 
@@ -231,7 +233,7 @@ export class uPlotApplet {
               ATLAS.fftMap.shared.bandPassWindow.slice(State.data.fftViewStart,State.data.fftViewEnd)
           ];
             ATLAS.channelTags.forEach((row,i) => {
-              if(row.viewing === true && (State.data.fdBackMode !== "coherence" || (State.data.fdBackMode === "coherence" && (row.tag !== 'other' && row.tag !== null)))) {
+              if(row.viewing === true &&  (row.tag !== 'other' && row.tag !== null)) {
                 if(view === 'All' || row.ch === ch) {
                   this.class.uPlotData.push(State.data.FFTResult[i].slice(State.data.fftViewStart,State.data.fftViewEnd));
                 }
@@ -292,7 +294,7 @@ export class uPlotApplet {
         var nsamples = Math.floor(EEG.sps*this.xrange);
         if(nsamples > EEG.data.counter) {nsamples = EEG.data.counter-1}
 
-        if ((graphmode === "TimeSeries") || (graphmode === "Stacked")) {
+        if (graphmode === "TimeSeries") {
             var nsamples = Math.floor(EEG.sps*this.xrange);
             if(nsamples > EEG.data.counter) { nsamples = EEG.data.counter-1;}
             this.class.uPlotData = [
@@ -311,19 +313,29 @@ export class uPlotApplet {
                 
               });
           }
+          else if (graphmode === "Stacked") {
+            this.class.uPlotData = [
+                EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
+            ];
+            ATLAS.channelTags.forEach((row,i) => {
+              if(row.viewing === true) { 
+                  if(State.data.useFilters === true) {
+                    this.class.uPlotData.push(State.data.filtered["A"+row.ch].slice(State.data.filtered["A"+row.ch].length - nsamples, State.data.filtered["A"+row.ch].length));
+                  } else {
+                    this.class.uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
+                  }
+              } 
+            });
+            if(this.yrange !== true){
+              this.class.updateStackedData(this.class.uPlotData);
+            } else { 
+              this.class.updateStackedData(this.class.uPlotData,true);
+            }
+          }
       }
 
       //console.log(uPlotData)
-      if(graphmode === "Stacked"){
-        this.class.makeStackeduPlot(
-            undefined,
-            this.class.uPlotData,
-            undefined,
-            ATLAS.channelTags,
-            this.plotWidth, 
-            this.plotHeight);
-      }
-      else {
+      if(graphmode !== "Stacked"){
         this.class.plot.setData(this.class.uPlotData);
       }
     }
@@ -396,7 +408,7 @@ export class uPlotApplet {
                 //console.log(posFFTList);
                   ATLAS.channelTags.forEach((row,i) => {
                     if(i < State.data.FFTResult.length){
-                      if(row.viewing === true && (State.data.fdBackMode !== "coherence" || (State.data.fdBackMode === "coherence" && (row.tag !== 'other' && row.tag !== null)))) {
+                      if(row.viewing === true && (row.tag !== 'other' && row.tag !== null)) {
                         if(view === 'All' || row.ch === ch) {
                           this.class.uPlotData.push(State.data.FFTResult[i].slice(State.data.fftViewStart,State.data.fftViewEnd));
                         }
@@ -435,36 +447,31 @@ export class uPlotApplet {
                 );
         }
         else if (gmode === "Stacked") {
-      
-          if(EEG.data["A0"].length > 1){
-          var nsamples = Math.floor(EEG.sps*this.xrange);
-          if(nsamples > EEG.data.counter) {nsamples = EEG.data.counter-1}
+          document.getElementById(this.renderProps.id+"title").innerHTML = "ADC signals Stacked";
+
+          if(EEG.data["A0"].length > 1) {
+            var nsamples = Math.floor(EEG.sps*this.xrange);
+            if(nsamples > EEG.data.counter) {nsamples = EEG.data.counter-1;}
       
             this.class.uPlotData = [
-                EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)
+                EEG.data.ms.slice(EEG.data.counter - nsamples, EEG.data.counter)//.map((x,i) => x = x-EEG.data.ms[0])
             ];
-              ATLAS.channelTags.forEach((row,i) => {
-                if(row.viewing === true) { 
-                  if(view === 'All' || row.ch === ch) {
+            ATLAS.channelTags.forEach((row,i) => {
+                if(row.viewing === true) {
                     if(State.data.useFilters === true) {
-                      this.class.uPlotData.push(State.data.filtered["A"+row.ch].slice(State.data.filtered["A"+row.ch].length - nsamples, State.data.filtered["A"+row.ch].length));
+                      this.class.uPlotData.push(State.data.filtered["A"+row.ch].slice(State.data.filtered["A"+row.ch].length - nsamples, State.data.filtered["A"+row.ch].length ));
                     } else {
                       this.class.uPlotData.push(EEG.data["A"+row.ch].slice(EEG.data.counter - nsamples, EEG.data.counter));
                     }
                   }
-                }
-              });
+            });
           }
           else {
             this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow]];
-            ATLAS.channelTags.forEach((row,i) => {
-              if(view === 'All' || row.ch === ch) {
-                this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
-              }
-            });
+              ATLAS.channelTags.forEach((row,i) => {  
+                  this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
+              });
           }
-      
-          document.getElementById(this.renderProps.id+"title").innerHTML = "ADC signals Stacked";
       
           //console.log(uPlotData);
           newSeries[0].label = "t";
@@ -474,7 +481,8 @@ export class uPlotApplet {
               undefined, 
               ATLAS.channelTags,
               this.plotWidth, 
-              this.plotHeight
+              this.plotHeight,
+              this.yrange
             );
           this.class.plot.axes[0].values = (u, vals, space) => vals.map(v => Math.floor((v-EEG.data.startms)*.00001666667)+"m:"+((v-EEG.data.startms)*.001 - 60*Math.floor((v-EEG.data.startms)*.00001666667)).toFixed(1) + "s");
           

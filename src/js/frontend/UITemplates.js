@@ -72,11 +72,13 @@ export function menudropdown_template(props={}) {
     return `
     <td style="width:100%; vertical-align:center; border:2px inset black;" colspan=6>
         <table style="margin-left:auto; margin-right:auto; ">
-            <tr><td>Set Band View</td><td><input type="text" style="width:95%;" id="freqStart" placeholder="0 (Hz)"></td><td>to</td><td><input type="text" style="width:100%;" id="freqEnd" placeholder="128 (Hz)"></td><td><button id="setBandpass">Set</button></td></tr>
+            <tr><td>Set Band View</td><td><input type="text" style="width:95%;" id="freqStart" placeholder="0 (Hz)"></td><td>to</td><td><input type="text" style="width:100%;" id="freqEnd" placeholder="128 (Hz)"></td><td><button id="setBandView">Set</button></td></tr>
             <tr><td>Set Tags</td><td colspan=3><input type="text" style="width:100%;" id="Tags" placeholder="Format: 0:Fp1 or 2:Fz or 6:P6:0,1,2 or 6:delete"></input></td><td><button id="setTags">Set</button></td></tr>
-            <tr><td>Filters:</td><td colSpan="3">Use filters<input id="useFilters" type="checkbox" checked> Notch 50Hz<input id="notch50" type="checkbox" checked> Notch 60Hz<input id="notch60" type="checkbox" checked> Low Pass 50Hz<input id="lp50" type="checkbox" checked> SMA4<input id="sma4" type="checkbox" checked> DC Blocker<input id="dcb" type="checkbox" checked></td>
+            <tr><td>Use Filters:<input id="useFilters" type="checkbox" checked></td><td colSpan="3"> Notch 50Hz <input id="notch50" type="checkbox" checked> Notch 60Hz <input id="notch60" type="checkbox" checked> Low Pass 50Hz x4 <input id="lp50" type="checkbox"> SMA4 <input id="sma4" type="checkbox" checked> DC Blocker <input id="dcb" type="checkbox" checked></td></tr>
+            <tr><td>Bandpass x4 <input id="bandpass" type="checkbox"></td><td> <input id="bplower" type="text" style="width:95%;" placeholder="3 (Hz)" value="3"></td><td>to</td><td><input id="bpupper" style="width:100%;" type="text" placeholder="45 (Hz)" value="45"></td><td><button id="setbp">Set</button></td></tr>
+            <tr><td>Analysis:</td><td colSpan="3"> uV Scaling <input id="uvscaling" type="checkbox" checked> Coherence (CPU intensive)<input id="getCoherence" type="checkbox" checked></td></tr>
         </table>
-     </td>`;
+     </td>`; 
 }
 
 export function menudropdown2_template(props={}) {
