@@ -28,11 +28,10 @@
     "muse-js": "^3.2.0",
     "normalize.css": "^8.0.1",
     "postprocessing": "^6.17.4",
-    "python-shell": "^2.0.3",
     "smoothie": "^1.35.0",
     "three": "^0.121.1",
     "tslib": "^2.0.3",
-    "uplot": "^1.4.0"
+    "uplot": "^1.4.0" 
   },
   "devDependencies": {
     "@types/web-bluetooth": "0.0.9",
