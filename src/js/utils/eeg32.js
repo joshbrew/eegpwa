@@ -510,7 +510,7 @@ export class eegAtlas {
 		// Based on MNI atlas.
 		var freqBins = {scp: [], delta: [], theta: [], alpha1: [], alpha2: [], beta: [], lowgamma: [], highgamma: []};
 
-		return {shared: {sps: this.sps, bandPassWindow:[], bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha1:[[],[]], alpha2:[[],[]], beta:[[],[]], lowgamma:[[],[]], highgamma:[[],[]]} //x axis values and indices for named EEG frequency bands
+		return {shared: {sps: 512, bandPassWindow:[], bandFreqs:{scp:[[],[]], delta:[[],[]], theta:[[],[]], alpha1:[[],[]], alpha2:[[],[]], beta:[[],[]], lowgamma:[[],[]], highgamma:[[],[]]} //x axis values and indices for named EEG frequency bands
 		}, map:[
 			{tag:"Fp1", data: { x: -21.5, y: 70.2,   z: -0.1,  count:0,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
 			{tag:"Fp2", data: { x: 28.4,  y: 69.1,   z: -0.4,  count:0,  times: [], amplitudes: [], slices: JSON.parse(JSON.stringify(freqBins)), means: JSON.parse(JSON.stringify(freqBins))}},
@@ -732,7 +732,7 @@ export class eegAtlas {
 		  this.coherenceMap.map[i].data.means.highgamma.push(eegmath.mean(highgamma));
 		}
 		});
-	  }
+	}
 
 	//Returns the x axis (frequencies) for the bandpass filter amplitudes. The window gets stretched or squeezed between the chosen frequencies based on the sample rate in my implementation.
 	bandPassWindow(freqStart,freqEnd,nSteps) {
@@ -743,7 +743,7 @@ export class eegAtlas {
 			  fftwindow.push(freqStart + (freqEnd_nyquist-freqStart)*i/(nSteps));
 		  }
 		return fftwindow;
-	  }
+	}
 
 }
 
