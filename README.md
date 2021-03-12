@@ -6,11 +6,11 @@ With the latest node LTS installed, cd to where you extracted this folder from y
 
 `npm install`
 
-then
+then (you may need Python and VS2017 or newer with Desktop C++ Development modules to build. You will get an error that will tell you what's missing)
 
 `npm start`
 
-Follow the prompt to find where the app is on your localhost server.
+Follow the prompt to find where the app is on your localhost server. 
 
 ## Purpose
 
