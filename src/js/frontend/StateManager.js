@@ -90,7 +90,6 @@ export class StateManager {
             else if(key !== null){
                 this.listener.addListener(key,this.data,key,onchange,this.data["stateUpdateInterval"],debug);
             }
-
         }
     }
 

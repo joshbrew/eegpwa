@@ -58,6 +58,7 @@ export class uPlotApplet {
                       <option value="Coherence">Coherence</option>
                       <option value="CoherenceTimeSeries">Mean Coherence</option>
                       <option value="TimeSeries">Raw</option>
+                      <option value="Stacked">Stacked Raw</option>c
                     </select>
                   </td>
                   <td id='`+props.id+`yrangetd' style='width:98px'>
@@ -80,7 +81,7 @@ export class uPlotApplet {
               </table>
             </div>
         </div>
-        `; //<option value="Stacked">Stacked Raw</option>
+        `; //
     }
 
     //Setup javascript functions for the new HTML here
@@ -352,7 +353,7 @@ export class uPlotApplet {
         if(gmode === "TimeSeries"){
           document.getElementById(this.renderProps.id+"title").innerHTML = "ADC signals";
       
-          if(EEG.data["A0"].length > 1) {
+          if(State.data.counter > 0) {
             var nsamples = Math.floor(EEG.sps*this.xrange);
             if(nsamples > EEG.data.counter) {nsamples = EEG.data.counter-1;}
       
@@ -375,8 +376,10 @@ export class uPlotApplet {
           else {
             this.class.uPlotData = [[...ATLAS.fftMap.shared.bandPassWindow]];
               ATLAS.channelTags.forEach((row,i) => {  
-                if(view === 'All' || row.ch === ch) {
+                if(view === 'All' || row.ch === parseInt(view)) {
+                  console.log("gotcha")
                   this.class.uPlotData.push([...ATLAS.fftMap.shared.bandPassWindow]);
+                  console.log(this.class.uPlotData)
                 }
               });
             
@@ -449,7 +452,7 @@ export class uPlotApplet {
         else if (gmode === "Stacked") {
           document.getElementById(this.renderProps.id+"title").innerHTML = "ADC signals Stacked";
 
-          if(EEG.data["A0"].length > 1) {
+          if(State.data.counter > 0) {
             var nsamples = Math.floor(EEG.sps*this.xrange);
             if(nsamples > EEG.data.counter) {nsamples = EEG.data.counter-1;}
       

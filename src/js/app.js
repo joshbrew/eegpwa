@@ -476,19 +476,6 @@ const initSystem = () => {
             });
         }
 
-        //TODO:
-        /* 
-        Automate the chunk saving for oncoming data as the buffers fill. Just have it call the save operation before the buffers fill completely so we don't lose any data
-        Visual GUI for file browsing and saving.
-        Test large datasets
-
-        */
-
-
-
-
-
-
     });
 }
 

@@ -103,7 +103,6 @@ export class gpuUtils {
     this.listidft1D_windowed = makeKrnl(this.gpu, krnl.listidft1D_windowedKern);
     this.bulkArrayMul = makeKrnl(this.gpu, krnl.bulkArrayMulKern);
     this.multiConv2D = makeKrnl(this.gpu, krnl.multiImgConv2DKern);
-
     
     //----------------------------------- Easy gpu pipelining
     //------------Combine Kernels-------- gpu.combineKernels(f1,f2,function(a,b,c) { f1(f2(a,b),c); });
@@ -128,13 +127,18 @@ export class gpuUtils {
 
     //TODO: automatic auto/cross correlation and ordering.
     //Input signals like this : [signal1,signal2,autocor1,autocor2,crosscor,...repeat for desired coherence calculations] or any order of that.
-    const gpuCoherence = (signals, sampleRate, freqStart, freqEnd, scalar) => { //Take FFTs of the signals, their autocorrelations, and cross correlation (5 FFTs per coherence), then multiply.
+    this.gpuCoherence = (signals, sampleRate, freqStart, freqEnd, scalar) => { //Take FFTs of the signals, their autocorrelations, and cross correlation (5 FFTs per coherence), then multiply.
       var dfts = this.listdft1D_windowed(signals, sampleRate, freqStart, freqEnd, scalar, new Array(Math.ceil(signals/sampleRate)).fill(0) );
       var products = this.bulkArrayMul(dfts, sampleRate, 5, 1);
       return products;
     }
 
-    //this.gpuCoherence = this.gpu.combineKernels(this.listdft1D_windowedKern, this.bulkArrayMulKern, gpuCoherence);
+    //this.gpuCoherence = this.gpu.combineKernels(this.listdft1D_windowedKern, this.bulkArrayMulKern, function gpuCoherence(signals,sampleRate,freqStart,freqEnd,scalar) {
+    //  var dfts = this.listdft1D_windowed(signals, sampleRate, freqStart, freqEnd, scalar, new Array(Math.ceil(signals/sampleRate)).fill(0) );
+    //  var products = this.bulkArrayMul(dfts, sampleRate, 5, 1);
+    //  return products;
+    //});
+
   }
 
   gpuXCors(arrays, precompute=false, texOut = false) { //gpu implementation for bulk cross/auto correlations, outputs [[0:0],[0:1],...,[1:1],...[n:n]]
@@ -159,6 +163,7 @@ export class gpuUtils {
           estsbuf.push(ests[i],ests[j]);
         }
       }
+
       this.correlogramsPC.setOutput([buffer.length]);
       this.correlogramsPC.setLoopMaxIterations(arrays[0].length*2);
       outputTex = this.correlogramsPC(buffer, arrays[0].length, meansbuf, estsbuf)

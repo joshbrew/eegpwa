@@ -719,7 +719,7 @@ class Physics {
             gravity: 9.81
         };
 
-        this.bodyPrim = {
+        this.bodySettings = {
 
             index: null,
 
@@ -750,7 +750,7 @@ class Physics {
         }
 
         for (let i = 0; i < nBodies; i++) {
-            this.physicsBodies.push(JSON.parse(JSON.stringify(this.bodyPrim)));
+            this.physicsBodies.push(JSON.parse(JSON.stringify(this.bodySettings)));
             this.physicsBodies[i].index = i;
         }
     }
@@ -811,7 +811,7 @@ class Physics {
     }
 
     addBody(child = null) {
-        this.physicsBodies.push(new this.bodyPrim);
+        this.physicsBodies.push(new this.bodySettings);
         this.physicsBodies[this.physicsBodies.length - 1].index = this.physicsBodies.length - 1;
         this.physicsBodies[this.physicsBodies.length - 1].child = child;
     }

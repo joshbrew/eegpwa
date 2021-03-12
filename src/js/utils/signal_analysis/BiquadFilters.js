@@ -181,7 +181,7 @@ export const makeNotchFilter = (frequency,sps,bandwidth) => {
   return new Biquad('notch',frequency,sps,Biquad.calcNotchQ(frequency,bandwidth),0);
 }
 
-export const makeBandpassFilter = (freqStart,freqEnd,sps,resonance=Math.pow(10,Math.floor(Math.log10(frequency)))) => {
+export const makeBandpassFilter = (freqStart,freqEnd,sps,resonance=Math.pow(10,Math.floor(Math.log10(Biquad.calcCenterFrequency(freqStart,freqEnd))))) => {
   return new Biquad('bandpass',
       Biquad.calcCenterFrequency(freqStart,freqEnd),
       sps,
