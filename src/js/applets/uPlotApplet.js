@@ -4,6 +4,7 @@ import {DOMFragment} from '../frontend/DOMFragment'
 import {uPlotMaker} from '../utils/visuals/eegvisuals'
 import {eegmath} from '../utils/eeg32'
 
+
 /*
 TODO:
 Custom plot legend, still clickable but much more compact.
@@ -42,7 +43,7 @@ export class uPlotApplet {
     //Create HTML template string with dynamic properties set in this.renderProps. Updates to these props will cause updates to the template
     HTMLtemplate(props=this.renderProps) {
         return `
-        <div id='`+props.id+`'>    
+        <div id='`+props.id+`'>   
             <div id='`+props.id+`canvas' style='position:absolute;z-index:3; top:50px'></div>
             <div id='`+props.id+`menu' style='position:absolute; float:right; z-index:4;'>
               <table style='position:absolute; transform:translateX(40px);'>

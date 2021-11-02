@@ -167,7 +167,7 @@ class biquadChannelFilterer {
                     new Biquad('lowpass', 50, 512)
                 ];
         this.bp1 = [
-                    makeBandpassFilter(this.bplower,this.bpupper,sps,9.75)
+                    makeBandpassFilter(this.bplower,this.bpupper,sps,1)
                 ];
         this.dcb = new DCBlocker(0.995);
     }
