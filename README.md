@@ -2,6 +2,8 @@
 
 See Web BCI test at https://webbci.netlify.app
 
+This has become Brains@Play: https://github.com/brainsatplay/brainsatplay
+
 With the latest node LTS installed, cd to where you extracted this folder from your command prompt then use the command
 
 `npm install`
